@@ -6,11 +6,10 @@ import { Input } from "~/components/ui/input";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuItem } from "~/components/ui/dropdown-menu";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
-import { BookmarkIcon, HeartIcon, HomeIcon, ChatBubbleOvalLeftIcon, GlobeAltIcon, UserCircleIcon, UsersIcon, MusicalNoteIcon} from '@heroicons/react/24/outline';
-import { User } from "@clerk/nextjs/server";
+import { BookmarkIcon, HeartIcon, HomeIcon, ChatBubbleOvalLeftIcon, GlobeAltIcon, UserCircleIcon, UsersIcon, MusicalNoteIcon } from '@heroicons/react/24/outline';
 
 export default function Home() {
-  const user = useUser();
+  const { isSignedIn } = useUser();
   const { data } = api.post.getAll.useQuery();
 
   return (
@@ -24,7 +23,7 @@ export default function Home() {
         <header className="sticky top-0 z-10 flex h-14 items-center bg-background px-4 shadow-sm">
           <Link href="#" className="mr-4">
             <GlobeAltIcon className="h-6 w-6" />
-            <span className="sr-only">Acme Games</span>
+            <span className="sr-only">Shappa's Games</span>
           </Link>
           <div className="relative flex-1">
             <Input
@@ -33,29 +32,37 @@ export default function Home() {
               className="w-full rounded-full bg-muted px-8 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
             />
           </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="icon" className="overflow-hidden rounded-full">
-                <img
-                  src="/placeholder.svg"
-                  width={36}
-                  height={36}
-                  alt="Avatar"
-                  className="overflow-hidden rounded-full"
-                  style={{ aspectRatio: "36/36", objectFit: "cover" }}
-                />
-                <span className="sr-only">John Doe</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>John Doe</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>Profile</DropdownMenuItem>
-              <DropdownMenuItem>Settings</DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>Logout</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <div className="flex items-center gap-4">
+            {!isSignedIn ? (
+              <SignInButton>
+                <Button variant="outline">SIGN IN</Button>
+              </SignInButton>
+            ) : (
+              <>
+                <SignOutButton>
+                  <Button variant="outline" size="icon">
+                    <UserCircleIcon className="h-6 w-6" />
+                  </Button>
+                </SignOutButton>
+              </>
+            )}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="icon" className="overflow-hidden rounded-full">
+                  <UserCircleIcon className="h-6 w-6" />
+                  <span className="sr-only">User Menu</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>User Menu</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem>Profile</DropdownMenuItem>
+                <DropdownMenuItem>Settings</DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem>Logout</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </header>
 
         <div className="flex flex-1 overflow-auto">
@@ -115,7 +122,7 @@ export default function Home() {
                         <div className="flex items-center justify-between">
                           <div className="space-y-1">
                             <div className="text-sm font-medium">{post.content}</div>
-                            <div className="text-xs text-muted-foreground">Acme Shooter 2023</div>
+                            <div className="text-xs text-muted-foreground">Shooter Game</div>
                           </div>
                           <div className="flex items-center gap-2">
                             <Button variant="ghost" size="icon" className="rounded-full p-1 hover:bg-white/20">
@@ -134,7 +141,7 @@ export default function Home() {
                         </div>
                         <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
                           <MusicalNoteIcon className="h-4 w-4" />
-                          Acme Shooter Soundtrack
+                          Shooter Soundtrack
                         </div>
                       </div>
                     </div>
@@ -171,5 +178,3 @@ function Share2Icon(props: React.SVGProps<SVGSVGElement>) {
     </svg>
   );
 }
-
-// Include other icons like MountainIcon, UsersIcon, UserIcon, etc., similarly
