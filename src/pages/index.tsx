@@ -7,7 +7,7 @@ import { api } from "~/utils/api";
 export default function Home() {
   const user = useUser();
 
-  const { data } = api.post.getLatest.useQuery();
+  const { data } = api.post.getAll.useQuery();
 
   return (
     <>
@@ -20,6 +20,10 @@ export default function Home() {
         <div className="flex flex-col items-center justify-center gap-4">
           {!user.isSignedIn && <SignInButton />}
           {!!user.isSignedIn && <SignOutButton />}
+        </div>
+        <div>
+        {data?.map((post: { id: string; content: string }) => 
+    (<div key={post.id}>{post.content}</div>))}
         </div>
       </main>
     </>
