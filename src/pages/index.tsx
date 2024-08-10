@@ -23,7 +23,7 @@ export default function Home() {
         <header className="sticky top-0 z-10 flex h-14 items-center bg-background px-4 shadow-sm">
           <Link href="#" className="mr-4">
             <GlobeAltIcon className="h-6 w-6" />
-            <span className="sr-only">Shappa's Games</span>
+            <span className="sr-only">Shappas Games</span>
           </Link>
           <div className="relative flex-1">
             <Input
