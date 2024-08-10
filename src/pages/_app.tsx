@@ -1,11 +1,11 @@
 import { GeistSans } from "geist/font/sans";
 import { type AppType } from "next/app";
-import { ClerkProvider} from '@clerk/nextjs'
+import { ClerkProvider } from "@clerk/nextjs";
 import { api } from "~/utils/api";
-
+import { AppProps } from 'next/app';
 import "~/styles/globals.css";
 
-const MyApp: AppType = ({ Component, pageProps }) => {
+const MyApp: AppType = ({ Component, pageProps }: AppProps) => {
   return (
     <ClerkProvider {...pageProps}>
       <div className={GeistSans.className}>
