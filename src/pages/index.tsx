@@ -23,7 +23,7 @@ export default function Home() {
         <header className="sticky top-0 z-10 flex h-14 items-center bg-background px-4 shadow-sm">
           <Link href="#" className="mr-4">
             <GlobeAltIcon className="h-6 w-6" />
-            <span className="sr-only">Shappas Games</span>
+            <span className="sr-only">Shappa's Games</span>
           </Link>
           <div className="relative flex-1">
             <Input
@@ -141,7 +141,7 @@ export default function Home() {
                         </div>
                         <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
                           <MusicalNoteIcon className="h-4 w-4" />
-                          Shooter Soundtrack
+                          AcShooter Soundtrack
                         </div>
                       </div>
                     </div>
