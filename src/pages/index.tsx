@@ -6,7 +6,7 @@ import { Input } from "~/components/ui/input";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuItem } from "~/components/ui/dropdown-menu";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
-import { BookmarkIcon, HeartIcon, HomeIcon, ChatBubbleOvalLeftIcon, GlobeAltIcon, UserCircleIcon, UsersIcon, MusicalNoteIcon } from '@heroicons/react/24/outline';
+import { BookmarkIcon, HeartIcon, HomeIcon, ChatBubbleOvalLeftIcon, GlobeAltIcon, UserCircleIcon, UsersIcon, MusicalNoteIcon} from '@heroicons/react/24/outline';
 
 export default function Home() {
   const { isSignedIn } = useUser();
@@ -21,9 +21,9 @@ export default function Home() {
       </Head>
       <main className="flex h-screen w-full flex-col bg-background">
         <header className="sticky top-0 z-10 flex h-14 items-center bg-background px-4 shadow-sm">
-          <Link href="#" className="mr-4">
-            <GlobeAltIcon className="h-6 w-6" />
-            <span className="sr-only">Shappa's Games</span>
+          <Link href="#" className="mr-4 flex items-center">
+            <GlobeAltIcon className="h-6 w-6 mr-2" />
+            <span className="font-semibold text-lg">GamePlay</span>
           </Link>
           <div className="relative flex-1">
             <Input
