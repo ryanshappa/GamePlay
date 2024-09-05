@@ -1,33 +1,47 @@
+// src/server/api/routers/post.ts
 import { z } from "zod";
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 
-// export const postRouter = createTRPCRouter({
-//   create: publicProcedure
-//     .input(z.object({
-//       title: z.string().min(1),
-//       content: z.string().min(1),
-//       authorId: z.number(), // Include authorId in the input
-//     }))
-//     .mutation(async ({ ctx, input }) => {
-//       return ctx.db.post.create({
-//         data: {
-//           title: input.title,
-//           content: input.content,
-//           authorId: input.authorId, // Ensure authorId is passed to the database
-//         },
-//       });
-//     }),
+export const postRouter = createTRPCRouter({
+  // Fetch all posts
+  getAll: publicProcedure.query(async ({ ctx }) => {
+    return ctx.db.post.findMany();
+  }),
 
-  // getLatest: publicProcedure.query(async ({ ctx }) => {
-  //   const post = await ctx.db.post.findFirst({
-  //     orderBy: { createdAt: "desc" },
-  //   });
+  // Fetch posts by a specific user
+  getPostsByUser: publicProcedure
+    .input(z.object({ userId: z.string() }))
+    .query(async ({ input, ctx }) => {
+      return ctx.db.post.findMany({
+        where: { authorId: parseInt(input.userId) },
+        orderBy: { createdAt: "desc" },
+      });
+    }),
 
-  //   return post ?? null;
-  // }),
-  
-  export const postRouter = createTRPCRouter({
-    getAll: publicProcedure.query(async ({ ctx }) => {
-      return ctx.db.post.findMany();
-  })
+  // Fetch post by ID
+  getById: publicProcedure
+    .input(z.object({ id: z.number() }))
+    .query(async ({ input, ctx }) => {
+      return ctx.db.post.findUnique({
+        where: { id: input.id },
+      });
+    }),
+
+  // Create a new post
+  createPost: publicProcedure
+    .input(z.object({
+      title: z.string(),
+      fileUrl: z.string(),
+      authorId: z.string(),
+    }))
+    .mutation(async ({ input, ctx }) => {
+      return ctx.db.post.create({
+        data: {
+          title: input.title,
+          fileUrl: input.fileUrl,
+          authorId: parseInt(input.authorId),
+          content: "", // Add this line to include the content property
+        },
+      });
+    }),
 });

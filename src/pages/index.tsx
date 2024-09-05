@@ -1,3 +1,4 @@
+import { useRouter } from 'next/router';
 import { SignInButton, SignOutButton, useUser } from "@clerk/nextjs";
 import Head from "next/head";
 import { api } from "~/utils/api";
@@ -6,11 +7,12 @@ import { Input } from "~/components/ui/input";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuItem } from "~/components/ui/dropdown-menu";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
-import { BookmarkIcon, HeartIcon, HomeIcon, ChatBubbleOvalLeftIcon, GlobeAltIcon, UserCircleIcon, UsersIcon, MusicalNoteIcon} from '@heroicons/react/24/outline';
+import { BookmarkIcon, HeartIcon, HomeIcon, ChatBubbleOvalLeftIcon, GlobeAltIcon, UserCircleIcon, UsersIcon, MusicalNoteIcon, PlusIcon, ShareIcon } from '@heroicons/react/24/outline';
 
 export default function Home() {
   const { isSignedIn } = useUser();
   const { data } = api.post.getAll.useQuery();
+  const router = useRouter(); // Add useRouter for navigation
 
   return (
     <>
@@ -76,12 +78,13 @@ export default function Home() {
               For You
             </Button>
             <Button
+              onClick={() => router.push("/create-post")} // Add redirect logic here
               variant="ghost"
               size="sm"
               className="w-full justify-start gap-2 rounded-md px-3 py-2 text-left font-medium hover:bg-muted"
             >
-              <UsersIcon className="h-5 w-5" />
-              Following
+              <PlusIcon className="h-5 w-5" />
+              Create
             </Button>
             <Button
               variant="ghost"
@@ -135,13 +138,9 @@ export default function Home() {
                               <BookmarkIcon className="h-5 w-5" />
                             </Button>
                             <Button variant="ghost" size="icon" className="rounded-full p-1 hover:bg-white/20">
-                              <Share2Icon className="h-5 w-5" />
+                              <ShareIcon className="h-5 w-5" />
                             </Button>
                           </div>
-                        </div>
-                        <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
-                          <MusicalNoteIcon className="h-4 w-4" />
-                          AcShooter Soundtrack
                         </div>
                       </div>
                     </div>
@@ -153,28 +152,5 @@ export default function Home() {
         </div>
       </main>
     </>
-  );
-}
-
-function Share2Icon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <circle cx="18" cy="5" r="3" />
-      <circle cx="6" cy="12" r="3" />
-      <circle cx="18" cy="19" r="3" />
-      <line x1="8.59" x2="15.42" y1="13.51" y2="17.49" />
-      <line x1="15.41" x2="8.59" y1="6.51" y2="10.49" />
-    </svg>
   );
 }
