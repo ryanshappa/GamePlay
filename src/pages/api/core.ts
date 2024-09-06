@@ -42,4 +42,25 @@ export const ourFileRouter = {
     }),
 } satisfies FileRouter;
 
+
+export async function uploadFiles(files: File[]) {
+  const formData = new FormData();
+
+  // Loop over the array of files and append each file to the form data
+  files.forEach((file) => formData.append('file', file));
+
+  const response = await fetch('/api/upload-file', {
+    method: 'POST',
+    body: formData,
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to upload file');
+  }
+
+  const result = await response.json();
+  return result;
+}
+
+
 export type OurFileRouter = typeof ourFileRouter;

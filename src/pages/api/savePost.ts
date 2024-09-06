@@ -1,5 +1,3 @@
-// src/pages/api/savePost.ts
-
 import { NextApiRequest, NextApiResponse } from "next";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "~/server/db"; // Assuming you're using Prisma
@@ -23,7 +21,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         title,
         fileUrl,
         content, // Include content here
-        authorId: parseInt(user.userId, 10),
+        authorId: user.userId, // Change to string
       },
     });
 

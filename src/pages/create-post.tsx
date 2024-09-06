@@ -1,3 +1,4 @@
+// src/pages/create-post.tsx
 import { useState } from "react";
 import { useRouter } from "next/router";
 import { useUser } from "@clerk/nextjs";
@@ -9,7 +10,6 @@ export default function CreatePost() {
   const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [title, setTitle] = useState<string>("");
-  const [uploadUrl, setUploadUrl] = useState<string | null>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -22,42 +22,19 @@ export default function CreatePost() {
       alert("Please sign in and upload a file.");
       return;
     }
-  
+
     const formData = new FormData();
-    formData.append("file", file); // Ensure correct key name is used
-  
-    const response = await fetch("/api/upload-file", {
-      method: "POST",
+    formData.append('file', file);
+
+    const response = await fetch('/api/upload-file', {
+      method: 'POST',
       body: formData,
     });
-  
+
     if (response.ok) {
-      const result = await response.json();
-      setUploadUrl(result.fileUrl);
-      savePostToProfile(result.fileUrl);
+      router.push("/feed");
     } else {
-      console.error("Upload failed");
-    }
-  };
-  
-
-  const savePostToProfile = async (fileUrl: string) => {
-    try {
-      const res = await fetch("/api/savePost", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ title, fileUrl }),
-      });
-
-      if (res.ok) {
-        router.push("/feed");
-      } else {
-        console.error("Failed to save the post.");
-      }
-    } catch (error) {
-      console.error("Error:", error);
+      console.error("Error uploading file");
     }
   };
 
@@ -75,8 +52,6 @@ export default function CreatePost() {
       <Button onClick={handleUpload} variant="secondary" className="mt-4">
         Upload
       </Button>
-
-      {uploadUrl && <p>File uploaded to: <a href={uploadUrl}>{uploadUrl}</a></p>}
     </div>
   );
 }
