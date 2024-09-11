@@ -1,7 +1,6 @@
 // src/utils/uploadthing.ts
 
-import { generateReactHelpers } from "@uploadthing/react/hooks";
-import type { OurFileRouter } from "~/api/uploadthing/core";
+import { generateUploadButton } from "@uploadthing/react"; // Import the Uploadthing React helpers
+import type { OurFileRouter } from "~/server/uploadthing"; // Import your FileRouter types
 
-// This will generate client-side hooks for uploading files
-export const { useUploadThing } = generateReactHelpers<OurFileRouter>();
+export const UploadButton = generateUploadButton<OurFileRouter>(); // Create the upload button

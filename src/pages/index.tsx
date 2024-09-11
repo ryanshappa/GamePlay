@@ -1,18 +1,17 @@
 import { useRouter } from 'next/router';
-import { SignInButton, SignOutButton, useUser } from "@clerk/nextjs";
+import { SignInButton, useUser, UserButton } from "@clerk/nextjs"; // Clerk's UserButton for profile dropdown
 import Head from "next/head";
 import { api } from "~/utils/api";
 import Link from "next/link";
 import { Input } from "~/components/ui/input";
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuItem } from "~/components/ui/dropdown-menu";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
-import { BookmarkIcon, HeartIcon, HomeIcon, ChatBubbleOvalLeftIcon, GlobeAltIcon, UserCircleIcon, UsersIcon, MusicalNoteIcon, PlusIcon, ShareIcon } from '@heroicons/react/24/outline';
+import { HomeIcon, PlusIcon } from '@heroicons/react/24/outline';
 
 export default function Home() {
   const { isSignedIn } = useUser();
-  const { data } = api.post.getAll.useQuery();
-  const router = useRouter(); // Add useRouter for navigation
+  const { data: posts, isLoading } = api.post.getAll.useQuery(); 
+  const router = useRouter();
 
   return (
     <>
@@ -23,8 +22,7 @@ export default function Home() {
       </Head>
       <main className="flex h-screen w-full flex-col bg-background">
         <header className="sticky top-0 z-10 flex h-14 items-center bg-background px-4 shadow-sm">
-          <Link href="#" className="mr-4 flex items-center">
-            <GlobeAltIcon className="h-6 w-6 mr-2" />
+          <Link href="/" className="mr-4 flex items-center">
             <span className="font-semibold text-lg">GamePlay</span>
           </Link>
           <div className="relative flex-1">
@@ -40,30 +38,9 @@ export default function Home() {
                 <Button variant="outline">SIGN IN</Button>
               </SignInButton>
             ) : (
-              <>
-                <SignOutButton>
-                  <Button variant="outline" size="icon">
-                    <UserCircleIcon className="h-6 w-6" />
-                  </Button>
-                </SignOutButton>
-              </>
+              // Show UserButton with profile and sign-out options
+              <UserButton afterSignOutUrl="/" />
             )}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="icon" className="overflow-hidden rounded-full">
-                  <UserCircleIcon className="h-6 w-6" />
-                  <span className="sr-only">User Menu</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>User Menu</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>Profile</DropdownMenuItem>
-                <DropdownMenuItem>Settings</DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>Logout</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
           </div>
         </header>
 
@@ -73,12 +50,13 @@ export default function Home() {
               variant="ghost"
               size="sm"
               className="w-full justify-start gap-2 rounded-md px-3 py-2 text-left font-medium hover:bg-muted"
+              onClick={() => router.push("/")}
             >
               <HomeIcon className="h-5 w-5" />
               For You
             </Button>
             <Button
-              onClick={() => router.push("/create-post")} // Add redirect logic here
+              onClick={() => router.push("/create-post")}
               variant="ghost"
               size="sm"
               className="w-full justify-start gap-2 rounded-md px-3 py-2 text-left font-medium hover:bg-muted"
@@ -86,65 +64,30 @@ export default function Home() {
               <PlusIcon className="h-5 w-5" />
               Create
             </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="w-full justify-start gap-2 rounded-md px-3 py-2 text-left font-medium hover:bg-muted"
-            >
-              <UserCircleIcon className="h-5 w-5" />
-              Profile
-            </Button>
-            <div className="mt-auto space-y-2 text-sm text-muted-foreground">
-              <Link href="#" className="hover:underline">
-                Company
-              </Link>
-              <Link href="#" className="hover:underline">
-                Program
-              </Link>
-              <Link href="#" className="hover:underline">
-                Terms & Policies
-              </Link>
-            </div>
           </nav>
 
           <div className="flex-1 overflow-auto">
             <div className="relative h-full">
               <Card className="absolute inset-0 h-full w-full overflow-hidden rounded-none">
                 <CardContent className="relative h-full">
-                  {data?.map((post: { id: number; content: string }) => (
-                    <div key={post.id}>
-                      <img
-                        src="/placeholder.svg"
-                        alt="Game Thumbnail"
-                        width={800}
-                        height={800}
-                        className="h-full w-full object-cover"
-                        style={{ aspectRatio: "800/800", objectFit: "cover" }}
-                      />
-                      <div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-black/80 to-transparent p-4 text-white">
-                        <div className="flex items-center justify-between">
-                          <div className="space-y-1">
-                            <div className="text-sm font-medium">{post.content}</div>
-                            <div className="text-xs text-muted-foreground">Shooter Game</div>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Button variant="ghost" size="icon" className="rounded-full p-1 hover:bg-white/20">
-                              <HeartIcon className="h-5 w-5" />
-                            </Button>
-                            <Button variant="ghost" size="icon" className="rounded-full p-1 hover:bg-white/20">
-                              <ChatBubbleOvalLeftIcon className="h-5 w-5" />
-                            </Button>
-                            <Button variant="ghost" size="icon" className="rounded-full p-1 hover:bg-white/20">
-                              <BookmarkIcon className="h-5 w-5" />
-                            </Button>
-                            <Button variant="ghost" size="icon" className="rounded-full p-1 hover:bg-white/20">
-                              <ShareIcon className="h-5 w-5" />
-                            </Button>
-                          </div>
+                  {isLoading ? (
+                    <div>Loading posts...</div>
+                  ) : (
+                    posts?.map((post) => (
+                      <div key={post.id} className="mb-4">
+                        <img
+                          src={post.fileUrl} 
+                          alt={post.title}
+                          className="h-full w-full object-cover"
+                          style={{ aspectRatio: "16/9", objectFit: "cover" }}
+                        />
+                        <div className="p-4">
+                          <h2 className="text-lg font-bold">{post.title}</h2>
+                          <p>{post.content || 'No description provided'}</p>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    ))
+                  )}
                 </CardContent>
               </Card>
             </div>

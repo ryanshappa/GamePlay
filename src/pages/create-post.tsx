@@ -2,45 +2,54 @@
 import { useState } from "react";
 import { useRouter } from "next/router";
 import { useUser } from "@clerk/nextjs";
-import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
+import { UploadButton } from "~/utils/uploadthing"; // Use Uploadthing button
 
 export default function CreatePost() {
-  const { isSignedIn } = useUser();
-  const router = useRouter();
-  const [file, setFile] = useState<File | null>(null);
-  const [title, setTitle] = useState<string>("");
+  const { isSignedIn } = useUser(); // Check if the user is signed in
+  const router = useRouter(); // For redirecting after post creation
+  const [title, setTitle] = useState<string>(""); // State for post title
+  const [fileUrl, setFileUrl] = useState<string | null>(null); // State for uploaded file URL
+  const [isUploaded, setIsUploaded] = useState<boolean>(false); // State to track if a file was uploaded
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setFile(e.target.files[0]);
-    }
-  };
-
-  const handleUpload = async () => {
-    if (!file || !isSignedIn) {
+  // Handle post creation logic after successful file upload
+  const handlePostCreation = async () => {
+    if (!isSignedIn || !fileUrl) {
       alert("Please sign in and upload a file.");
       return;
     }
 
-    const formData = new FormData();
-    formData.append('file', file);
+    try {
+      const result = await fetch('/api/savePost', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title,
+          fileUrl, // Use the uploaded file URL
+          content: '', // Optionally handle post content if needed
+        }),
+      });
 
-    const response = await fetch('/api/upload-file', {
-      method: 'POST',
-      body: formData,
-    });
+      const post = await result.json();
 
-    if (response.ok) {
-      router.push("/feed");
-    } else {
-      console.error("Error uploading file");
+      if (result.ok) {
+        console.log("Post saved:", post);
+        router.push("/"); // Redirect to homepage after post creation
+      } else {
+        console.error("Failed to save post", post);
+      }
+    } catch (error) {
+      console.error("Error during post creation:", error);
     }
   };
 
   return (
     <div className="flex flex-col items-center p-4">
       <h1 className="text-2xl mb-4">Create a New Post</h1>
+
+      {/* Input for post title */}
       <Input
         type="text"
         placeholder="Post Title"
@@ -48,10 +57,33 @@ export default function CreatePost() {
         onChange={(e) => setTitle(e.target.value)}
         className="mb-4"
       />
-      <input type="file" accept=".zip" onChange={handleFileChange} />
-      <Button onClick={handleUpload} variant="secondary" className="mt-4">
-        Upload
-      </Button>
+
+      {/* Uploadthing button for handling file upload */}
+      {!isUploaded && ( // Hide the upload button after a successful upload
+        <UploadButton
+          endpoint="gameUploader" // Ensure this matches your FileRouter endpoint
+          onClientUploadComplete={(res) => {
+            if (res && res[0]) {
+              setFileUrl(res[0].url); // Save the uploaded file URL
+              setIsUploaded(true); // Set file uploaded state to true
+              alert("File uploaded successfully! Now you can create the post.");
+            }
+          }}
+          onUploadError={(error: Error) => {
+            console.error("Upload error:", error);
+          }}
+        />
+      )}
+
+      {/* Conditionally show the Create Post button only after a file is uploaded */}
+      {isUploaded && (
+        <button
+          className="bg-blue-500 text-white px-4 py-2 mt-4 rounded"
+          onClick={handlePostCreation}
+        >
+          Create Post
+        </button>
+      )}
     </div>
   );
 }
