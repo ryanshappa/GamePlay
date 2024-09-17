@@ -1,5 +1,5 @@
 import { useRouter } from 'next/router';
-import { SignInButton, useUser, UserButton } from "@clerk/nextjs"; // Clerk's UserButton for profile dropdown
+import { SignInButton, useUser, UserButton } from "@clerk/nextjs"; 
 import Head from "next/head";
 import { api } from "~/utils/api";
 import Link from "next/link";
@@ -38,7 +38,7 @@ export default function Home() {
                 <Button variant="outline">SIGN IN</Button>
               </SignInButton>
             ) : (
-              // Show UserButton with profile and sign-out options
+              
               <UserButton afterSignOutUrl="/" />
             )}
           </div>
