@@ -4,7 +4,8 @@ import { UploadThingError } from "uploadthing/server";
 import { promises as fs } from "fs";
 import * as path from "path";
 import * as unzipper from "unzipper";
-import { Buffer } from "buffer"; // Import Buffer
+import { Buffer } from "buffer"; 
+import { Readable } from "stream";
 
 const f = createUploadthing();
 
@@ -32,7 +33,7 @@ export const ourFileRouter = {
         const buffer = Buffer.from(arrayBuffer); // Convert ArrayBuffer to Buffer
 
         // Define the path to save the extracted files
-        const fileKey = file.key; // Unique identifier for the uploaded file
+        const fileKey = file.key ?? ''; // Unique identifier for the uploaded file
         let extractPath = path.join(process.cwd(), "public", "games", fileKey);
 
         // Ensure the directory exists
@@ -45,11 +46,13 @@ export const ourFileRouter = {
           stream.on("error", reject);
 
           // Create a readable stream from the buffer
-          const bufferStream = new (require("stream").Readable)();
-          bufferStream._read = () => {};
-          bufferStream.push(buffer);
-          bufferStream.push(null);
-
+          const bufferStream = new Readable({
+            read() {
+              this.push(buffer);
+              this.push(null);
+            },
+          });
+          
           bufferStream.pipe(stream);
         });
 
