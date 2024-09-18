@@ -1,34 +1,37 @@
-import { auth } from "@clerk/nextjs/server"; 
+import { getAuth } from "@clerk/nextjs/server";
 import { NextApiRequest, NextApiResponse } from "next";
-import { db } from "~/server/db"; // Prisma db connection
+import { db } from "~/server/db";
+import { ensureUserExists } from "~/utils/userUtils";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  // Ensure the method is POST
   if (req.method !== "POST") {
     return res.status(405).json({ message: "Method not allowed" });
   }
 
-  // Fetch user from Clerk's server-side `auth`
-  const { userId } = auth(); // Correctly fetch userId from Clerk
+  const { userId } = getAuth(req);
 
   if (!userId) {
     return res.status(401).json({ message: "Unauthorized" });
   }
 
-  const { title, fileUrl, content } = req.body;
+  await ensureUserExists(userId);
+
+  const { title, fileKey, content } = req.body;
 
   try {
+    // Construct the URL to the game's index.html
+    const gameUrl = `/games/${fileKey}/index.html`;
+
     // Insert post into database using Prisma
     const post = await db.post.create({
       data: {
         title,
-        fileUrl,
-        content, 
-        authorId: userId, // Associate post with the authenticated user
+        fileUrl: gameUrl, // Store the URL to the game's index.html
+        content,
+        authorId: userId,
       },
     });
 
-    // Send back the created post as a response
     return res.status(201).json(post);
   } catch (error) {
     console.error("Error saving post:", error);

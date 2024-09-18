@@ -1,89 +1,117 @@
-// src/pages/create-post.tsx
 import { useState } from "react";
 import { useRouter } from "next/router";
 import { useUser } from "@clerk/nextjs";
+import { UploadButton } from "@uploadthing/react";
+import type { OurFileRouter } from "~/server/uploadthing";
 import { Input } from "~/components/ui/input";
-import { UploadButton } from "~/utils/uploadthing"; // Use Uploadthing button
+import { Button } from "~/components/ui/button";
 
 export default function CreatePost() {
-  const { isSignedIn } = useUser(); // Check if the user is signed in
-  const router = useRouter(); // For redirecting after post creation
-  const [title, setTitle] = useState<string>(""); // State for post title
-  const [fileUrl, setFileUrl] = useState<string | null>(null); // State for uploaded file URL
-  const [isUploaded, setIsUploaded] = useState<boolean>(false); // State to track if a file was uploaded
+  const { user } = useUser();
+  const router = useRouter();
 
-  // Handle post creation logic after successful file upload
-  const handlePostCreation = async () => {
-    if (!isSignedIn || !fileUrl) {
-      alert("Please sign in and upload a file.");
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
+  const [fileKey, setFileKey] = useState(""); // State to store fileKey
+  const [uploading, setUploading] = useState(false);
+
+  const handleUploadComplete = (res: any) => {
+    console.log("Upload complete callback triggered.");
+    console.log("Upload response:", res);
+
+    if (res && res.length > 0) {
+      const uploadedFile = res[0];
+      console.log("Uploaded file data:", uploadedFile);
+      const key = uploadedFile.fileKey || uploadedFile.key || uploadedFile.id;
+      if (key) {
+        setFileKey(key);
+        console.log("FileKey set to:", key);
+      } else {
+        console.error("File key not found in uploaded file data.");
+      }
+    } else {
+      console.error("File upload failed or no files returned.");
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (!title || !fileKey) {
+      alert("Please provide a title and upload a game.");
       return;
     }
 
     try {
-      const result = await fetch('/api/savePost', {
-        method: 'POST',
+      setUploading(true);
+
+      // Prepare data to send to savePost endpoint
+      const postData = {
+        title,
+        content,
+        fileKey,
+      };
+
+      // Send data to savePost endpoint
+      const response = await fetch("/api/savePost", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          title,
-          fileUrl, // Use the uploaded file URL
-          content: '', // Optionally handle post content if needed
-        }),
+        body: JSON.stringify(postData),
       });
 
-      const post = await result.json();
-
-      if (result.ok) {
-        console.log("Post saved:", post);
-        router.push("/"); // Redirect to homepage after post creation
+      if (response.ok) {
+        const post = await response.json();
+        console.log("Post created successfully:", post);
+        router.push(`/post/${post.id}`);
       } else {
-        console.error("Failed to save post", post);
+        console.error("Failed to create post.");
       }
     } catch (error) {
       console.error("Error during post creation:", error);
+    } finally {
+      setUploading(false);
     }
   };
 
   return (
-    <div className="flex flex-col items-center p-4">
-      <h1 className="text-2xl mb-4">Create a New Post</h1>
+    <div className="p-4">
+      <h1 className="text-2xl font-bold mb-4">Create a New Post</h1>
 
-      {/* Input for post title */}
-      <Input
-        type="text"
-        placeholder="Post Title"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        className="mb-4"
-      />
+      <div className="mb-4">
+        <label className="block text-sm font-medium mb-1">Title</label>
+        <Input
+          type="text"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="Enter the title of your game"
+          className="w-full"
+        />
+      </div>
 
-      {/* Uploadthing button for handling file upload */}
-      {!isUploaded && ( // Hide the upload button after a successful upload
-        <UploadButton
-          endpoint="gameUploader" // Ensure this matches your FileRouter endpoint
-          onClientUploadComplete={(res) => {
-            if (res && res[0]) {
-              setFileUrl(res[0].url); // Save the uploaded file URL
-              setIsUploaded(true); // Set file uploaded state to true
-              alert("File uploaded successfully! Now you can create the post.");
-            }
-          }}
+      <div className="mb-4">
+        <label className="block text-sm font-medium mb-1">Content</label>
+        <textarea
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          placeholder="Enter a description for your game (optional)"
+          className="w-full h-32 p-2 border rounded"
+        />
+      </div>
+
+      <div className="mb-4">
+        <label className="block text-sm font-medium mb-1">Upload Game</label>
+        <UploadButton<OurFileRouter, "gameUploader">
+          endpoint="gameUploader"
+          onClientUploadComplete={handleUploadComplete}
           onUploadError={(error: Error) => {
-            console.error("Upload error:", error);
+            console.error("Error during upload:", error);
           }}
         />
-      )}
+      </div>
 
-      {/* Conditionally show the Create Post button only after a file is uploaded */}
-      {isUploaded && (
-        <button
-          className="bg-blue-500 text-white px-4 py-2 mt-4 rounded"
-          onClick={handlePostCreation}
-        >
-          Create Post
-        </button>
-      )}
+      <Button onClick={handleSubmit} disabled={uploading || !fileKey}>
+        {uploading ? "Uploading..." : "Create Post"}
+      </Button>
     </div>
   );
 }

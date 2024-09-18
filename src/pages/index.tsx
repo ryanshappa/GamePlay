@@ -1,5 +1,5 @@
 import { useRouter } from 'next/router';
-import { SignInButton, useUser, UserButton } from "@clerk/nextjs"; 
+import { SignInButton, useUser, UserButton } from "@clerk/nextjs";
 import Head from "next/head";
 import { api } from "~/utils/api";
 import Link from "next/link";
@@ -10,7 +10,7 @@ import { HomeIcon, PlusIcon } from '@heroicons/react/24/outline';
 
 export default function Home() {
   const { isSignedIn } = useUser();
-  const { data: posts, isLoading } = api.post.getAll.useQuery(); 
+  const { data: posts, isLoading } = api.post.getAll.useQuery();
   const router = useRouter();
 
   return (
@@ -38,7 +38,6 @@ export default function Home() {
                 <Button variant="outline">SIGN IN</Button>
               </SignInButton>
             ) : (
-              
               <UserButton afterSignOutUrl="/" />
             )}
           </div>
@@ -68,23 +67,19 @@ export default function Home() {
 
           <div className="flex-1 overflow-auto">
             <div className="relative h-full">
-              <Card className="absolute inset-0 h-full w-full overflow-hidden rounded-none">
+              <Card className="absolute inset-0 h-full w-full overflow-auto rounded-none">
                 <CardContent className="relative h-full">
                   {isLoading ? (
                     <div>Loading posts...</div>
                   ) : (
                     posts?.map((post) => (
                       <div key={post.id} className="mb-4">
-                        <img
-                          src={post.fileUrl} 
-                          alt={post.title}
-                          className="h-full w-full object-cover"
-                          style={{ aspectRatio: "16/9", objectFit: "cover" }}
-                        />
-                        <div className="p-4">
-                          <h2 className="text-lg font-bold">{post.title}</h2>
-                          <p>{post.content || 'No description provided'}</p>
-                        </div>
+                        {/* Display the post title and content */}
+                        <h2 className="text-lg font-bold">{post.title}</h2>
+                        <p>{post.content || 'No description provided'}</p>
+                        <Link href={`/post/${post.id}`} className="text-blue-500 hover:underline">
+                          View Game
+                        </Link>
                       </div>
                     ))
                   )}

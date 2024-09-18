@@ -1,56 +1,28 @@
-import { initTRPC } from "@trpc/server";
-import { type CreateNextContextOptions } from "@trpc/server/adapters/next";
+import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
-import { ZodError } from "zod";
 import { getAuth } from "@clerk/nextjs/server";
 import { db } from "~/server/db";
+import { type CreateNextContextOptions } from "@trpc/server/adapters/next";
 
-type CreateContextOptions = Record<string, never>;
+export const createContext = async ({ req }: CreateNextContextOptions) => {
+  const { userId } = getAuth(req);
 
-// This helper generates the "internals" for a tRPC context
-const createInnerTRPCContext = (_opts: CreateContextOptions) => {
   return {
+    req,
     db,
+    userId,
   };
 };
 
-// Actual context you will use in your router, now includes session data
-export const createTRPCContext = (opts: CreateNextContextOptions) => {
-  const { req } = opts;
-  const auth = getAuth(req); // Clerk's getAuth to retrieve session
-  const session = auth.sessionId ? auth : null; // Set session info
-
-  return {
-    db,
-    session,
-  };
-};
-
-// Initialize tRPC API
-const t = initTRPC.context<typeof createTRPCContext>().create({
+const t = initTRPC.context<typeof createContext>().create({
   transformer: superjson,
-  errorFormatter({ shape, error }) {
-    return {
-      ...shape,
-      data: {
-        ...shape.data,
-        zodError:
-          error.cause instanceof ZodError ? error.cause.flatten() : null,
-      },
-    };
-  },
 });
 
-export const createCallerFactory = t.createCallerFactory;
 export const createTRPCRouter = t.router;
-
-// Public (unauthenticated) procedure with timing middleware
-export const publicProcedure = t.procedure.use(
-  t.middleware(async ({ next, path }) => {
-    const start = Date.now();
-    const result = await next();
-    const end = Date.now();
-    console.log(`[TRPC] ${path} took ${end - start}ms to execute`);
-    return result;
-  })
-);
+export const publicProcedure = t.procedure;
+export const protectedProcedure = t.procedure.use(({ ctx, next }) => {
+  if (!ctx.userId) {
+    throw new TRPCError({ code: "UNAUTHORIZED" });
+  }
+  return next();
+});

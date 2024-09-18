@@ -1,6 +1,6 @@
-// src/server/api/routers/post.ts
 import { z } from "zod";
-import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
+import { createTRPCRouter, protectedProcedure, publicProcedure } from "~/server/api/trpc";
+import { ensureUserExists } from "~/utils/userUtils";
 
 export const postRouter = createTRPCRouter({
   // Fetch all posts
@@ -10,7 +10,7 @@ export const postRouter = createTRPCRouter({
 
   // Fetch a post by its ID
   getPostById: publicProcedure
-    .input(z.object({ id: z.number() }))  // Expecting the post id to be a number
+    .input(z.object({ id: z.number() })) // Expecting the post id to be a number
     .query(async ({ input, ctx }) => {
       const post = await ctx.db.post.findUnique({
         where: { id: input.id },
@@ -20,25 +20,30 @@ export const postRouter = createTRPCRouter({
     }),
 
   // Create a new post
-  createPost: publicProcedure
+  createPost: protectedProcedure
     .input(
       z.object({
         title: z.string(),
-        content: z.string().optional(),  // Optional content
-        fileUrl: z.string(),  // URL of the uploaded file
+        content: z.string().optional(),
+        fileUrl: z.string(),
       })
     )
     .mutation(async ({ input, ctx }) => {
-      if (!ctx.session?.userId) {
+      const userId = ctx.userId;
+
+      if (!userId) {
         throw new Error("User not authenticated");
       }
+
+      // Ensure the user exists in the database
+      await ensureUserExists(userId);
 
       const post = await ctx.db.post.create({
         data: {
           title: input.title,
-          content: input.content || '',
+          content: input.content || "",
           fileUrl: input.fileUrl,
-          authorId: ctx.session.userId,  // Assign the post to the logged-in user
+          authorId: userId,
         },
       });
 
