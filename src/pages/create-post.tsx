@@ -7,7 +7,7 @@ import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
 
 export default function CreatePost() {
-  const { user } = useUser();
+  //const { user } = useUser();
   const router = useRouter();
 
   const [title, setTitle] = useState("");

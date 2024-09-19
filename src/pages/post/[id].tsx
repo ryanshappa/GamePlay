@@ -24,7 +24,7 @@ export default function PostPage({ post }: PostPageProps) {
 
       <div className="game-container">
         <iframe
-          src={fileUrl || ""}
+          src={fileUrl ?? ""}
           width="960"
           height="600"
           frameBorder="0"

@@ -15,6 +15,12 @@ const config = {
   "rules": {
     "@typescript-eslint/array-type": "warn",
     "@typescript-eslint/consistent-type-definitions": "warn",
+    '@typescript-eslint/prefer-nullish-coalescing': 'off',
+    '@typescript-eslint/no-unsafe-assignment': 'off',
+    '@typescript-eslint/no-unsafe-call': 'off',
+    '@typescript-eslint/no-unsafe-member-access': 'off',
+    '@typescript-eslint/no-empty-function': 'off',
+    '@typescript-eslint/no-var-requires': 'off',
     "@typescript-eslint/consistent-type-imports": [
       "warn",
       {

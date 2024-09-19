@@ -76,7 +76,7 @@ export default function Home() {
                       <div key={post.id} className="mb-4">
                         {/* Display the post title and content */}
                         <h2 className="text-lg font-bold">{post.title}</h2>
-                        <p>{post.content || 'No description provided'}</p>
+                        <p>{post.content ?? 'No description provided'}</p>
                         <Link href={`/post/${post.id}`} className="text-blue-500 hover:underline">
                           View Game
                         </Link>

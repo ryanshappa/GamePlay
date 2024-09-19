@@ -3,7 +3,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 import { db } from "~/server/db";
 import type { WebhookEvent } from "@clerk/clerk-sdk-node"; // Use an alternative type
 
-const webhookSecret = process.env.CLERK_WEBHOOK_SECRET || "";
+const webhookSecret = process.env.CLERK_WEBHOOK_SECRET ?? "";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
 
