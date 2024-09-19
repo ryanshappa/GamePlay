@@ -8,9 +8,7 @@ const webhookSecret = process.env.CLERK_WEBHOOK_SECRET ?? "";
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
 
   const payload = await getRawBody(req); 
-
   const headers = req.headers;
-
   const wh = new Webhook(webhookSecret);
 
   let evt: WebhookEvent; 
