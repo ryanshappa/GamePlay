@@ -6,18 +6,16 @@ import type { WebhookEvent } from "@clerk/clerk-sdk-node"; // Use an alternative
 const webhookSecret = process.env.CLERK_WEBHOOK_SECRET || "";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  // Disable Next.js's default body parsing
-  // We'll handle raw body parsing ourselves
-  const payload = await getRawBody(req); // We'll define getRawBody below
+
+  const payload = await getRawBody(req); 
 
   const headers = req.headers;
 
   const wh = new Webhook(webhookSecret);
 
-  let evt: WebhookEvent; // Change to the new type
+  let evt: WebhookEvent; 
 
   try {
-    // Extract and cast headers to the expected types
     const svixHeaders = {
       "svix-id": headers["svix-id"] as string,
       "svix-timestamp": headers["svix-timestamp"] as string,
@@ -34,8 +32,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   if (eventType === "user.created" || eventType === "user.updated") {
     const userId = evt.data.id as string;
-    const email = evt.data.email_addresses[0]?.email_address || "";
-    const name = evt.data.first_name || "";
+    const email = evt.data.email_addresses[0]?.email_address ?? "";
+    const name = evt.data.first_name ?? "";
 
     // Upsert user in the database
     await db.user.upsert({
@@ -55,7 +53,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   res.status(200).json({ success: true });
 }
 
-// Helper function to get raw body
 import rawBody from "raw-body";
 
 async function getRawBody(req: NextApiRequest) {
@@ -63,7 +60,7 @@ async function getRawBody(req: NextApiRequest) {
   return body;
 }
 
-// Disable Next.js default body parsing
+
 export const config = {
   api: {
     bodyParser: false,

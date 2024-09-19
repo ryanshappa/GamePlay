@@ -10,7 +10,7 @@ export const postRouter = createTRPCRouter({
 
   // Fetch a post by its ID
   getPostById: publicProcedure
-    .input(z.object({ id: z.number() })) // Expecting the post id to be a number
+    .input(z.object({ id: z.number() })) 
     .query(async ({ input, ctx }) => {
       const post = await ctx.db.post.findUnique({
         where: { id: input.id },
@@ -35,13 +35,12 @@ export const postRouter = createTRPCRouter({
         throw new Error("User not authenticated");
       }
 
-      // Ensure the user exists in the database
       await ensureUserExists(userId);
 
       const post = await ctx.db.post.create({
         data: {
           title: input.title,
-          content: input.content || "",
+          content: input.content ?? "",
           fileUrl: input.fileUrl,
           authorId: userId,
         },
