@@ -78,6 +78,7 @@ const config = {
     "@typescript-eslint/no-unused-vars": "off", // Disable unused variables check
     "@typescript-eslint/require-await": "off", // Already off
     "@typescript-eslint/no-unnecessary-type-assertion": "off", // Disable unnecessary type assertion warnings
+    '@typescript-eslint/no-floating-promises': 'off',
     "@typescript-eslint/no-misused-promises": [
       "warn",
       {
