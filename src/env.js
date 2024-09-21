@@ -30,8 +30,7 @@ export const env = createEnv({
    * `NEXT_PUBLIC_`.
    */
   client: {
-    NEXT_PUBLIC_CLIENTVAR: z.string(),
-    NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: z.string(), // Moved to client section
+    NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: z.string() // Moved to client section
   },
 
   /**
@@ -53,7 +52,6 @@ export const env = createEnv({
     UPLOADTHING_TOKEN: process.env.UPLOADTHING_TOKEN,     // Match the new variables here
     CLERK_SECRET_KEY: process.env.CLERK_SECRET_KEY,       // Match the new variables here
     NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY, // Match the new variables here
-    NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR, // Added missing variable
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially
