@@ -81,6 +81,7 @@ const config = {
     "@typescript-eslint/require-await": "off", // Already off
     "@typescript-eslint/no-unnecessary-type-assertion": "off", // Disable unnecessary type assertion warnings
     '@typescript-eslint/no-floating-promises': 'off',
+    "react/no-unescaped-entities": 0,
     "@typescript-eslint/no-misused-promises": [
       "warn",
       {
