@@ -4,9 +4,15 @@ import { ensureUserExists } from "~/utils/userUtils";
 
 export const postRouter = createTRPCRouter({
   // Fetch all posts
-  getAll: publicProcedure.query(async ({ ctx }) => {
-    return ctx.db.post.findMany();
-  }),
+  getAll: protectedProcedure
+    .query(async ({ ctx }) => {
+      const userId = ctx.userId;
+      if (!userId) throw new Error("User not authenticated");
+      return ctx.db.post.findMany({
+        where: { authorId: userId },
+        orderBy: { createdAt: 'desc' },
+      });
+    }),
 
   // Fetch a post by its ID
   getPostById: publicProcedure

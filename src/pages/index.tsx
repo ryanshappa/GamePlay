@@ -9,8 +9,12 @@ import { Card, CardContent } from "~/components/ui/card";
 import { HomeIcon, PlusIcon } from '@heroicons/react/24/outline';
 
 export default function Home() {
-  const { isSignedIn } = useUser();
-  const { data: posts, isLoading } = api.post.getAll.useQuery();
+  const { isSignedIn, user } = useUser(); // Get the user object
+  const userId = user?.id; // Extract the user ID
+  const { data: posts, isLoading } = api.post.getAll.useQuery(
+    undefined,
+    { enabled: !!userId } // Only fetch posts if userId is available
+  );
   const router = useRouter();
 
   return (
@@ -69,10 +73,12 @@ export default function Home() {
             <div className="relative h-full">
               <Card className="absolute inset-0 h-full w-full overflow-auto rounded-none">
                 <CardContent className="relative h-full">
-                  {isLoading ? (
+                  {!isSignedIn ? (
+                    <div>Please sign in to view your posts.</div>
+                  ) : isLoading ? (
                     <div>Loading posts...</div>
-                  ) : (
-                    posts?.map((post) => (
+                  ) : posts && posts.length > 0 ? (
+                    posts.map((post) => (
                       <div key={post.id} className="mb-4">
                         {/* Display the post title and content */}
                         <h2 className="text-lg font-bold">{post.title}</h2>
@@ -82,6 +88,8 @@ export default function Home() {
                         </Link>
                       </div>
                     ))
+                  ) : (
+                    <div>You haven't created any posts yet.</div>
                   )}
                 </CardContent>
               </Card>
