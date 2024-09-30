@@ -1,65 +1,41 @@
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { db } from "~/server/db";
-import { GetServerSidePropsContext } from "next";
-import { Post } from "@prisma/client";
+import type { Post } from "@prisma/client";
 
-type PostPageProps = {
-  post: Post | null;
-};
-
-export default function PostPage({ post }: PostPageProps) {
+export default function PostPage() {
   const router = useRouter();
+  const { id } = router.query;
+  const [post, setPost] = useState<Post | null>(null);
 
-  if (!post) {
-    return <div>Post not found.</div>;
-  }
+  useEffect(() => {
+    if (id) {
+      fetch(`/api/getPost?id=${id}`)
+        .then((res) => res.json())
+        .then((data) => {
+          setPost(data);
+        })
+        .catch((error) => {
+          console.error("Error fetching post:", error);
+        });
+    }
+  }, [id]);
 
-  const { title, content, fileUrl } = post;
+  if (!post) return <div>Loading...</div>;
 
   return (
-    <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4">{title}</h1>
-      {content && <p className="mb-4">{content}</p>}
-
-      <div className="game-container">
+    <div className="p-6 max-w-3xl mx-auto">
+      <h1 className="text-3xl font-bold mb-4">{post.title}</h1>
+      <p className="mb-6">{post.content}</p>
+      {post.fileUrl && (
         <iframe
-          src={fileUrl ?? ""}
-          width="960"
-          height="600"
-          frameBorder="0"
-          allowFullScreen
+          src={post.fileUrl}
+          width="100%"
+          height="800px"
+          title={post.title}
+          className="border rounded-md"
         ></iframe>
-      </div>
+      )}
     </div>
   );
-}
-
-export async function getServerSideProps(context: GetServerSidePropsContext) {
-  const { id } = context.params as { id: string };
-
-  const post = await db.post.findUnique({
-    where: { id: parseInt(id, 10) },
-  });
-
-  if (post) {
-    // Convert Date objects to strings
-    const serializedPost = {
-      ...post,
-      createdAt: post.createdAt.toISOString(),
-      updatedAt: post.updatedAt.toISOString(),
-    };
-
-    return {
-      props: {
-        post: serializedPost,
-      },
-    };
-  } else {
-    return {
-      props: {
-        post: null,
-      },
-    };
-  }
 }
