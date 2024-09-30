@@ -14,7 +14,7 @@ export async function uploadGameToS3(fileBuffer: Buffer): Promise<string> {
   // Upload each file to S3
   for (const entry of zip.files) {
     if (entry.type === "File") {
-      let filePath = entry.path; // Relative path within the zip
+      const filePath = entry.path; // Relative path within the zip
       let content = await entry.buffer();
 
       // Determine the appropriate headers based on the file extension

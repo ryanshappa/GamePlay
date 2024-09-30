@@ -74,6 +74,8 @@ const config = {
     '@typescript-eslint/no-explicit-any': 'warn',
     '@typescript-eslint/no-unsafe-argument': "warn",
     '@typescript-eslint/no-unsafe-member-access': 'off',
+    '@typescript-eslint/restrict-template-expressions': 'warn',
+    '@typescript-eslint/prefer-optional-chain': 'off',
     '@typescript-eslint/no-empty-function': 'off',
     '@typescript-eslint/no-var-requires': 'off',
     "@typescript-eslint/consistent-type-imports": "off", // Disable type imports enforcement
