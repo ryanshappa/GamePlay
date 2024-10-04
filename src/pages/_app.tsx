@@ -1,15 +1,35 @@
-import { GeistSans } from "geist/font/sans";
-import { type AppType } from "next/app";
-import { ClerkProvider } from "@clerk/nextjs";
-import { api } from "~/utils/api";
+import { GeistSans } from 'geist/font/sans';
+import { type AppType } from 'next/app';
+import { ClerkProvider } from '@clerk/nextjs';
+import { api } from '~/utils/api';
 import { AppProps } from 'next/app';
-import "~/styles/globals.css";
+import '~/styles/globals.css';
+import Layout from '~/components/layout';
+import { ReactElement, ReactNode } from 'react';
+import { NextPage } from 'next';
 
-const MyApp: AppType = ({ Component, pageProps }: AppProps) => {
+type NextPageWithLayout = NextPage & {
+  getLayout?: (page: ReactElement) => ReactNode;
+};
+
+type AppPropsWithLayout = AppProps & {
+  Component: NextPageWithLayout;
+};
+
+const MyApp: AppType = ({ Component, pageProps }: AppPropsWithLayout) => {
+  // Use the layout defined at the page level, if available
+  const getLayout =
+    Component.getLayout ||
+    ((page: ReactElement) => (
+      <Layout>
+        {page}
+      </Layout>
+    ));
+
   return (
     <ClerkProvider {...pageProps}>
       <div className={GeistSans.className}>
-        <Component {...pageProps} />
+        {getLayout(<Component {...pageProps} />)}
       </div>
     </ClerkProvider>
   );

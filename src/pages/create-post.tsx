@@ -1,11 +1,11 @@
-// src/pages/create-post.tsx
+import { useState } from 'react';
+import { useRouter } from 'next/router';
+import { Input } from '~/components/ui/input';
+import { Button } from '~/components/ui/button';
+import Layout from '~/components/layout';
 
-import { useState } from "react";
-import { useRouter } from "next/router";
-import { Input } from "~/components/ui/input";
-import { Button } from "~/components/ui/button";
 
-export default function CreatePost() {
+const CreatePost = () => {
   const router = useRouter();
 
   const [title, setTitle] = useState("");
@@ -49,7 +49,7 @@ export default function CreatePost() {
   };
 
   return (
-    <div className="p-4">
+    <div className="p-8">
       <h1 className="text-2xl font-bold mb-4">Create a New Post</h1>
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
@@ -59,7 +59,7 @@ export default function CreatePost() {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Enter the title of your game"
-            className="w-full"
+            className="w-full bg-gray-800 text-white"
           />
         </div>
 
@@ -69,7 +69,7 @@ export default function CreatePost() {
             value={content}
             onChange={(e) => setContent(e.target.value)}
             placeholder="Enter a description for your game (optional)"
-            className="w-full h-32 p-2 border rounded"
+            className="w-full h-32 p-2 border rounded bg-gray-800 text-white"
           />
         </div>
 
@@ -83,6 +83,7 @@ export default function CreatePost() {
                 setFile(e.target.files[0]);
               }
             }}
+            className="text-white"
           />
         </div>
 
@@ -92,4 +93,8 @@ export default function CreatePost() {
       </form>
     </div>
   );
-}
+};
+
+CreatePost.getLayout = (page: React.ReactNode) => <Layout showSearchBar={false}>{page}</Layout>;
+
+export default CreatePost;

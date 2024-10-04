@@ -8,24 +8,59 @@ generator client {
 }
 
 model User {
-  id          String   @id
-  email       String   @unique
-  name        String?
-  firstName   String?
-  lastName    String?
+  id          String    @id @default(cuid())
+  email       String    @unique
   username    String?
+  bio         String?
+  avatarUrl   String?
   posts       Post[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  following   Follow[]  @relation("Following")
+  followers   Follow[]  @relation("Followers")
+  likes       Like[]    
+  comments    Comment[] 
 }
 
 model Post {
-  id          Int      @id @default(autoincrement())
+  id          Int       @id @default(autoincrement())
   title       String
   content     String?
   fileUrl     String?
   authorId    String
-  author      User     @relation(fields: [authorId], references: [id])
+  author      User      @relation(fields: [authorId], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  likes       Like[]    
+  comments    Comment[] 
+}
+
+model Follow {
+  id          Int      @id @default(autoincrement())
+  followerId  String
+  follower    User     @relation("Following", fields: [followerId], references: [id])
+  followingId String
+  following   User     @relation("Followers", fields: [followingId], references: [id])
   createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+}
+
+model Like {
+  id          Int      @id @default(autoincrement())
+  createdAt   DateTime @default(now())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  postId      Int
+  post        Post     @relation(fields: [postId], references: [id])
+
+  @@unique([userId, postId]) // Ensure a user can like a post only once
+}
+
+model Comment {
+  id          Int      @id @default(autoincrement())
+  content     String
+  createdAt   DateTime @default(now())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  postId      Int
+  post        Post     @relation(fields: [postId], references: [id])
 }
