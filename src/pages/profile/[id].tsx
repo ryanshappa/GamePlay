@@ -1,15 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth, useUser } from '@clerk/nextjs';
-import { db } from '~/server/db';
 import { Post, User } from '@prisma/client';
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
 import { Button } from '~/components/ui/button';
-import { Input } from '~/components/ui/input';
-import { Textarea } from '~/components/ui/textarea';
-import { ScrollArea } from '~/components/ui/scroll-area';
-import { Home, Plus, Search, User as UserIcon } from 'lucide-react';
 import Link from 'next/link';
+import { EditProfileDialog } from '~/components/editProfileDialog';
 
 interface UserProfile {
   id: string;
@@ -29,6 +25,7 @@ export default function ProfilePage() {
   const { user: currentUser } = useUser();
   const [user, setUser] = useState<UserProfile | null>(null);
   const [isFollowing, setIsFollowing] = useState(false);
+  const [editProfileOpen, setEditProfileOpen] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -102,8 +99,19 @@ export default function ProfilePage() {
               {isFollowing ? 'Unfollow' : 'Follow'}
             </Button>
           )}
+          {userId === id && (
+            <Button
+              className="bg-green-600 text-white px-4 py-2 rounded-full"
+              onClick={() => setEditProfileOpen(true)}
+            >
+              Edit Profile
+            </Button>
+          )}
         </div>
       </section>
+
+      {/* Edit Profile Dialog */}
+      <EditProfileDialog open={editProfileOpen} onOpenChange={setEditProfileOpen} />
 
       {/* Posts Section */}
       <section className="px-8">

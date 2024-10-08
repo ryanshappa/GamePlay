@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useUser, SignOutButton } from '@clerk/nextjs';
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
 import { Button } from '~/components/ui/button';
@@ -6,6 +6,8 @@ import { Input } from '~/components/ui/input';
 import { Home, Plus, Search, User as UserIcon, Settings, LogOut } from 'lucide-react';
 import Link from 'next/link';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
+import { SignInDialog } from './signInDialog';
+import { SignUpDialog } from './signUpDialog';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -13,7 +15,12 @@ interface LayoutProps {
 }
 
 export default function Layout({ children, showSearchBar = true }: LayoutProps) {
-  const { user } = useUser();
+  const { user, isSignedIn } = useUser();
+  const [dialogOpen, setDialogOpen] = useState<'signIn' | 'signUp' | null>(null);
+
+  const openSignInDialog = () => setDialogOpen('signIn');
+  const openSignUpDialog = () => setDialogOpen('signUp');
+  const closeDialog = () => setDialogOpen(null);
 
   return (
     <div className="flex flex-col h-screen bg-black text-white">
@@ -33,7 +40,7 @@ export default function Layout({ children, showSearchBar = true }: LayoutProps) 
           </div>
         )}
         <div className="flex items-center">
-          {user ? (
+          {isSignedIn ? (
             <DropdownMenu.Root>
               <DropdownMenu.Trigger asChild>
                 <Button variant="ghost" className="p-0">
@@ -66,9 +73,9 @@ export default function Layout({ children, showSearchBar = true }: LayoutProps) 
               </DropdownMenu.Content>
             </DropdownMenu.Root>
           ) : (
-            <Link href="/sign-in">
-              <Button variant="ghost">Sign In</Button>
-            </Link>
+            <Button variant="ghost" onClick={openSignInDialog}>
+              Sign In
+            </Button>
           )}
         </div>
       </header>
@@ -83,19 +90,33 @@ export default function Layout({ children, showSearchBar = true }: LayoutProps) 
                 <span className="text-lg">Home</span>
               </div>
             </Link>
-            <Link href="/create-post">
-              <div className="flex items-center space-x-6 cursor-pointer hover:text-gray-400 transition-colors duration-200 mb-8">
-                <Plus className="h-8 w-8" />
-                <span className="text-lg">Create</span>
-              </div>
-            </Link>
+            <div
+              className="flex items-center space-x-6 cursor-pointer hover:text-gray-400 transition-colors duration-200 mb-8"
+              onClick={() => {
+                if (isSignedIn) {
+                  window.location.href = '/create-post';
+                } else {
+                  openSignInDialog();
+                }
+              }}
+            >
+              <Plus className="h-8 w-8" />
+              <span className="text-lg">Create</span>
+            </div>
             {user && (
-              <Link href={`/profile/${user.id}`}>
-                <div className="flex items-center space-x-6 cursor-pointer hover:text-gray-400 transition-colors duration-200 mb-8">
-                  <UserIcon className="h-8 w-8" />
-                  <span className="text-lg">Profile</span>
-                </div>
-              </Link>
+              <div
+                className="flex items-center space-x-6 cursor-pointer hover:text-gray-400 transition-colors duration-200 mb-8"
+                onClick={() => {
+                  if (isSignedIn) {
+                    window.location.href = `/profile/${user.id}`;
+                  } else {
+                    openSignInDialog();
+                  }
+                }}
+              >
+                <UserIcon className="h-8 w-8" />
+                <span className="text-lg">Profile</span>
+              </div>
             )}
           </nav>
         </aside>
@@ -103,6 +124,22 @@ export default function Layout({ children, showSearchBar = true }: LayoutProps) 
         {/* Main Content */}
         <main className="flex-1 overflow-y-auto">{children}</main>
       </div>
+
+      {/* Sign-In and Sign-Up Dialogs */}
+      {dialogOpen === 'signIn' && (
+        <SignInDialog
+          open={true}
+          onOpenChange={closeDialog}
+          onSwitchToSignUp={openSignUpDialog}
+        />
+      )}
+      {dialogOpen === 'signUp' && (
+        <SignUpDialog
+          open={true}
+          onOpenChange={closeDialog}
+          onSwitchToSignIn={openSignInDialog}
+        />
+      )}
     </div>
   );
 }

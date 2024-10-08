@@ -37,7 +37,38 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       console.error('Error adding comment:', error);
       res.status(500).json({ error: 'Internal server error' });
     }
-  } else {
+  } 
+  // Add GET request handling
+  else if (req.method === 'GET') {
+    try {
+      const comments = await db.comment.findMany({
+        where: { postId },
+        include: {
+          user: true,
+        },
+        orderBy: {
+          createdAt: 'asc',
+        },
+      });
+
+      const serializedComments = comments.map((comment) => ({
+        id: comment.id,
+        content: comment.content,
+        createdAt: comment.createdAt.toISOString(),
+        user: {
+          id: comment.user.id,
+          username: comment.user.username,
+          avatarUrl: comment.user.avatarUrl,
+        },
+      }));
+
+      res.status(200).json(serializedComments);
+    } catch (error) {
+      console.error('Error fetching comments:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  } 
+  else {
     res.status(405).json({ error: `Method '${req.method}' Not Allowed` });
   }
 }

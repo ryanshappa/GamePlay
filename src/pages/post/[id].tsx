@@ -17,6 +17,8 @@ import {
   ShareIcon,
 } from 'lucide-react';
 import { useUser } from '@clerk/nextjs';
+import Link from 'next/link';
+import { SignInDialog } from '~/components/signInDialog'; // Ensure this path is correct
 
 interface PostWithAuthorAndComments extends Post {
   author: User;
@@ -60,12 +62,13 @@ interface PostPageProps {
 
 function PostPage({ post }: PostPageProps) {
   const router = useRouter();
-  const { user } = useUser();
+  const { user, isSignedIn } = useUser();
   const [likesCount, setLikesCount] = useState(post.likes.length);
   const [hasLiked, setHasLiked] = useState(false);
   const [comments, setComments] = useState(post.comments);
   const [newComment, setNewComment] = useState('');
   const [isCopySuccess, setIsCopySuccess] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState<'signIn' | 'signUp' | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -76,8 +79,8 @@ function PostPage({ post }: PostPageProps) {
   }, [user, post.likes]);
 
   const handleLike = async () => {
-    if (!user) {
-      alert('You must be signed in to like posts.');
+    if (!isSignedIn) {
+      setDialogOpen('signIn');
       return;
     }
 
@@ -97,8 +100,8 @@ function PostPage({ post }: PostPageProps) {
   };
 
   const handleAddComment = async () => {
-    if (!user) {
-      alert('You must be signed in to comment.');
+    if (!isSignedIn) {
+      setDialogOpen('signIn');
       return;
     }
 
@@ -194,6 +197,17 @@ function PostPage({ post }: PostPageProps) {
               <ShareIcon className="h-6 w-6" />
             </Button>
             {isCopySuccess && <span>Link copied!</span>}
+
+            {/* Author Avatar and Profile Link */}
+            <Link href={`/profile/${post.author.id}`}>
+              <div className="flex items-center space-x-2 cursor-pointer">
+                <Avatar>
+                  <AvatarImage src={post.author.avatarUrl || '/default-avatar.png'} alt="Author Avatar" />
+                  <AvatarFallback>{post.author.username.charAt(0)}</AvatarFallback>
+                </Avatar>
+                <span className="font-semibold">@{post.author.username}</span>
+              </div>
+            </Link>
           </div>
 
           {/* Comments Section */}
@@ -233,7 +247,7 @@ function PostPage({ post }: PostPageProps) {
             </div>
 
             {/* Add Comment */}
-            {user && (
+            {isSignedIn && (
               <div className="mt-6">
                 <Textarea
                   value={newComment}
@@ -245,6 +259,15 @@ function PostPage({ post }: PostPageProps) {
                 />
                 <Button onClick={handleAddComment}>
                   Post Comment
+                </Button>
+              </div>
+            )}
+
+            {/* If not signed in, show prompt to sign in */}
+            {!isSignedIn && (
+              <div className="mt-6">
+                <Button onClick={() => setDialogOpen('signIn')}>
+                  Sign in to add a comment
                 </Button>
               </div>
             )}
@@ -260,6 +283,15 @@ function PostPage({ post }: PostPageProps) {
           </Button>
         </div>
       </ScrollArea>
+
+      {/* Sign-In Dialog */}
+      {dialogOpen === 'signIn' && (
+        <SignInDialog
+          open={true}
+          onOpenChange={() => setDialogOpen(null)}
+          onSwitchToSignUp={() => setDialogOpen('signUp')}
+        />
+      )}
     </div>
   );
 }

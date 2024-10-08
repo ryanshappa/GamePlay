@@ -16,7 +16,7 @@ const upload = multer({
 });
 
 const apiRoute = nextConnect<NextApiRequestWithFile, NextApiResponse>({
-  onError(error: unknown, req: NextApiRequestWithFile, res: NextApiResponse) { // Change 'any' to 'unknown'
+  onError(error: unknown, req: NextApiRequestWithFile, res: NextApiResponse) { 
     res.status(500).json({ error: `An error occurred: ${error instanceof Error ? error.message : 'Unknown error'}` });
   },
   onNoMatch(req: NextApiRequestWithFile, res: NextApiResponse) {

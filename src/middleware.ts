@@ -8,13 +8,13 @@ export default clerkMiddleware((auth, request, event) => {
   // Define routes that don't require authentication
   const publicRoutes = ['/sign-in', '/sign-up', '/api', '/_next'];
 
-  // Allow public routes to pass through
+
   if (publicRoutes.some((route) => pathname.startsWith(route))) {
     return NextResponse.next();
   }
 
-  // For all other routes, require authentication
-  return NextResponse.next(); // Clerk's middleware handles authentication
+
+  return NextResponse.next(); 
 });
 
 export const config = {
