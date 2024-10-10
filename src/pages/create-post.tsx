@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import { Input } from '~/components/ui/input';
 import { Button } from '~/components/ui/button';
 import Layout from '~/components/layout';
-
+import { Label } from '~/components/ui/label'; 
 
 const CreatePost = () => {
   const router = useRouter();
@@ -48,6 +48,12 @@ const CreatePost = () => {
     }
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setFile(e.target.files[0]);
+    }
+  };
+
   return (
     <div className="p-8">
       <h1 className="text-2xl font-bold mb-4">Create a New Post</h1>
@@ -74,16 +80,14 @@ const CreatePost = () => {
         </div>
 
         <div className="mb-4">
-          <label className="block text-sm font-medium mb-1">Upload Game</label>
-          <input
+          <Label htmlFor="file">Upload your game file</Label>
+          <p className="text-sm text-gray-500">Please upload your game packaged as a .zip file.</p>
+          <Input
             type="file"
+            id="file"
             accept=".zip"
-            onChange={(e) => {
-              if (e.target.files && e.target.files[0]) {
-                setFile(e.target.files[0]);
-              }
-            }}
-            className="text-white"
+            onChange={handleFileChange}
+            className="mt-2 bg-gray-700 text-white"
           />
         </div>
 

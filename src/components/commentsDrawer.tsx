@@ -64,7 +64,7 @@ export function CommentsDrawer({ open, onClose, post }: CommentsDrawerProps) {
   return (
     <Drawer.Root open={open} onOpenChange={onClose}>
       <Drawer.Portal>
-        <Drawer.Overlay className="fixed inset-0 bg-black opacity-50" />
+        <Drawer.Overlay className="fixed inset-0 bg-black opacity-0" />
         <Drawer.Content className="fixed right-0 top-0 h-full w-80 bg-gray-800 p-4 text-white overflow-y-auto">
           <Drawer.Title className="text-xl font-bold mb-4">Comments</Drawer.Title>
           <Drawer.Close className="absolute top-2 right-2 text-white hover:text-gray-400">
@@ -74,7 +74,7 @@ export function CommentsDrawer({ open, onClose, post }: CommentsDrawerProps) {
             {comments.map((comment) => (
               <div key={comment.id} className="flex items-start space-x-2">
                 <Avatar className="h-8 w-8">
-                  <AvatarImage src={comment.user.avatarUrl || '/default-avatar.png'} alt="User Avatar" />
+                  <AvatarImage src={comment.user.avatarUrl} alt="User Avatar" />
                   <AvatarFallback>{comment.user.username.charAt(0)}</AvatarFallback>
                 </Avatar>
                 <div>

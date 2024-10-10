@@ -21,7 +21,7 @@ export default function TopBar() {
             <DropdownMenuTrigger asChild>
               <button className="focus:outline-none">
                 <Avatar>
-                <AvatarImage src={(user as any).avatarUrl || '/default-avatar.png'} alt="User avatar" />
+                <AvatarImage src={(user as any).avatarUrl} alt="User avatar" />
                   <AvatarFallback>{user.firstName?.charAt(0) || 'U'}</AvatarFallback>
                 </Avatar>
               </button>

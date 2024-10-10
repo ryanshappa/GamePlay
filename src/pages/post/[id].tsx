@@ -84,18 +84,26 @@ function PostPage({ post }: PostPageProps) {
       return;
     }
 
+    const method = hasLiked ? 'DELETE' : 'POST';
+
+    setLikesCount((prev) => (hasLiked ? prev - 1 : prev + 1));
+    setHasLiked(!hasLiked);
+
     try {
       const response = await fetch(`/api/posts/${post.id}/like`, {
-        method: 'POST',
+        method,
       });
-      if (response.ok) {
-        setLikesCount((prev) => prev + 1);
-        setHasLiked(true);
-      } else {
-        console.error('Failed to like post.');
+
+      if (!response.ok) {
+        setLikesCount((prev) => (hasLiked ? prev + 1 : prev - 1));
+        setHasLiked(hasLiked);
+        console.error('Failed to update like status.');
       }
     } catch (error) {
-      console.error('Error liking post:', error);
+      // Revert UI changes on error
+      setLikesCount((prev) => (hasLiked ? prev + 1 : prev - 1));
+      setHasLiked(hasLiked);
+      console.error('Error updating like status:', error);
     }
   };
 
@@ -154,7 +162,7 @@ function PostPage({ post }: PostPageProps) {
           {/* Game Display */}
           <div className="relative w-[800px] h-[450px] bg-gray-800 rounded-md overflow-hidden mb-6">
             <iframe
-              src={post.fileUrl || '/default-file-url'}
+              src={post.fileUrl || ''}
               title={post.title}
               className="w-full h-full"
               frameBorder="0"
@@ -167,15 +175,13 @@ function PostPage({ post }: PostPageProps) {
             <Button
               variant="ghost"
               size="icon"
-              className={`rounded-full ${
-                hasLiked
-                  ? 'bg-red-500'
-                  : 'bg-gray-800 hover:bg-gray-700'
-              }`}
+              className="rounded-full bg-gray-800 hover:bg-gray-700"
               onClick={handleLike}
-              disabled={hasLiked}
             >
-              <HeartIcon className="h-6 w-6" />
+              <HeartIcon
+                className={`h-6 w-6 ${hasLiked ? 'text-red-500' : 'text-white'}`}
+                fill={hasLiked ? 'currentColor' : 'none'}
+              />
             </Button>
             <span>{likesCount}</span>
 
@@ -202,7 +208,7 @@ function PostPage({ post }: PostPageProps) {
             <Link href={`/profile/${post.author.id}`}>
               <div className="flex items-center space-x-2 cursor-pointer">
                 <Avatar>
-                  <AvatarImage src={post.author.avatarUrl || '/default-avatar.png'} alt="Author Avatar" />
+                  <AvatarImage src={post.author.avatarUrl} alt="Author Avatar" />
                   <AvatarFallback>{post.author.username.charAt(0)}</AvatarFallback>
                 </Avatar>
                 <span className="font-semibold">@{post.author.username}</span>
@@ -222,8 +228,7 @@ function PostPage({ post }: PostPageProps) {
                   <Avatar>
                     <AvatarImage
                       src={
-                        comment.user.avatarUrl ||
-                        '/default-avatar.png'
+                        comment.user.avatarUrl
                       }
                       alt="User Avatar"
                     />

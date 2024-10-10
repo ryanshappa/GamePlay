@@ -2,12 +2,12 @@ import React, { useState } from 'react';
 import { useUser, SignOutButton } from '@clerk/nextjs';
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
 import { Button } from '~/components/ui/button';
-import { Input } from '~/components/ui/input';
-import { Home, Plus, Search, User as UserIcon, Settings, LogOut } from 'lucide-react';
+import { User as UserIcon, Settings, LogOut, Home, Plus } from 'lucide-react';
 import Link from 'next/link';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { SignInDialog } from './signInDialog';
 import { SignUpDialog } from './signUpDialog';
+import { SearchBar } from '~/components/searchBar'; 
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -28,15 +28,8 @@ export default function Layout({ children, showSearchBar = true }: LayoutProps) 
       <header className="flex items-center justify-between p-4 border-b border-gray-800 w-full">
         <div className="text-2xl font-bold">GamePlay</div>
         {showSearchBar && (
-          <div className="flex-1 flex justify-center">
-            <div className="relative w-1/2">
-              <Input
-                type="search"
-                placeholder="Search"
-                className="w-full bg-gray-800 px-4 py-2 rounded-full pl-10"
-              />
-              <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
-            </div>
+          <div className="flex-grow flex justify-center mx-4">
+            <SearchBar />
           </div>
         )}
         <div className="flex items-center">
@@ -46,14 +39,12 @@ export default function Layout({ children, showSearchBar = true }: LayoutProps) 
                 <Button variant="ghost" className="p-0">
                   <Avatar>
                     <AvatarImage
-                      src={
-                        typeof user.publicMetadata?.avatarUrl === 'string'
-                          ? (user.publicMetadata.avatarUrl as string)
-                          : '/default-avatar.png'
-                      }
+                      src={user.imageUrl || undefined}
                       alt="User avatar"
                     />
-                    <AvatarFallback>{user.firstName?.charAt(0) || 'U'}</AvatarFallback>
+                    <AvatarFallback>
+                      {user.firstName?.charAt(0) || 'U'}
+                    </AvatarFallback>
                   </Avatar>
                 </Button>
               </DropdownMenu.Trigger>

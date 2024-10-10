@@ -1,5 +1,3 @@
-// components/EditProfileDialog.tsx
-
 import * as React from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { useUser } from '@clerk/nextjs';
@@ -13,37 +11,73 @@ export function EditProfileDialog({ open, onOpenChange }: { open: boolean; onOpe
   const { user } = useUser();
   const [username, setUsername] = React.useState<string>(user?.username || '');
   const [bio, setBio] = React.useState<string>((user?.publicMetadata?.bio as string) || '');
-  const [avatarUrl, setAvatarUrl] = React.useState<string>((user?.publicMetadata?.avatarUrl as string) || '/default-avatar.png');
-  const [avatarFile, setAvatarFile] = React.useState<File | null>(null);
+  const [avatarUrl, setAvatarUrl] = React.useState<string>(user?.imageUrl || '');
 
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      setAvatarFile(file);
-      setAvatarUrl(URL.createObjectURL(file));
+      // Optionally show a preview immediately
+      // setAvatarUrl(URL.createObjectURL(file));
 
       try {
-        // Upload the avatar file using Clerk's setProfileImage method
+        // Upload the avatar
         await user?.setProfileImage({ file });
-      } catch (error) {
+
+        // Refresh user data
+        await user?.reload();
+
+        // Update avatarUrl state with the new URL from Clerk
+        setAvatarUrl(user?.imageUrl || '');
+
+        // Update the avatar URL in your database
+        const avatarUrl = user?.imageUrl;
+        await fetch('/api/updateUserProfile', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ avatarUrl }),
+        });
+      } catch (error: any) {
         console.error('Error uploading avatar:', error);
-        alert('Failed to upload avatar. Please try again.');
+        const errorMessage =
+          error.errors?.[0]?.longMessage ||
+          error.errors?.[0]?.message ||
+          error.message ||
+          'Failed to upload avatar. Please try again.';
+        alert(errorMessage);
       }
     }
   };
 
   const handleSaveChanges = async () => {
     try {
-      await user?.update({
-        username,
-        unsafeMetadata: { bio }, 
+      const response = await fetch('/api/updateUserProfile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username,
+          bio,
+          avatarUrl: user?.imageUrl,
+        }),
       });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to update profile.');
+      }
+
+      // Refresh user data
+      await user?.reload();
 
       alert('Profile updated successfully.');
       onOpenChange(false);
     } catch (error: any) {
       console.error('Error updating profile:', error);
-      alert(error.errors[0]?.message || 'An error occurred while updating your profile. Please try again.');
+      const errorMessage =
+        error.errors?.[0]?.longMessage ||
+        error.errors?.[0]?.message ||
+        error.message ||
+        'An error occurred while updating your profile. Please try again.';
+      alert(errorMessage);
     }
   };
 

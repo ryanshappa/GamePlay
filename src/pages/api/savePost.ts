@@ -1,5 +1,3 @@
-// src/pages/api/savePost.ts
-
 import { getAuth } from "@clerk/nextjs/server";
 import type { NextApiRequest, NextApiResponse } from "next";
 import { db } from "~/server/db";
@@ -10,7 +8,7 @@ import fs from "fs";
 
 export const config = {
   api: {
-    bodyParser: false, // Disallow body parsing, consume as stream
+    bodyParser: false, 
   },
 };
 

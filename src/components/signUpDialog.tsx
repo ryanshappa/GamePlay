@@ -2,10 +2,10 @@ import * as React from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
-import { useSignUp } from '@clerk/nextjs';
+import { useSignUp, useClerk } from '@clerk/nextjs';
 import { Cross2Icon } from '@radix-ui/react-icons';
 import { useRouter } from 'next/router';
-import { FaGoogle } from 'react-icons/fa'; // Import Google icon from react-icons
+import { FaGoogle } from 'react-icons/fa'; 
 
 interface SignUpDialogProps {
   open: boolean;
@@ -15,9 +15,12 @@ interface SignUpDialogProps {
 
 export function SignUpDialog({ open, onOpenChange, onSwitchToSignIn }: SignUpDialogProps) {
   const { signUp } = useSignUp();
+  const { setActive } = useClerk();
   const router = useRouter();
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
+  const [pendingVerification, setPendingVerification] = React.useState(false);
+  const [code, setCode] = React.useState('');
 
   React.useEffect(() => {
     if (signUp) {
@@ -32,20 +35,31 @@ export function SignUpDialog({ open, onOpenChange, onSwitchToSignIn }: SignUpDia
       return;
     }
     try {
-      const result = await signUp.create({
+      await signUp.create({
         emailAddress: email,
         password,
       });
-      if (result.status === 'complete') {
-        // Sign-up successful
-        onOpenChange(false);
-      } else {
-        // Handle other statuses (e.g., email verification)
-        console.log('Additional steps required:', result.status);
-      }
+
+      await signUp.prepareEmailAddressVerification();
+
+      setPendingVerification(true);
     } catch (error: any) {
       console.error('Error signing up:', error);
       alert(error.errors[0]?.message || 'Failed to sign up');
+    }
+  };
+
+  const handleVerifyEmail = async () => {
+    if (signUp) {
+      try {
+        await signUp.attemptEmailAddressVerification({
+          code,
+        });
+      } catch (error) {
+
+      }
+    } else {
+
     }
   };
 
@@ -75,23 +89,43 @@ export function SignUpDialog({ open, onOpenChange, onSwitchToSignIn }: SignUpDia
           <Cross2Icon />
         </Dialog.Close>
         <div className="space-y-4">
-          <Input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full bg-gray-500 text-white" 
-          />
-          <Input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full bg-gray-500 text-white" 
-          />
-          <Button className="w-full bg-gray-700 hover:bg-gray-800 text-white" onClick={handleSignUp}>
-            Sign Up
-          </Button>
+          {pendingVerification ? (
+            <>
+              <Input
+                type="text"
+                placeholder="Verification Code"
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
+                className="w-full bg-gray-500 text-white"
+              />
+              <Button
+                className="w-full bg-gray-700 hover:bg-gray-800 text-white"
+                onClick={handleVerifyEmail}
+              >
+                Verify Email
+              </Button>
+            </>
+          ) : (
+            <>
+              <Input
+                type="email"
+                placeholder="Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full bg-gray-500 text-white" 
+              />
+              <Input
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full bg-gray-500 text-white" 
+              />
+              <Button className="w-full bg-gray-700 hover:bg-gray-800 text-white" onClick={handleSignUp}>
+                Sign Up
+              </Button>
+            </>
+          )}
           <Button
             variant="outline"
             className="w-full flex items-center justify-center bg-gray-300 text-white hover:bg-gray-400"

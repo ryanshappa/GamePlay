@@ -1,0 +1,60 @@
+import React from 'react';
+import { HeartIcon } from 'lucide-react';
+import { useAuth } from '@clerk/nextjs';
+
+interface LikeButtonProps {
+  postId: number;
+  initialLiked: boolean;
+  initialCount: number;
+}
+
+export function LikeButton({ postId, initialLiked, initialCount }: LikeButtonProps) {
+  const { isSignedIn } = useAuth();
+  const [liked, setLiked] = React.useState(initialLiked);
+  const [count, setCount] = React.useState(initialCount);
+
+  const handleClick = async () => {
+    if (!isSignedIn) {
+      return;
+    }
+
+    const method = liked ? 'DELETE' : 'POST';
+
+    // Optimistically update UI
+    setLiked(!liked);
+    setCount(liked ? count - 1 : count + 1);
+
+    try {
+      const response = await fetch(`/api/posts/${postId}/like`, {
+        method,
+      });
+
+      if (!response.ok) {
+        // Revert UI changes if API call fails
+        setLiked(liked);
+        setCount(liked ? count + 1 : count - 1);
+        console.error('Failed to update like status.');
+      }
+    } catch (error) {
+      // Revert UI changes on error
+      setLiked(liked);
+      setCount(liked ? count + 1 : count - 1);
+      console.error('Error updating like status:', error);
+    }
+  };
+
+  return (
+    <div className="flex flex-col items-center">
+      <button
+        className="rounded-full bg-gray-800 hover:bg-gray-700 p-2"
+        onClick={handleClick}
+      >
+        <HeartIcon
+          className={`h-6 w-6 ${liked ? 'text-red-500' : 'text-white'}`}
+          fill={liked ? 'currentColor' : 'none'}
+        />
+      </button>
+      <span className="text-white mt-1">{count}</span>
+    </div>
+  );
+}

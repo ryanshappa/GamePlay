@@ -9,11 +9,14 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { CommentsDrawer } from '~/components/commentsDrawer';
+import { getAuth } from '@clerk/nextjs/server';
+import { LikeButton } from '~/components/likeButton'; // Assuming this is the custom LikeButton component
 
 interface PostWithAuthor extends Post {
   author: User;
   likesCount: number; 
   commentsCount: number;
+  likedByCurrentUser: boolean; // Add this line
 }
 
 interface HomePageProps {
@@ -25,6 +28,7 @@ export default function HomePage({ posts }: HomePageProps) {
   const [dialogOpen, setDialogOpen] = useState<'signIn' | 'signUp' | null>(null);
   const [commentsDrawerOpen, setCommentsDrawerOpen] = useState(false);
   const [selectedPost, setSelectedPost] = useState<PostWithAuthor | null>(null);
+  const [postList, setPostList] = useState(posts);
 
   const handleLike = async (postId: string) => {
     if (!isSignedIn) {
@@ -65,7 +69,7 @@ export default function HomePage({ posts }: HomePageProps) {
             <div className="relative flex items-start">
               <div className="w-[800px] h-[450px] bg-gray-800 rounded-md overflow-hidden">
                 <iframe
-                  src={post.fileUrl || '/default-file-url'}
+                  src={post.fileUrl || ''}
                   title={post.title}
                   className="w-full h-full"
                   frameBorder="0"
@@ -76,19 +80,17 @@ export default function HomePage({ posts }: HomePageProps) {
               <div className="flex flex-col items-center space-y-4 ml-4">
                 <Link href={`/profile/${post.author.id}`}>
                   <Avatar className="cursor-pointer">
-                    <AvatarImage src={post.author.avatarUrl || '/default-avatar.png'} alt="Author Avatar" />
+                    <AvatarImage src={post.author.avatarUrl || ''} alt="Author Avatar" />
                     <AvatarFallback>{post.author.username?.charAt(0) || 'A'}</AvatarFallback>
                   </Avatar>
                 </Link>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="rounded-full bg-gray-800 hover:bg-gray-700"
-                  onClick={() => handleLike(post.id.toString())}
-                >
-                  <HeartIcon className="h-6 w-6" />
-                </Button>
-                <span>{post.likesCount}</span>
+
+                {/* Replace the existing like button with LikeButton component */}
+                <LikeButton
+                  postId={post.id}
+                  initialLiked={post.likedByCurrentUser}
+                  initialCount={post.likesCount}
+                />
 
                 <Button
                   variant="ghost"
@@ -132,10 +134,18 @@ export default function HomePage({ posts }: HomePageProps) {
   );
 }
 
-export const getServerSideProps: GetServerSideProps = async () => {
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  const { userId } = getAuth(context.req);
+
   const posts = await db.post.findMany({
     include: {
       author: true,
+      likes: userId
+        ? {
+            where: { userId },
+            select: { id: true }, // Select only the necessary fields
+          }
+        : false,
       _count: {
         select: {
           likes: true,
@@ -153,12 +163,13 @@ export const getServerSideProps: GetServerSideProps = async () => {
     createdAt: post.createdAt.toISOString(),
     updatedAt: post.updatedAt.toISOString(),
     author: {
-      ...post.author,
-      createdAt: post.author.createdAt.toISOString(),
-      updatedAt: post.author.updatedAt.toISOString(),
+      id: post.author.id,
+      username: post.author.username,
+      avatarUrl: post.author.avatarUrl,
     },
     likesCount: post._count.likes,
     commentsCount: post._count.comments,
+    likedByCurrentUser: userId ? post.likes.length > 0 : false,
   }));
 
   return {

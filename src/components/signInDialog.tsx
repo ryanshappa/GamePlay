@@ -2,7 +2,7 @@ import * as React from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
-import { useSignIn } from '@clerk/nextjs';
+import { useSignIn, useClerk } from '@clerk/nextjs';
 import { Cross2Icon } from '@radix-ui/react-icons';
 import { useRouter } from 'next/router';
 import { FcGoogle } from 'react-icons/fc'; // Import Google icon from react-icons
@@ -15,6 +15,7 @@ interface SignInDialogProps {
 
 export function SignInDialog({ open, onOpenChange, onSwitchToSignUp }: SignInDialogProps) {
   const { signIn } = useSignIn();
+  const { setActive } = useClerk();
   const router = useRouter();
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
@@ -32,16 +33,16 @@ export function SignInDialog({ open, onOpenChange, onSwitchToSignUp }: SignInDia
       return;
     }
     try {
-      const result = await signIn.create({
+      const completeSignIn = await signIn.create({
         identifier: email,
         password,
       });
-      if (result.status === 'complete') {
-        // Sign-in successful
+
+      if (completeSignIn.status === 'complete') {
+        await setActive({ session: completeSignIn.createdSessionId });
         onOpenChange(false);
       } else {
-        // Handle other statuses (e.g., pending email verification)
-        console.log('Additional steps required:', result.status);
+        console.log('Additional steps required:', completeSignIn.status);
       }
     } catch (error: any) {
       console.error('Error signing in:', error);
