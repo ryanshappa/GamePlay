@@ -1,3 +1,5 @@
+// Import Clerk client
+import { clerkClient } from '@clerk/nextjs/server';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { db } from '~/server/db';
 
@@ -9,7 +11,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const user = await db.user.findUnique({
+    let user = await db.user.findUnique({
       where: { id: userId },
       select: {
         id: true,
@@ -28,9 +30,42 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
 
     if (!user) {
-      return res.status(404).json({ error: 'User not found' });
+      // User not found in database, create user
+      try {
+        // Fetch user data from Clerk
+        const clerkUser = await clerkClient.users.getUser(userId);
+
+        // Create user in database
+        user = await db.user.create({
+          data: {
+            id: userId,
+            username: clerkUser.username || clerkUser.emailAddresses[0]?.emailAddress || '',
+            email: clerkUser.emailAddresses[0]?.emailAddress || '',
+            avatarUrl: clerkUser.imageUrl,
+            bio: (clerkUser.publicMetadata?.bio as string) || '',
+          },
+          select: {
+            id: true,
+            username: true,
+            bio: true,
+            avatarUrl: true,
+            posts: true,
+            followers: true,
+            following: true,
+            likes: {
+              select: {
+                post: true,
+              },
+            },
+          },
+        });
+      } catch (error) {
+        console.error('Error creating user in database:', error);
+        return res.status(500).json({ error: 'Failed to create user profile.' });
+      }
     }
 
+    // Proceed as before
     const followersCount = await db.follow.count({
       where: { followingId: userId },
     });
@@ -44,11 +79,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
 
     // Serialize dates in posts
-    const serializedPosts = user.posts.map((post) => ({
-      ...post,
-      createdAt: post.createdAt.toISOString(),
-      updatedAt: post.updatedAt.toISOString(),
-    }));
+    const serializedPosts = user.posts
+      ? user.posts.map((post) => ({
+          ...post,
+          createdAt: post.createdAt.toISOString(),
+          updatedAt: post.updatedAt.toISOString(),
+        }))
+      : [];
 
     return res.status(200).json({
       ...user,
