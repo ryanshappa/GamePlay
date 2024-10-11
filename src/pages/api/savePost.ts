@@ -5,6 +5,10 @@ import { ensureUserExists } from "~/utils/userUtils";
 import { uploadGameToS3 } from "~/server/uploadGame";
 import formidable from "formidable";
 import fs from "fs";
+import algoliasearch from 'algoliasearch';
+
+const client = algoliasearch(process.env.ALGOLIA_APP_ID as string, process.env.ALGOLIA_WRITE_API_KEY as string);
+const index = client.initIndex('posts');
 
 export const config = {
   api: {
@@ -13,12 +17,10 @@ export const config = {
 };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  // Only accept POST
   if (req.method !== "POST") {
     return res.status(405).json({ message: "Method not allowed" });
   }
 
-  // Get authenticated user
   const { userId } = getAuth(req);
 
   if (!userId) {

@@ -38,12 +38,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       where: { id: userId },
       update: {
         email,
-        name,
       },
       create: {
         id: userId,
         email,
-        name,
       },
     });
   }
