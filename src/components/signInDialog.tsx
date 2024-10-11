@@ -68,7 +68,7 @@ export function SignInDialog({ open, onOpenChange, onSwitchToSignUp }: SignInDia
 
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
-      <Dialog.Overlay className="fixed inset-100 bg-gray-200" /> 
+      <Dialog.Overlay className="fixed inset-0 bg-black/50" /> 
       <Dialog.Content className="fixed top-1/2 left-1/2 max-w-md w-full bg-gray-500 p-6 rounded-md transform -translate-x-1/2 -translate-y-1/2 text-white">
         {/* Darker Grey Background with White Text */}
         <Dialog.Title className="text-2xl font-bold mb-4">Sign In</Dialog.Title>
