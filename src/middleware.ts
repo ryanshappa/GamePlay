@@ -1,12 +1,15 @@
-import { clerkMiddleware, clerkClient, getAuth } from "@clerk/nextjs/server";
+// middleware.ts
+
+import { clerkMiddleware, clerkClient, getAuth } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { db } from './server/db';
 
-export default clerkMiddleware(async (auth, request, event) => {
+// Remove the import of 'db' and any database operations
+// import { db } from './server/db';
+
+export default clerkMiddleware((request: any) => { // Use 'any' if type is unknown
   console.log('Middleware executed for:', request.nextUrl.pathname);
   const { pathname } = request.nextUrl;
-
 
   const publicRoutes = ['/sign-in', '/sign-up', '/_next'];
 
@@ -14,36 +17,13 @@ export default clerkMiddleware(async (auth, request, event) => {
     return NextResponse.next();
   }
 
-  const userId = (auth as any).user?.id; 
+  // The 'getAuth' function can be used to retrieve user information
+  const { userId } = getAuth(request);
 
-  if (userId) {
-    // Check if user exists in database
-    const userExists = await db.user.findUnique({
-      where: { id: userId },
-    });
+  // Remove any database operations here
+  // Middleware should be stateless and not depend on external data sources
 
-    if (!userExists) {
-      try {
-        // Fetch user data from Clerk
-        const clerkUser = await clerkClient.users.getUser(userId);
-
-        // Create user in database
-        await db.user.create({
-          data: {
-            id: userId,
-            username: clerkUser.username || clerkUser.emailAddresses[0]?.emailAddress || '',
-            email: clerkUser.emailAddresses[0]?.emailAddress || '',
-            avatarUrl: (clerkUser as any).profileImageUrl, 
-            bio: (clerkUser.publicMetadata?.bio as string) || '',
-          },
-        });
-      } catch (error) {
-        console.error('Error creating user in database:', error);
-      }
-    }
-  }
-
-  return NextResponse.next(); 
+  return NextResponse.next();
 });
 
 export const config = {
