@@ -1,5 +1,3 @@
-// src/pages/api/getUserProfile.ts
-
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { db } from '~/server/db';
 

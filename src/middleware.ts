@@ -8,7 +8,7 @@ export default clerkMiddleware(async (auth, request, event) => {
   const { pathname } = request.nextUrl;
 
 
-  const publicRoutes = ['/sign-in', '/sign-up', '/api', '/_next'];
+  const publicRoutes = ['/sign-in', '/sign-up', '/_next'];
 
   if (publicRoutes.some((route) => pathname.startsWith(route))) {
     return NextResponse.next();
