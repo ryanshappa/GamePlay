@@ -68,6 +68,9 @@ const config = {
   "rules": {
     "@typescript-eslint/array-type": "warn", // Keeping this as a warning
     "@typescript-eslint/consistent-type-definitions": "off", // Disable 'type' vs 'interface' rule
+    "@typescript-eslint/non-nullable-type-assertion-style": "warn",
+    "@typescript-eslint/no-unsafe-return": "warn",
+    "@typescript-eslint/no-empty-interface": "warn",
     '@typescript-eslint/prefer-nullish-coalescing': 'off',
     '@typescript-eslint/no-unsafe-assignment': 'off',
     '@typescript-eslint/no-unsafe-call': 'off',
