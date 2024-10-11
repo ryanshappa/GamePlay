@@ -31,17 +31,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (eventType === "user.created" || eventType === "user.updated") {
     const userId = evt.data.id as string;
     const email = evt.data.email_addresses[0]?.email_address ?? "";
-    const name = evt.data.first_name ?? "";
+    const username = evt.data.username ?? evt.data.email_addresses[0]?.email_address ?? "";
+    const avatarUrl = evt.data.image_url ?? "";
 
-    // Upsert user in the database
     await db.user.upsert({
       where: { id: userId },
       update: {
         email,
+        username,
+        avatarUrl,
       },
       create: {
         id: userId,
         email,
+        username,
+        avatarUrl,
       },
     });
   }
