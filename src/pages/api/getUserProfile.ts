@@ -1,4 +1,3 @@
-// Import Clerk client
 import { clerkClient } from '@clerk/nextjs/server';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { db } from '~/server/db';
