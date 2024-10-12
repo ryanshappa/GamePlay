@@ -1,49 +1,28 @@
-import { clerkMiddleware, clerkClient, getAuth } from "@clerk/nextjs/server";
+import { clerkMiddleware } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { db } from './server/db';
 
-export default clerkMiddleware(async (auth, request, event) => {
-  console.log('Middleware executed for:', request.nextUrl.pathname);
-  const { pathname } = request.nextUrl;
+export default clerkMiddleware((auth, req: NextRequest) => {
+  console.log('Middleware executed for:', req.nextUrl.pathname);
 
+  const { pathname } = req.nextUrl;
 
-  const publicRoutes = ['/sign-in', '/sign-up', '/api', '/_next'];
+  const publicRoutes = ['/sign-in', '/sign-up', '/_next'];
 
   if (publicRoutes.some((route) => pathname.startsWith(route))) {
     return NextResponse.next();
   }
 
-  const userId = (auth as any).user?.id; 
-
-  if (userId) {
-    // Check if user exists in database
-    const userExists = await db.user.findUnique({
-      where: { id: userId },
-    });
-
-    if (!userExists) {
-      try {
-        // Fetch user data from Clerk
-        const clerkUser = await clerkClient.users.getUser(userId);
-
-        // Create user in database
-        await db.user.create({
-          data: {
-            id: userId,
-            username: clerkUser.username || clerkUser.emailAddresses[0]?.emailAddress || '',
-            email: clerkUser.emailAddresses[0]?.emailAddress || '',
-            avatarUrl: (clerkUser as any).profileImageUrl, 
-            bio: (clerkUser.publicMetadata?.bio as string) || '',
-          },
-        });
-      } catch (error) {
-        console.error('Error creating user in database:', error);
-      }
-    }
+  // You can use `auth` here to access authentication details
+  const { userId } = auth();
+  
+  // If the user is not authenticated, redirect to sign-in
+  if (!userId) {
+    return NextResponse.redirect(new URL('/sign-in', req.url));
   }
 
-  return NextResponse.next(); 
+
+  return NextResponse.next();
 });
 
 export const config = {
