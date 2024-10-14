@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getAuth } from '@clerk/nextjs/server';
 import { db } from '~/server/db';
+import { usersIndex } from '~/server/algoliaClient';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { userId } = getAuth(req);
@@ -28,6 +29,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           ...(bio && { bio }),
           ...(avatarUrl && { avatarUrl }),
         },
+      });
+
+      // Update the user in Algolia index
+      await usersIndex.saveObject({
+        objectID: userId, // Ensure objectID matches the user ID
+        username: user.username,
+        bio: user.bio,
+        avatarUrl: user.avatarUrl,
+        // Add other fields as necessary
       });
 
       res.status(200).json({ message: 'Profile updated successfully', user });

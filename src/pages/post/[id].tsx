@@ -18,7 +18,8 @@ import {
 } from 'lucide-react';
 import { useUser } from '@clerk/nextjs';
 import Link from 'next/link';
-import { SignInDialog } from '~/components/signInDialog'; // Ensure this path is correct
+import { SignInDialog } from '~/components/signInDialog';
+import DeleteCommentButton from '~/components/deleteComment'; 
 
 interface PostWithAuthorAndComments extends Post {
   author: User;
@@ -132,10 +133,13 @@ function PostPage({ post }: PostPageProps) {
         setComments((prev) => [...prev, comment]);
         setNewComment('');
       } else {
-        console.error('Failed to add comment.');
+        const errorData = await response.json();
+        console.error('Failed to add comment:', errorData.error);
+        alert(`Failed to add comment: ${errorData.error}`);
       }
     } catch (error) {
       console.error('Error adding comment:', error);
+      alert('An unexpected error occurred while adding the comment.');
     }
   };
 
@@ -146,21 +150,26 @@ function PostPage({ post }: PostPageProps) {
     setTimeout(() => setIsCopySuccess(false), 2000);
   };
 
+  const handleDeleteComment = (commentId: number) => {
+    const id = Number(commentId);
+    setComments((prev) => prev.filter((comment) => comment.id !== id));
+  };
+
   if (!post) {
     return <div>Post not found</div>;
   }
 
   return (
-    <div className="flex-1">
+    <div className="flex-1 p-4">
       {/* Content Wrapper */}
-      <ScrollArea className="h-full">
-        <div className="flex flex-col items-start p-4 pl-8">
+      <ScrollArea className="w-full h-full">
+        <div className="flex flex-col w-full p-4">
           {/* Post Content */}
           <h1 className="text-3xl font-bold mb-4">{post.title}</h1>
           <p className="mb-6">{post.content}</p>
 
           {/* Game Display */}
-          <div className="relative w-[800px] h-[450px] bg-gray-800 rounded-md overflow-hidden mb-6">
+          <div className="relative w-full h-[80vh] bg-gray-800 rounded-md overflow-hidden mb-6">
             <iframe
               src={post.fileUrl || ''}
               title={post.title}
@@ -190,7 +199,7 @@ function PostPage({ post }: PostPageProps) {
               size="icon"
               className="rounded-full bg-gray-800 hover:bg-gray-700"
             >
-              <MessageCircleIcon className="h-6 w-6" />
+              <MessageCircleIcon className="h-6 w-6 text-white" />
             </Button>
             <span>{comments.length}</span>
 
@@ -200,16 +209,19 @@ function PostPage({ post }: PostPageProps) {
               className="rounded-full bg-gray-800 hover:bg-gray-700"
               onClick={handleShare}
             >
-              <ShareIcon className="h-6 w-6" />
+              <ShareIcon className="h-6 w-6 text-white" />
             </Button>
             {isCopySuccess && <span>Link copied!</span>}
 
             {/* Author Avatar and Profile Link */}
             <Link href={`/profile/${post.author.id}`}>
               <div className="flex items-center space-x-2 cursor-pointer">
-                <Avatar>
-                  <AvatarImage src={post.author.avatarUrl} alt="Author Avatar" />
-                  <AvatarFallback>{post.author.username.charAt(0)}</AvatarFallback>
+                <Avatar className="h-10 w-10">
+                  {post.author.avatarUrl ? (
+                    <AvatarImage src={post.author.avatarUrl} alt={`${post.author.username}'s Avatar`} />
+                  ) : (
+                    <AvatarFallback>{post.author.username.charAt(0)}</AvatarFallback>
+                  )}
                 </Avatar>
                 <span className="font-semibold">@{post.author.username}</span>
               </div>
@@ -225,21 +237,33 @@ function PostPage({ post }: PostPageProps) {
                   key={comment.id}
                   className="flex items-start space-x-4"
                 >
-                  <Avatar>
-                    <AvatarImage
-                      src={
-                        comment.user.avatarUrl
-                      }
-                      alt="User Avatar"
-                    />
-                    <AvatarFallback>
-                      {comment.user.username.charAt(0)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <p className="font-semibold">
-                      {comment.user.username}
-                    </p>
+                  <Link href={`/profile/${comment.user.id}`}>
+                      <Avatar className="cursor-pointer">
+                        <AvatarImage
+                          src={comment.user.avatarUrl}
+                          alt={`${comment.user.username}'s Avatar`}
+                        />
+                        <AvatarFallback>
+                          {comment.user.username.charAt(0)}
+                        </AvatarFallback>
+                      </Avatar>
+                  </Link>
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between">
+                      <p className="font-semibold">
+                        {comment.user.username}
+                      </p>
+                      <DeleteCommentButton
+                        comment={{
+                          id: Number(comment.id),
+                          user: comment.user,
+                          post: post,
+                        }}
+                        postAuthorId={post.authorId}
+                        currentUser={user ? { id: user.id, username: user.username || '' } : null}
+                        onDelete={handleDeleteComment}
+                      />
+                    </div>
                     <p>{comment.content}</p>
                     <p className="text-gray-500 text-sm">
                       {new Date(
@@ -354,6 +378,8 @@ export const getServerSideProps: GetServerSideProps = async (
       id: like.id,
       userId: like.userId,
       postId: like.postId,
+      // If you need to serialize createdAt:
+      // createdAt: like.createdAt.toISOString(),
     })),
   };
 

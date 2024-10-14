@@ -6,6 +6,7 @@ import { uploadGameToS3 } from "~/server/uploadGame";
 import formidable from "formidable";
 import fs from "fs";
 import algoliasearch from 'algoliasearch';
+import { postsIndex } from '~/server/algoliaClient';
 
 const client = algoliasearch(process.env.ALGOLIA_APP_ID as string, process.env.ALGOLIA_WRITE_API_KEY as string);
 const index = client.initIndex('posts');
@@ -61,6 +62,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           content: String(Array.isArray(content) ? content[0] : content || ""),
           authorId: userId,
         },
+      });
+
+      // Index the new post in Algolia
+      await postsIndex.saveObject({
+        objectID: post.id,
+        title: post.title,
+        content: post.content,
+        authorId: post.authorId,
+        createdAt: post.createdAt.toISOString(),
+        updatedAt: post.updatedAt.toISOString(),
+        // Add other fields as necessary
       });
 
       return res.status(201).json(post);

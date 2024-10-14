@@ -15,27 +15,26 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const existingFollow = await db.follow.findFirst({
+    const followToDelete = await db.follow.findFirst({
       where: {
         followerId: userId,
         followingId,
       },
     });
 
-    if (existingFollow) {
-      return res.status(400).json({ message: 'Already following this user' });
+    if (!followToDelete) {
+      return res.status(400).json({ message: 'Not following this user' });
     }
 
-    await db.follow.create({
-      data: {
-        followerId: userId,
-        followingId,
+    await db.follow.delete({
+      where: {
+        id: followToDelete.id,
       },
     });
 
-    res.status(200).json({ message: 'Followed user successfully' });
+    res.status(200).json({ message: 'Unfollowed user successfully' });
   } catch (error) {
-    console.error('Error following user:', error);
+    console.error('Error unfollowing user:', error);
     res.status(500).json({ message: 'Internal server error' });
   }
 }

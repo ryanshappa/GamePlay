@@ -4,22 +4,36 @@ import { Button } from './ui/button';
 import { Textarea } from './ui/textarea';
 import { useUser } from '@clerk/nextjs';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
+import Link from 'next/link';
+import DeleteCommentButton from './deleteComment'; // Ensure correct import
 
+interface User {
+  id: string;
+  username?: string;
+}
+
+interface Post {
+  id: number;
+  authorId: string;
+  // ... other post properties
+}
 
 interface Comment {
-  id: number; 
+  id: number;
   content: string;
   createdAt: string;
   user: {
+    id: string; 
     avatarUrl: string;
     username: string;
   };
+  postId: number; // Assuming postId is present
 }
 
 interface CommentsDrawerProps {
   open: boolean;
   onClose: () => void;
-  post: any;
+  post: Post;
 }
 
 export function CommentsDrawer({ open, onClose, post }: CommentsDrawerProps) {
@@ -29,7 +43,6 @@ export function CommentsDrawer({ open, onClose, post }: CommentsDrawerProps) {
 
   React.useEffect(() => {
     if (open) {
-      // Fetch comments for the post
       fetch(`/api/posts/${post.id}/comments`)
         .then((res) => res.json())
         .then((data) => setComments(data))
@@ -61,11 +74,25 @@ export function CommentsDrawer({ open, onClose, post }: CommentsDrawerProps) {
     }
   };
 
+  const handleDeleteComment = (commentId: number) => {
+    setComments((prev) => prev.filter((comment) => comment.id !== commentId));
+  };
+
   return (
     <Drawer.Root open={open} onOpenChange={onClose}>
       <Drawer.Portal>
+        {/* Overlay */}
         <Drawer.Overlay className="fixed inset-0 bg-black opacity-0" />
-        <Drawer.Content className="fixed right-0 top-0 h-full w-80 bg-gray-800 p-4 text-white overflow-y-auto">
+        
+        {/* Drawer Content */}
+        <Drawer.Content
+          className="fixed right-0 bg-gray-800 p-4 text-white overflow-y-auto shadow-lg z-40"
+          style={{
+            top: '72px',
+            height: 'calc(100vh - 60px)',
+            width: '320px',
+          }}
+        >
           <Drawer.Title className="text-xl font-bold mb-4">Comments</Drawer.Title>
           <Drawer.Close className="absolute top-2 right-2 text-white hover:text-gray-400">
             &times;
@@ -73,16 +100,35 @@ export function CommentsDrawer({ open, onClose, post }: CommentsDrawerProps) {
           <div className="space-y-4">
             {comments.map((comment) => (
               <div key={comment.id} className="flex items-start space-x-2">
-                <Avatar className="h-8 w-8">
-                  <AvatarImage src={comment.user.avatarUrl} alt="User Avatar" />
-                  <AvatarFallback>{comment.user.username.charAt(0)}</AvatarFallback>
-                </Avatar>
-                <div>
+                {/* Wrap Avatar with Link */}
+                <Link href={`/profile/${comment.user.id}`}>
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={comment.user.avatarUrl} alt="User Avatar" />
+                    <AvatarFallback>{comment.user.username?.charAt(0) || 'U'}</AvatarFallback>
+                  </Avatar>
+                </Link>
+                <div className="flex-1">
                   <p className="font-semibold">{comment.user.username}</p>
                   <p>{comment.content}</p>
-                  <p className="text-gray-500 text-xs">
-                    {new Date(comment.createdAt).toLocaleString()}
-                  </p>
+                  {/* New Flex Container for Timestamp and Delete Button */}
+                  <div className="flex items-center justify-between">
+                    <p className="text-gray-500 text-xs">
+                      {new Date(comment.createdAt).toLocaleString()}
+                    </p>
+                    {/* Conditionally render the Delete button */}
+                    {(user?.id === comment.user.id || user?.id === post.authorId) && (
+                      <DeleteCommentButton
+                        comment={{
+                          id: Number(comment.id),
+                          user: comment.user,
+                          post: post,
+                        }}
+                        postAuthorId={post.authorId}
+                        currentUser={user ? { id: user.id, username: user.username || '' } : null}
+                        onDelete={handleDeleteComment}
+                      />
+                    )}
+                  </div>
                 </div>
               </div>
             ))}
