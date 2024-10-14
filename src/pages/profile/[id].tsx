@@ -68,6 +68,15 @@ export default function ProfilePage() {
 
     if (response.ok) {
       setIsFollowing(!isFollowing);
+      setUser((prevUser) => {
+        if (!prevUser) return prevUser;
+        return {
+          ...prevUser,
+          followersCount: isFollowing
+            ? prevUser.followersCount - 1
+            : prevUser.followersCount + 1,
+        };
+      });
     } else {
       console.error('Failed to update follow status');
     }

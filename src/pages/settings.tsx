@@ -30,8 +30,21 @@ export default function SettingsPage() {
   const handleDeleteAccount = async () => {
     if (confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
       try {
-        await user?.delete(); 
-        router.push('/'); 
+        const response = await fetch('/api/users/deleteAccount', { 
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (response.ok) {
+          alert('Account deleted successfully.');
+          router.push('/'); 
+        } else {
+          const data = await response.json();
+          console.error('Failed to delete account:', data.error);
+          alert(`Failed to delete account: ${data.error}`);
+        }
       } catch (error) {
         console.error('Failed to delete account:', error);
         alert('An error occurred while deleting your account. Please try again.');

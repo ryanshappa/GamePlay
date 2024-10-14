@@ -73,7 +73,7 @@ export default function Layout({ children, showSearchBar = true }: LayoutProps) 
 
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar */}
-        <aside className="w-56 p-4 flex flex-col">
+        <aside className="w-52 p-4 flex flex-col">
           <nav className="mt-6">
             <Link href="/">
               <div className="flex items-center space-x-6 cursor-pointer hover:text-gray-400 transition-colors duration-200 mb-8">
@@ -113,7 +113,9 @@ export default function Layout({ children, showSearchBar = true }: LayoutProps) 
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 overflow-y-auto">{children}</main>
+        <main className="flex-1 overflow-y-auto pt-4">
+          {children}
+        </main>
       </div>
 
       {/* Sign-In and Sign-Up Dialogs */}

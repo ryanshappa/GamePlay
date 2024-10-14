@@ -7,6 +7,7 @@ import {
   connectHits,
   connectStateResults,
 } from 'react-instantsearch-dom';
+import Link from 'next/link'; // Import Link
 
 const searchClient = algoliasearch(
   process.env.NEXT_PUBLIC_ALGOLIA_APP_ID || '',
@@ -45,9 +46,9 @@ const PostsHits = ({ hits }: { hits: any[] }) => (
     {hits.length > 0 ? (
       hits.map((hit) => (
         <div key={hit.objectID} className="px-4 py-2 hover:bg-gray-700">
-          <a href={`/post/${hit.objectID}`} className="text-white">
+          <Link href={`/post/${hit.objectID}`} className="text-white">
             {hit.title}
-          </a>
+          </Link>
         </div>
       ))
     ) : (
@@ -65,9 +66,9 @@ const UsersHits = ({ hits }: { hits: any[] }) => (
     {hits.length > 0 ? (
       hits.map((hit) => (
         <div key={hit.objectID} className="px-4 py-2 hover:bg-gray-700">
-          <a href={`/profile/${hit.objectID}`} className="text-white">
+          <Link href={`/profile/${hit.objectID}`} className="text-white">
             {hit.username}
-          </a>
+          </Link>
         </div>
       ))
     ) : (

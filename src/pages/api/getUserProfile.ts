@@ -1,6 +1,7 @@
 import { clerkClient } from '@clerk/nextjs/server';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { db } from '~/server/db';
+import { usersIndex } from '~/server/algoliaClient';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { userId } = req.query;
@@ -58,8 +59,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             },
           },
         });
+
+        // Index the new user in Algolia
+        await usersIndex.saveObject({
+          objectID: user.id,
+          username: user.username,
+          bio: user.bio,
+          avatarUrl: user.avatarUrl,
+          followersCount: user.followers.length,
+          followingCount: user.following.length,
+          likesCount: user.likes.length,
+          // Add other fields as necessary
+        });
       } catch (error) {
-        console.error('Error creating user in database:', error);
+        console.error('Error creating user in database or indexing:', error);
         return res.status(500).json({ error: 'Failed to create user profile.' });
       }
     }

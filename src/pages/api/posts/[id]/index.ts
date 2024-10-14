@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { db } from '~/server/db';
 import { getAuth } from '@clerk/nextjs/server';
+import { postsIndex } from '~/server/algoliaClient';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
 	const { userId } = getAuth(req);
@@ -29,8 +30,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 			await db.comment.deleteMany({ where: { postId } });
 			await db.like.deleteMany({ where: { postId } });
 
-			// Delete the post
+			// Delete the post from the database
 			await db.post.delete({ where: { id: postId } });
+
+			// Remove the post from Algolia index
+			await postsIndex.deleteObject(postId.toString());
 
 			res.status(200).json({ message: 'Post deleted successfully.' });
 		} catch (error) {
