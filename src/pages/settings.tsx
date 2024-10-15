@@ -30,7 +30,7 @@ export default function SettingsPage() {
   const handleDeleteAccount = async () => {
     if (confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
       try {
-        const response = await fetch('/api/users/deleteAccount', { 
+        const response = await fetch('/api/deleteAccount', { 
           method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',
