@@ -17,6 +17,7 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.658.1",
     "@aws-sdk/lib-storage": "^3.658.1",
+    "@aws-sdk/s3-request-presigner": "^3.675.0",
     "@chakra-ui/react": "^2.10.2",
     "@clerk/clerk-sdk-node": "^5.0.41",
     "@clerk/nextjs": "^5.7.1",

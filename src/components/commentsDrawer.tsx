@@ -13,7 +13,7 @@ interface User {
 }
 
 interface Post {
-  id: number;
+  id: string;
   authorId: string;
   // ... other post properties
 }
@@ -27,7 +27,7 @@ interface Comment {
     avatarUrl: string;
     username: string;
   };
-  postId: number; // Assuming postId is present
+  postId: string; // Assuming postId is present
 }
 
 interface CommentsDrawerProps {

@@ -8,7 +8,7 @@ interface User {
 }
 
 interface Post {
-  id: number;
+  id: string;
   authorId: string;
 }
 

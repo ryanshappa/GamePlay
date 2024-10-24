@@ -3,7 +3,7 @@ import { HeartIcon } from 'lucide-react';
 import { useAuth } from '@clerk/nextjs';
 
 interface LikeButtonProps {
-  postId: number;
+  postId: string;
   initialLiked: boolean;
   initialCount: number;
 }

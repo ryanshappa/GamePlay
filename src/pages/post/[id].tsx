@@ -53,15 +53,16 @@ interface SerializedPost
     id: number;
     createdAt: string; // Ensure this is a string
     userId: string;
-    postId: number;
+    postId: string;
   }[];
 }
 
 interface PostPageProps {
   post: SerializedPost;
+  status: string;
 }
 
-function PostPage({ post }: PostPageProps) {
+function PostPage({ post, status }: PostPageProps) {
   const router = useRouter();
   const { user, isSignedIn } = useUser();
   const [likesCount, setLikesCount] = useState(post.likes.length);
@@ -73,9 +74,7 @@ function PostPage({ post }: PostPageProps) {
 
   useEffect(() => {
     if (user) {
-      setHasLiked(
-        post.likes.some((like) => like.userId === user.id)
-      );
+      setHasLiked(post.likes.some((like) => like.userId === user.id));
     }
   }, [user, post.likes]);
 
@@ -155,8 +154,22 @@ function PostPage({ post }: PostPageProps) {
     setComments((prev) => prev.filter((comment) => comment.id !== id));
   };
 
-  if (!post) {
-    return <div>Post not found</div>;
+  // Handle the status prop to conditionally render content
+  if (status === 'processing' || status === 'invalid') {
+    return (
+      <div className="flex-1 p-4">
+        <ScrollArea className="w-full h-full">
+          <div className="flex flex-col w-full p-4">
+            {status === 'processing' && (
+              <p>Your game is being processed. Please check back shortly.</p>
+            )}
+            {status === 'invalid' && (
+              <p>There was an issue with your game upload. Please try again.</p>
+            )}
+          </div>
+        </ScrollArea>
+      </div>
+    );
   }
 
   return (
@@ -333,7 +346,7 @@ export const getServerSideProps: GetServerSideProps = async (
 ) => {
   const { id } = context.params!;
   const post = await db.post.findUnique({
-    where: { id: parseInt(id as string) },
+    where: { id: id as string },
     include: {
       author: true,
       comments: {
@@ -354,13 +367,14 @@ export const getServerSideProps: GetServerSideProps = async (
     };
   }
 
-  // Serialize dates
+  const status = post.status;
+
   const serializedPost = {
     ...post,
     createdAt: post.createdAt.toISOString(),
     updatedAt: post.updatedAt.toISOString(),
     author: {
-      id: post.author.id,
+      id: post.authorId,
       username: post.author.username,
       avatarUrl: post.author.avatarUrl,
     },
@@ -378,7 +392,7 @@ export const getServerSideProps: GetServerSideProps = async (
       id: like.id,
       userId: like.userId,
       postId: like.postId,
-      // If you need to serialize createdAt:
+      // Include createdAt if needed
       // createdAt: like.createdAt.toISOString(),
     })),
   };
@@ -386,6 +400,7 @@ export const getServerSideProps: GetServerSideProps = async (
   return {
     props: {
       post: serializedPost,
+      status,
     },
   };
 };
