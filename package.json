@@ -17,6 +17,7 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.658.1",
     "@aws-sdk/lib-storage": "^3.658.1",
+    "@aws-sdk/s3-request-presigner": "^3.675.0",
     "@chakra-ui/react": "^2.10.2",
     "@clerk/clerk-sdk-node": "^5.0.41",
     "@clerk/nextjs": "^5.7.1",
@@ -91,7 +92,7 @@
     "prettier-plugin-tailwindcss": "^0.6.5",
     "prisma": "^5.19.1",
     "tailwindcss": "^3.4.9",
-    "typescript": "^5.5.3"
+    "typescript": "^5.6.3"
   },
   "ct3aMetadata": {
     "initVersion": "7.36.2"

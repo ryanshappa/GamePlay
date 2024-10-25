@@ -34,7 +34,7 @@ export default function ProfilePage() {
   const [isFollowing, setIsFollowing] = useState(false);
   const [editProfileOpen, setEditProfileOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false); // **State for Deletion Loading**
-  const [selectedPostId, setSelectedPostId] = useState<number | null>(null);
+  const [selectedPostId, setSelectedPostId] = useState<string | null>(null); // Change type to string | null
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   useEffect(() => {
@@ -82,12 +82,12 @@ export default function ProfilePage() {
     }
   };
 
-  const handleDeleteClick = (postId: number) => {
+  const handleDeleteClick = (postId: string) => { // Change postId type to string
     setSelectedPostId(postId);
     onOpen();
   };
 
-  const handleDeletePost = async (postId: number | null) => {
+  const handleDeletePost = async (postId: string | null) => { // Change postId type to string
     if (!postId) return;
 
     try {
@@ -100,7 +100,7 @@ export default function ProfilePage() {
           if (!prevUser) return prevUser;
           return {
             ...prevUser,
-            posts: prevUser.posts.filter((post) => post.id !== postId),
+            posts: prevUser.posts.filter((post) => post.id !== postId), // No conversion needed
           };
         });
         alert('Post deleted successfully.');
@@ -196,7 +196,7 @@ export default function ProfilePage() {
                       </MenuButton>
                       <MenuList className="bg-gray-800 text-white">
                         <MenuItem
-                          onClick={() => handleDeletePost(post.id)} 
+                          onClick={() => handleDeletePost(String(post.id))} 
                           className="px-4 py-2 hover:bg-gray-700 cursor-pointer"
                           disabled={isDeleting}
                         >

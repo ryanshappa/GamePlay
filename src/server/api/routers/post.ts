@@ -16,10 +16,10 @@ export const postRouter = createTRPCRouter({
 
   // Fetch a post by its ID
   getPostById: publicProcedure
-    .input(z.object({ id: z.number() })) 
+    .input(z.object({ id: z.string() })) 
     .query(async ({ input, ctx }) => {
       const post = await ctx.db.post.findUnique({
-        where: { id: input.id },
+        where: { id: input.id }, 
       });
       if (!post) throw new Error("Post not found");
       return post;

@@ -19,7 +19,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 	if (req.method === 'DELETE') {
 		try {
 			const post = await db.post.findUnique({
-				where: { id: postId },
+				where: { id: postId.toString() },
 			});
 
 			if (!post || post.authorId !== userId) {
@@ -27,11 +27,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 			}
 
 			// Delete associated comments and likes
-			await db.comment.deleteMany({ where: { postId } });
-			await db.like.deleteMany({ where: { postId } });
+			await db.comment.deleteMany({ where: { postId: postId.toString() } });
+			await db.like.deleteMany({ where: { postId: postId.toString() } });
 
 			// Delete the post from the database
-			await db.post.delete({ where: { id: postId } });
+			await db.post.delete({ where: { id: postId.toString() } });
 
 			// Remove the post from Algolia index
 			await postsIndex.deleteObject(postId.toString());

@@ -12,7 +12,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     const post = await db.post.findUnique({
-      where: { id: parseInt(id, 10) },
+      where: { id: id }, 
     });
 
     if (!post) {

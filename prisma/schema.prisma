@@ -23,7 +23,7 @@ model User {
 }
 
 model Post {
-  id          Int       @id @default(autoincrement())
+  id          String    @id @default(uuid())
   title       String
   content     String?
   fileUrl     String?
@@ -33,6 +33,8 @@ model Post {
   updatedAt   DateTime  @updatedAt
   likes       Like[]    
   comments    Comment[] 
+  engine      String    @default("Unity")
+  status      String?
 }
 
 model Follow {
@@ -49,7 +51,7 @@ model Like {
   createdAt   DateTime @default(now())
   userId      String
   user        User     @relation(fields: [userId], references: [id])
-  postId      Int
+  postId      String
   post        Post     @relation(fields: [postId], references: [id])
 
   @@unique([userId, postId]) // Ensure a user can like a post only once
@@ -61,6 +63,6 @@ model Comment {
   createdAt   DateTime @default(now())
   userId      String
   user        User     @relation(fields: [userId], references: [id])
-  postId      Int
+  postId      String
   post        Post     @relation(fields: [postId], references: [id])
 }

@@ -3,11 +3,7 @@ import { db } from '~/server/db';
 import { getAuth } from '@clerk/nextjs/server';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const postId = parseInt(req.query.id as string);
-
-  if (isNaN(postId)) {
-    return res.status(400).json({ error: 'Invalid post ID' });
-  }
+  const postId = req.query.id as string;
 
   if (req.method === 'POST') {
 
@@ -22,7 +18,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         where: {
           userId_postId: {
             userId,
-            postId,
+            postId: postId,
           },
         },
       });
@@ -34,7 +30,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       await db.like.create({
         data: {
           userId,
-          postId,
+          postId: postId,
         },
       });
 
@@ -56,7 +52,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         where: {
           userId_postId: {
             userId,
-            postId,
+            postId: postId,
           },
         },
       });

@@ -13,7 +13,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Fetch comments for the post
     try {
       const comments = await db.comment.findMany({
-        where: { postId },
+        where: { postId: postId.toString() },
         include: {
           user: true,
         },
@@ -27,7 +27,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         content: comment.content,
         createdAt: comment.createdAt.toISOString(),
         user: {
-          id: comment.user.id,
+          id: comment.userId,
           username: comment.user.username,
           avatarUrl: comment.user.avatarUrl,
         },
@@ -61,7 +61,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const comment = await db.comment.create({
         data: {
           content,
-          postId,
+          postId: postId.toString(),
           userId,
         },
         include: {
@@ -74,7 +74,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         content: comment.content,
         createdAt: comment.createdAt.toISOString(),
         user: {
-          id: comment.user.id,
+          id: comment.userId,
           username: comment.user.username,
           avatarUrl: comment.user.avatarUrl,
         },

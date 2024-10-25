@@ -1,29 +1,77 @@
-# Create T3 App
+# GamePlay
 
-This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
+An online platform that allows users to upload, share, and play games built with Unity and Godot engines directly in the browser.
 
-## What's next? How do I make an app with this?
+## **Table of Contents**
 
-We try to keep this project as simple as possible, so you can start with just the scaffolding we set up for you, and add additional things later when they become necessary.
+- [About the Project](#about-the-project)
+- [Features](#features)
+- [Built With](#built-with)
+- [Getting Started](#getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+  - [Environment Variables](#environment-variables)
+- [Development](#development)
+- [Deployment](#deployment)
+- [Usage](#usage)
+- [API Documentation](#api-documentation)
+- [Contributing](#contributing)
+- [License](#license)
+- [Contact](#contact)
 
-If you are not familiar with the different technologies used in this project, please refer to the respective docs. If you still are in the wind, please join our [Discord](https://t3.gg/discord) and ask for help.
+## **About the Project**
 
-- [Next.js](https://nextjs.org)
-- [NextAuth.js](https://next-auth.js.org)
-- [Prisma](https://prisma.io)
-- [Drizzle](https://orm.drizzle.team)
-- [Tailwind CSS](https://tailwindcss.com)
-- [tRPC](https://trpc.io)
+This project is a web application that allows game developers to:
 
-## Learn More
+- Upload their Unity or Godot games packaged as zip files.
+- Have their games processed and hosted for play directly in the browser.
+- Share their games with others and receive feedback.
 
-To learn more about the [T3 Stack](https://create.t3.gg/), take a look at the following resources:
+Players can:
 
-- [Documentation](https://create.t3.gg/)
-- [Learn the T3 Stack](https://create.t3.gg/en/faq#what-learning-resources-are-currently-available) — Check out these awesome tutorials
+- Browse and search for games.
+- Play games directly in the browser without the need for additional downloads.
+- Interact with the community by commenting and rating games.
 
-You can check out the [create-t3-app GitHub repository](https://github.com/t3-oss/create-t3-app) — your feedback and contributions are welcome!
+## **Features**
 
-## How do I deploy this?
+- **User Authentication:** Secure sign-up and sign-in using Clerk (or Supabase, if migrated).
+- **Game Uploads:** Support for uploading Unity and Godot games.
+- **File Processing:** AWS Lambda function to process and extract game files.
+- **Cloud Storage:** Amazon S3 for storing uploaded and processed game files.
+- **Search Functionality:** Integrated with Algolia for fast and efficient game searching.
+- **Responsive Design:** Mobile-friendly interface using modern UI components.
 
-Follow our deployment guides for [Vercel](https://create.t3.gg/en/deployment/vercel), [Netlify](https://create.t3.gg/en/deployment/netlify) and [Docker](https://create.t3.gg/en/deployment/docker) for more information.
+## **Built With**
+
+- **Frontend:**
+  - [Next.js](https://nextjs.org/) - React framework for server-rendered applications.
+  - [TypeScript](https://www.typescriptlang.org/) - Typed superset of JavaScript.
+  - [Tailwind CSS](https://tailwindcss.com/) - Utility-first CSS framework.
+- **Backend:**
+  - [Node.js](https://nodejs.org/) - JavaScript runtime environment.
+  - [Prisma](https://www.prisma.io/) - ORM for database access.
+  - [PostgreSQL](https://www.postgresql.org/) - Relational database.
+  - [AWS Lambda](https://aws.amazon.com/lambda/) - Serverless computing service.
+  - [AWS S3](https://aws.amazon.com/s3/) - Object storage service.
+  - [Algolia](https://www.algolia.com/) - Search and discovery platform.
+- **Authentication:**
+  - [Clerk](https://clerk.dev/) - User management and authentication (or Supabase, if migrated).
+
+## **Getting Started**
+
+### **Prerequisites**
+
+- **Node.js** (version 14 or later)
+- **npm** (comes with Node.js) or **yarn**
+- **PostgreSQL** database
+- **AWS Account** with access to Lambda and S3
+- **Algolia Account**
+
+### **Installation**
+
+1. **Clone the Repository:**
+
+   ```bash
+   git clone https://github.com/ryanshappa/gameplay.git
+   cd gameplay
