@@ -21,7 +21,7 @@
     ],
     "noEmit": true,
     "module": "ESNext",
-    "moduleResolution": "node",
+    "moduleResolution": "Bundler",
     "jsx": "preserve",
     "plugins": [
       {
@@ -48,6 +48,6 @@
   ],
   "exclude": [
     "node_modules",
-    "public/games"
+    "lambda"
   ]
 }
