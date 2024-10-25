@@ -1,10 +1,11 @@
-const AWS = require('aws-sdk');
-const unzipper = require('unzipper');
-const axios = require('axios');
+import AWS from 'aws-sdk';
+import unzipper from 'unzipper';
+import axios from 'axios';
+import { S3Event, S3Handler } from 'aws-lambda';
 
 const s3 = new AWS.S3();
 
-exports.handler = async (event) => {
+export const handler: S3Handler = async (event: S3Event) => {
   console.log('Event:', JSON.stringify(event, null, 2));
 
   const bucketName = process.env.BUCKET_NAME;
@@ -21,9 +22,9 @@ exports.handler = async (event) => {
     const objectMetadata = await s3.headObject({ Bucket: bucket, Key: srcKey }).promise();
     const { Metadata } = objectMetadata;
 
-    const gameId = Metadata.postId;
-    const userId = Metadata.userid;
-    const engine = Metadata.engine;
+    const gameId = Metadata?.postId;
+    const userId = Metadata?.userid;
+    const engine = Metadata?.engine;
 
     if (!gameId || !userId || !engine) {
       console.error('Missing metadata in S3 object');
@@ -40,6 +41,9 @@ exports.handler = async (event) => {
 
       // Extract the zip file
       console.log('Opening the zip file.');
+      if (!zipObject.Body || !(zipObject.Body instanceof Buffer)) {
+          throw new Error('Invalid zip file body.');
+      }
       const zip = await unzipper.Open.buffer(zipObject.Body);
       console.log('Zip file opened.');
 
@@ -119,8 +123,8 @@ exports.handler = async (event) => {
   }
 };
 
-function validateGameFiles(files, engine) {
-  let requiredFiles = [];
+function validateGameFiles(files: unzipper.File[], engine: string): boolean {
+  let requiredFiles: string[] = [];
 
   if (engine === 'unity') {
     requiredFiles = ['index.html', 'Build/'];
@@ -135,7 +139,7 @@ function validateGameFiles(files, engine) {
   );
 }
 
-function getFileHeaders(filePath) {
+function getFileHeaders(filePath: string) {
   let contentType = "application/octet-stream";
   let contentEncoding = null;
 
