@@ -1,18 +1,18 @@
-import AWS from 'aws-sdk';
-import unzipper from 'unzipper';
-import axios from 'axios';
-import { S3Event, S3Handler } from 'aws-lambda';
+const AWS = require('aws-sdk');
+const unzipper = require('unzipper');
+const axios = require('axios');
 
 const s3 = new AWS.S3();
 
-export const handler: S3Handler = async (event: S3Event) => {
+exports.handler = async (event) => {
   console.log('Event:', JSON.stringify(event, null, 2));
 
-  const bucketName = process.env.BUCKET_NAME;
+  const sourceBucketName = process.env.SOURCE_BUCKET_NAME; // New variable for source bucket
+  const destinationBucketName = process.env.DESTINATION_BUCKET_NAME; // New variable for destination bucket
   const apiEndpoint = process.env.API_ENDPOINT;
 
-  if (!bucketName || !apiEndpoint) {
-    console.error('BUCKET_NAME or API_ENDPOINT environment variable is not defined');
+  if (!sourceBucketName || !destinationBucketName || !apiEndpoint) {
+    console.error('SOURCE_BUCKET_NAME, DESTINATION_BUCKET_NAME, or API_ENDPOINT environment variable is not defined');
     return;
   }
 
@@ -22,9 +22,9 @@ export const handler: S3Handler = async (event: S3Event) => {
     const objectMetadata = await s3.headObject({ Bucket: bucket, Key: srcKey }).promise();
     const { Metadata } = objectMetadata;
 
-    const gameId = Metadata?.postId;
-    const userId = Metadata?.userid;
-    const engine = Metadata?.engine;
+    const gameId = Metadata.postId || Metadata.postid;
+    const userId = Metadata.userid || Metadata.userId;
+    const engine = Metadata.engine;
 
     if (!gameId || !userId || !engine) {
       console.error('Missing metadata in S3 object');
@@ -34,16 +34,13 @@ export const handler: S3Handler = async (event: S3Event) => {
     console.log('Starting to process the uploaded zip file.');
 
     try {
-      // Get the uploaded zip file
+      // Get the uploaded zip file from the source bucket
       console.log(`Fetching object from S3: Bucket=${bucket}, Key=${srcKey}`);
       const zipObject = await s3.getObject({ Bucket: bucket, Key: srcKey }).promise();
       console.log('Successfully fetched the zip file from S3.');
 
       // Extract the zip file
       console.log('Opening the zip file.');
-      if (!zipObject.Body || !(zipObject.Body instanceof Buffer)) {
-          throw new Error('Invalid zip file body.');
-      }
       const zip = await unzipper.Open.buffer(zipObject.Body);
       console.log('Zip file opened.');
 
@@ -62,8 +59,8 @@ export const handler: S3Handler = async (event: S3Event) => {
         continue; // Skip processing
       }
 
-      // Upload extracted files back to S3
-      console.log('Uploading extracted files back to S3.');
+      // Upload extracted files to the destination bucket
+      console.log('Uploading extracted files to the destination bucket.');
       for (const entry of zip.files) {
         if (entry.type === 'File') {
           const filePath = entry.path; // Relative path within the zip
@@ -87,11 +84,11 @@ export const handler: S3Handler = async (event: S3Event) => {
           // Determine content type
           const { contentType, contentEncoding } = getFileHeaders(filePath);
 
-          // Upload the file
+          // Upload the file to the destination bucket
           await s3
             .putObject({
-              Bucket: bucketName,
-              Key: `games/${gameId}/${filePath}`,
+              Bucket: destinationBucketName,
+              Key: `${gameId}/${filePath}`, // Use gameId as the folder in destination bucket
               Body: content,
               ContentType: contentType,
               ContentEncoding: contentEncoding || undefined,
@@ -101,8 +98,8 @@ export const handler: S3Handler = async (event: S3Event) => {
         }
       }
 
-      // Construct the URL to the game's index.html
-      const gameUrl = `https://${bucketName}.s3.amazonaws.com/games/${gameId}/index.html`;
+      // Construct the URL to the game's index.html in the destination bucket
+      const gameUrl = `https://${destinationBucketName}.s3.amazonaws.com/${gameId}/index.html`;
 
       // Update the post via API
       await axios.post(`${apiEndpoint}/updatePost`, {
@@ -123,8 +120,8 @@ export const handler: S3Handler = async (event: S3Event) => {
   }
 };
 
-function validateGameFiles(files: unzipper.File[], engine: string): boolean {
-  let requiredFiles: string[] = [];
+function validateGameFiles(files, engine) {
+  let requiredFiles = [];
 
   if (engine === 'unity') {
     requiredFiles = ['index.html', 'Build/'];
@@ -139,7 +136,7 @@ function validateGameFiles(files: unzipper.File[], engine: string): boolean {
   );
 }
 
-function getFileHeaders(filePath: string) {
+function getFileHeaders(filePath) {
   let contentType = "application/octet-stream";
   let contentEncoding = null;
 

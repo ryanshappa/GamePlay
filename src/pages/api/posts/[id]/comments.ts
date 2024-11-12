@@ -1,19 +1,19 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { db } from '~/server/db';
 import { getAuth } from '@clerk/nextjs/server';
+import { db } from '~/server/db';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const postId = parseInt(req.query.id as string);
+  const { userId } = getAuth(req);
+  const postId = req.query.id as string; // Ensure postId is a string
 
-  if (isNaN(postId)) {
-    return res.status(400).json({ error: 'Invalid post ID' });
+  if (!postId) {
+    return res.status(400).json({ message: 'Invalid post ID' });
   }
 
   if (req.method === 'GET') {
-    // Fetch comments for the post
     try {
       const comments = await db.comment.findMany({
-        where: { postId: postId.toString() },
+        where: { postId },
         include: {
           user: true,
         },
@@ -33,36 +33,30 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         },
       }));
 
-      res.status(200).json(serializedComments);
+      return res.status(200).json(serializedComments);
     } catch (error) {
       console.error('Error fetching comments:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      return res.status(500).json({ error: 'Internal server error' });
     }
-  } else if (req.method === 'POST') {
-    // Add a new comment to the post
-    const { userId } = getAuth(req);
+  }
 
+  if (req.method === 'POST') {
     if (!userId) {
-      return res.status(401).json({ error: 'Unauthorized' });
+      return res.status(401).json({ message: 'Unauthorized' });
     }
 
     const { content } = req.body;
 
     if (!content || typeof content !== 'string') {
-      return res.status(400).json({ error: 'Invalid comment content' });
+      return res.status(400).json({ message: 'Content is required and must be a string.' });
     }
 
     try {
-      const user = await db.user.findUnique({ where: { id: userId } });
-      if (!user) {
-        return res.status(404).json({ error: 'User not found' });
-      }
-
-      const comment = await db.comment.create({
+      const newComment = await db.comment.create({
         data: {
           content,
-          postId: postId.toString(),
           userId,
+          postId,
         },
         include: {
           user: true,
@@ -70,68 +64,72 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
 
       const serializedComment = {
-        id: comment.id,
-        content: comment.content,
-        createdAt: comment.createdAt.toISOString(),
+        id: newComment.id,
+        content: newComment.content,
+        createdAt: newComment.createdAt.toISOString(),
         user: {
-          id: comment.userId,
-          username: comment.user.username,
-          avatarUrl: comment.user.avatarUrl,
+          id: newComment.userId,
+          username: newComment.user.username,
+          avatarUrl: newComment.user.avatarUrl,
         },
       };
 
-      res.status(201).json(serializedComment);
+      return res.status(201).json(serializedComment);
     } catch (error) {
       console.error('Error adding comment:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      return res.status(500).json({ message: 'Internal server error' });
     }
-  } else if (req.method === 'DELETE') {
-    // Delete a comment
-    const { userId } = getAuth(req);
+  }
 
+  if (req.method === 'DELETE') {
     if (!userId) {
-      return res.status(401).json({ error: 'Unauthorized' });
+      return res.status(401).json({ message: 'Unauthorized' });
     }
 
-    const commentId = parseInt(req.query.commentId as string);
+    const { commentId } = req.body;
 
-    if (isNaN(commentId)) {
-      return res.status(400).json({ error: 'Invalid comment ID' });
+    const numericCommentId = Number(commentId);
+
+    if (!numericCommentId || isNaN(numericCommentId)) {
+      return res.status(400).json({ message: 'commentId is required and must be a valid number.' });
     }
 
     try {
       const comment = await db.comment.findUnique({
-        where: { id: commentId },
-        include: { user: true, post: true },
+        where: { id: numericCommentId },
+        include: {
+          user: true,
+          post: {
+            include: {
+              author: true,
+            },
+          },
+        },
       });
 
       if (!comment) {
         return res.status(404).json({ error: 'Comment not found' });
       }
 
-      const post = await db.post.findUnique({
-        where: { id: comment.postId },
-      });
-
-      if (!post) {
-        return res.status(404).json({ error: 'Post not found' });
+      if (comment.postId !== postId) {
+        return res.status(400).json({ error: 'Comment does not belong to the specified post' });
       }
 
-      if (comment.userId !== userId && post.authorId !== userId) {
+      if (comment.userId !== userId && comment.post.authorId !== userId) {
         return res.status(403).json({ error: 'Forbidden' });
       }
 
       await db.comment.delete({
-        where: { id: commentId },
+        where: { id: numericCommentId },
       });
 
-      res.status(204).end();
+      return res.status(200).json({ message: 'Comment deleted successfully' });
     } catch (error) {
       console.error('Error deleting comment:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      return res.status(500).json({ error: 'Internal server error' });
     }
-  } else {
-    res.setHeader('Allow', ['GET', 'POST', 'DELETE']);
-    res.status(405).json({ error: `Method ${req.method} not allowed` });
   }
+
+  res.setHeader('Allow', ['GET', 'POST', 'DELETE']);
+  return res.status(405).json({ message: `Method '${req.method}' Not Allowed` });
 }

@@ -20,7 +20,6 @@ export function LikeButton({ postId, initialLiked, initialCount }: LikeButtonPro
 
     const method = liked ? 'DELETE' : 'POST';
 
-    // Optimistically update UI
     setLiked(!liked);
     setCount(liked ? count - 1 : count + 1);
 

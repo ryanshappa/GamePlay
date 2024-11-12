@@ -51,7 +51,7 @@ interface SerializedPost
   }[];
   likes: {
     id: number;
-    createdAt: string; // Ensure this is a string
+    createdAt: string; 
     userId: string;
     postId: string;
   }[];

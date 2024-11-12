@@ -10,11 +10,12 @@ const CreatePost = () => {
 
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [engine, setEngine] = useState("unity"); 
+  const [engine, setEngine] = useState("unity");
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
-  const [fileKey, setFileKey] = useState<string>(""); 
-  const [gameId, setGameId] = useState<string>(""); // Add this state variable
+  const [creatingPost, setCreatingPost] = useState(false);
+  const [fileKey, setFileKey] = useState<string>("");
+  const [gameId, setGameId] = useState<string>("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,10 +24,16 @@ const CreatePost = () => {
       alert("Please provide a title and upload a game.");
       return;
     }
-    if (gameId) {
+
+    setCreatingPost(true);
+    try {
+      alert("Post is being created...");
       router.push(`/post/${gameId}`);
-    } else {
-      alert("Game uploaded successfully and is being processed.");
+    } catch (error) {
+      console.error("Error creating post:", error);
+      alert("Failed to create post.");
+    } finally {
+      setCreatingPost(false);
     }
   };
 
@@ -35,6 +42,7 @@ const CreatePost = () => {
       const selectedFile = e.target.files[0];
       setFile(selectedFile);
 
+      setUploading(true);
       try {
         // Request a presigned URL from the server
         const res = await fetch("/api/getPresignedUrl", {
@@ -54,18 +62,21 @@ const CreatePost = () => {
           throw new Error(data.message || "Failed to get presigned URL");
         }
 
-        const { presignedUrl, fileKey, gameId } = data; // Destructure gameId
+        const { presignedUrl, fileKey, gameId } = data;
 
         await fetch(presignedUrl, {
           method: "PUT",
           body: selectedFile,
         });
 
-        setFileKey(fileKey); 
-        setGameId(gameId); 
+        setFileKey(fileKey);
+        setGameId(gameId);
+        alert("File uploaded successfully.");
       } catch (error) {
         console.error("Error uploading file:", error);
         alert("Failed to upload file.");
+      } finally {
+        setUploading(false);
       }
     }
   };
@@ -110,17 +121,30 @@ const CreatePost = () => {
         <div className="mb-4">
           <Label htmlFor="file">Upload your game file</Label>
           <p className="text-sm text-gray-500">Please upload your game packaged as a .zip file.</p>
-          <Input
-            type="file"
-            id="file"
-            accept=".zip"
-            onChange={handleFileChange}
-            className="mt-2 bg-gray-700 text-white"
-          />
+          <div className="mt-2">
+            <label
+              htmlFor="file"
+              className="bg-blue-600 text-white py-2 px-4 rounded cursor-pointer hover:bg-blue-700 inline-block"
+            >
+              {file ? "Change File" : "Choose File"}
+            </label>
+            <span className="ml-2 text-white">
+              {file ? file.name : "No file chosen"}
+            </span>
+            <Input
+              type="file"
+              id="file"
+              accept=".zip"
+              onChange={handleFileChange}
+              className="hidden"
+              disabled={uploading}
+            />
+          </div>
+          {uploading && <p className="text-sm text-blue-500">Uploading file...</p>}
         </div>
 
-        <Button type="submit" disabled={uploading}>
-          {uploading ? "Uploading..." : "Create Post"}
+        <Button type="submit" disabled={uploading || creatingPost}>
+          {creatingPost ? "Creating Post..." : "Create Post"}
         </Button>
       </form>
     </div>

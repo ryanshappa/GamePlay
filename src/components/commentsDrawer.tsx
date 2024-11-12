@@ -15,7 +15,6 @@ interface User {
 interface Post {
   id: string;
   authorId: string;
-  // ... other post properties
 }
 
 interface Comment {
@@ -30,13 +29,21 @@ interface Comment {
   postId: string; // Assuming postId is present
 }
 
+interface PostWithAuthor extends Post {
+  author: {
+    username: string | null;
+  };
+}
+
 interface CommentsDrawerProps {
   open: boolean;
   onClose: () => void;
-  post: Post;
+  post: PostWithAuthor;
+  onAddComment: (postId: string) => void;
+  onDeleteComment: (postId: string, commentId: number) => void;
 }
 
-export function CommentsDrawer({ open, onClose, post }: CommentsDrawerProps) {
+export function CommentsDrawer({ open, onClose, post, onAddComment, onDeleteComment }: CommentsDrawerProps) {
   const { user } = useUser();
   const [comments, setComments] = React.useState<Comment[]>([]);
   const [newComment, setNewComment] = React.useState('');
@@ -45,7 +52,14 @@ export function CommentsDrawer({ open, onClose, post }: CommentsDrawerProps) {
     if (open) {
       fetch(`/api/posts/${post.id}/comments`)
         .then((res) => res.json())
-        .then((data) => setComments(data))
+        .then((data) => {
+          if (Array.isArray(data)) {
+            setComments(data);
+          } else {
+            console.error('Unexpected data format:', data);
+            setComments([]);
+          }
+        })
         .catch((err) => console.error(err));
     }
   }, [open, post.id]);
@@ -66,6 +80,7 @@ export function CommentsDrawer({ open, onClose, post }: CommentsDrawerProps) {
         const comment = await response.json();
         setComments((prev) => [...prev, comment]);
         setNewComment('');
+        onAddComment(post.id);
       } else {
         console.error('Failed to add comment.');
       }
@@ -76,6 +91,7 @@ export function CommentsDrawer({ open, onClose, post }: CommentsDrawerProps) {
 
   const handleDeleteComment = (commentId: number) => {
     setComments((prev) => prev.filter((comment) => comment.id !== commentId));
+    onDeleteComment(post.id, commentId);
   };
 
   return (

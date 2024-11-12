@@ -1,3 +1,4 @@
+import Head from 'next/head';
 import { GeistSans } from 'geist/font/sans';
 import { type AppType } from 'next/app';
 import { ClerkProvider } from '@clerk/nextjs';
@@ -27,11 +28,23 @@ const MyApp: AppType = ({ Component, pageProps }: AppPropsWithLayout) => {
     ));
 
   return (
-    <ClerkProvider {...pageProps}>
-      <div className={GeistSans.className}>
-        {getLayout(<Component {...pageProps} />)}
-      </div>
-    </ClerkProvider>
+    <>
+      <Head>
+        {/* Preconnect to Google Fonts */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        {/* Include the Press Start 2P font */}
+        <link
+          href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap"
+          rel="stylesheet"
+        />
+      </Head>
+      <ClerkProvider {...pageProps}>
+        <div className={GeistSans.className}>
+          {getLayout(<Component {...pageProps} />)}
+        </div>
+      </ClerkProvider>
+    </>
   );
 };
 
