@@ -43,21 +43,23 @@ const DeleteCommentButton: React.FC<DeleteCommentButtonProps> = ({
 
     try {
       const response = await fetch(
-        `/api/posts/${comment.post.id}/comments?commentId=${comment.id}`, // Adjusted API endpoint if necessary
+        `/api/posts/${comment.post.id}/comments`,
         {
           method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',
           },
+          body: JSON.stringify({ commentId: comment.id }),
         }
       );
 
       if (response.ok) {
         onDelete(comment.id);
+        alert('Comment deleted successfully.');
       } else {
         const errorData = await response.json();
-        console.error('Failed to delete comment:', errorData.error);
-        alert(`Failed to delete comment: ${errorData.error}`);
+        console.error('Failed to delete comment:', errorData.error || errorData.message);
+        alert(`Failed to delete comment: ${errorData.error || errorData.message}`);
       }
     } catch (error) {
       console.error('Error deleting comment:', error);

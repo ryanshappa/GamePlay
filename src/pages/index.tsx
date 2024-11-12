@@ -10,7 +10,8 @@ import { useState } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { CommentsDrawer } from '~/components/commentsDrawer';
 import { getAuth } from '@clerk/nextjs/server';
-import { LikeButton } from '~/components/likeButton'; // Assuming this is the custom LikeButton component
+import { LikeButton } from '~/components/likeButton';
+import DeleteCommentButton from '~/components/deleteComment';
 
 interface PostWithAuthor extends Post {
   author: User;
@@ -30,6 +31,28 @@ export default function HomePage({ posts }: HomePageProps) {
   const [selectedPost, setSelectedPost] = useState<PostWithAuthor | null>(null);
   const [postList, setPostList] = useState(posts);
   const [isCopySuccess, setIsCopySuccess] = useState(false);
+
+  // Function to handle comment deletion
+  const handleDeleteComment = (postId: string, commentId: number) => {
+    setPostList((prevPosts) =>
+      prevPosts.map((post) =>
+        post.id === postId
+          ? { ...post, commentsCount: post.commentsCount - 1 }
+          : post
+      )
+    );
+  };
+
+  // Function to handle comment addition
+  const handleAddComment = (postId: string) => {
+    setPostList((prevPosts) =>
+      prevPosts.map((post) =>
+        post.id === postId
+          ? { ...post, commentsCount: post.commentsCount + 1 }
+          : post
+      )
+    );
+  };
 
   const handleLike = async (postId: string) => {
     if (!isSignedIn) {
@@ -71,7 +94,7 @@ export default function HomePage({ posts }: HomePageProps) {
     <div>
       {/* Main content of the home page */}
       <ScrollArea className="h-full">
-        {posts.map((post) => (
+        {postList.map((post) => (
           <div key={post.id} className="flex flex-col items-start p-4 pl-8">
             <h2 className="text-2xl font-bold mb-4">{post.title}</h2>
             <div className="relative flex items-start">
@@ -150,6 +173,8 @@ export default function HomePage({ posts }: HomePageProps) {
           open={commentsDrawerOpen}
           onClose={() => setCommentsDrawerOpen(false)}
           post={selectedPost}
+          onAddComment={handleAddComment} // Pass handler for adding comments
+          onDeleteComment={handleDeleteComment} // Pass handler for deleting comments
         />
       )}
 

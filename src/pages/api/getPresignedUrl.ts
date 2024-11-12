@@ -41,7 +41,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
 
     const params = {
-      Bucket: process.env.AWS_S3_BUCKET_NAME!,
+      Bucket: process.env.AWS_S3_SOURCE_BUCKET_NAME!,
       Key: fileKey,
       ContentType: "application/zip",
       Metadata: {

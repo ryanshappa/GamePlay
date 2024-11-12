@@ -8,6 +8,10 @@ import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { SignInDialog } from './signInDialog';
 import { SignUpDialog } from './signUpDialog';
 import { SearchBar } from '~/components/searchBar'; 
+// Updated Social Media Icons Imports
+import { FaInstagram } from 'react-icons/fa';
+import { SiTiktok } from 'react-icons/si';
+import { FaXTwitter } from "react-icons/fa6";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -26,9 +30,9 @@ export default function Layout({ children, showSearchBar = true }: LayoutProps) 
     <div className="flex flex-col h-screen bg-black text-white">
       {/* Top Bar */}
       <header className="flex items-center justify-between p-4 border-b border-gray-800 w-full">
-        <div className="text-2xl font-bold">GamePlay</div>
+        <div className="text-2xl font-bold font-press-start">GamePlay</div>
         {showSearchBar && (
-          <div className="flex-grow flex justify-center mx-4">
+          <div className="flex-grow flex justify-center mr-12">
             <SearchBar />
           </div>
         )}
@@ -110,6 +114,34 @@ export default function Layout({ children, showSearchBar = true }: LayoutProps) 
               </div>
             )}
           </nav>
+
+          {/* Social Media Links */}
+          <div className="mt-auto flex space-x-4">
+            <Link
+              href="https://x.com/TryGamePlay_"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Twitter"
+            >
+              <FaXTwitter className="h-8 w-8 hover:text-blue-400 transition-colors duration-200" />
+            </Link>
+            <Link
+              href="https://www.tiktok.com/@try_gameplay?lang=en"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="TikTok"
+            >
+              <SiTiktok className="h-8 w-8 md:h-8 md:w-8 hover:text-red-500 transition-colors duration-200" />
+            </Link>
+            <Link
+              href="https://www.instagram.com/trygameplay/"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Instagram"
+            >
+              <FaInstagram className="h-8 w-8 hover:text-pink-400 transition-colors duration-200" />
+            </Link>
+          </div>
         </aside>
 
         {/* Main Content */}

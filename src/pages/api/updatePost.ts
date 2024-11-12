@@ -3,24 +3,24 @@ import { db } from '~/server/db';
 import { postsIndex } from '~/server/algoliaClient';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ message: 'Method not allowed' });
+  }
+
   const { gameId, gameUrl, status } = req.body;
 
-  if (!gameId || !status) {
-    return res.status(400).json({ message: 'Missing required fields' });
+  if (!gameId || !gameUrl || !status) {
+    return res.status(400).json({ message: 'gameId, gameUrl, and status are required' });
   }
 
   try {
-    // Update the post in the database
     const post = await db.post.update({
       where: { id: gameId },
-      data: {
-        fileUrl: gameUrl || '',
-        status,
-      },
+      data: { fileUrl: gameUrl, status },
     });
 
     if (status === 'valid') {
-      // Index the new post in Algolia
+      // Algolia indexing logic
       await postsIndex.saveObject({
         objectID: post.id,
         title: post.title,
@@ -28,13 +28,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         authorId: post.authorId,
         createdAt: post.createdAt.toISOString(),
         updatedAt: post.updatedAt.toISOString(),
-        // Include other fields as necessary
       });
     }
 
-    return res.status(200).json({ message: 'Post updated successfully' });
+    return res.status(200).json({ message: 'Post updated and indexed successfully' });
   } catch (error) {
     console.error('Error updating post:', error);
-    return res.status(500).json({ message: 'Failed to update post' });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 }

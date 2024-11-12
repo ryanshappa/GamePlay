@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import { useAuth, useUser } from '@clerk/nextjs';
 import { Post, User } from '@prisma/client';
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
-import { Button, useDisclosure, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter } from '@chakra-ui/react';
+import { Button, useDisclosure, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, Portal } from '@chakra-ui/react';
 import Link from 'next/link';
 import { EditProfileDialog } from '~/components/editProfileDialog';
 import { MoreHorizontal } from 'lucide-react'; 
@@ -87,8 +87,10 @@ export default function ProfilePage() {
     onOpen();
   };
 
-  const handleDeletePost = async (postId: string | null) => { // Change postId type to string
+  const handleDeletePost = async (postId: string) => { // postId is strictly a string
     if (!postId) return;
+
+    setIsDeleting(true); // Assuming you have an isDeleting state to handle loading
 
     try {
       const response = await fetch(`/api/posts/${postId}`, {
@@ -100,18 +102,19 @@ export default function ProfilePage() {
           if (!prevUser) return prevUser;
           return {
             ...prevUser,
-            posts: prevUser.posts.filter((post) => post.id !== postId), // No conversion needed
+            posts: prevUser.posts.filter((post) => post.id !== postId),
           };
         });
         alert('Post deleted successfully.');
       } else {
         const data = await response.json();
-        alert(`Failed to delete post: ${data.error}`);
+        alert(`Failed to delete post: ${data.message}`);
       }
     } catch (error) {
       console.error('Error deleting post:', error);
       alert('An error occurred while deleting the post. Please try again.');
     } finally {
+      setIsDeleting(false); // Reset loading state
       onClose();
     }
   };
@@ -194,15 +197,17 @@ export default function ProfilePage() {
                       <MenuButton className="p-1 rounded-full hover:bg-gray-700">
                         <MoreHorizontal className="h-6 w-6" />
                       </MenuButton>
-                      <MenuList className="bg-gray-800 text-white">
-                        <MenuItem
-                          onClick={() => handleDeletePost(String(post.id))} 
-                          className="px-4 py-2 hover:bg-gray-700 cursor-pointer"
-                          disabled={isDeleting}
-                        >
-                          {isDeleting ? 'Deleting...' : 'Delete Post'}
-                        </MenuItem>
-                      </MenuList>
+                      <Portal>
+                        <MenuList className="bg-gray-800 text-white z-50">
+                          <MenuItem
+                            onClick={() => handleDeleteClick(post.id)}
+                            className="px-4 py-2 hover:bg-gray-700 cursor-pointer"
+                            disabled={isDeleting}
+                          >
+                            {isDeleting ? 'Deleting...' : 'Delete Post'}
+                          </MenuItem>
+                        </MenuList>
+                      </Portal>
                     </Menu>
                   </div>
                 )}
@@ -223,7 +228,9 @@ export default function ProfilePage() {
             Are you sure you want to delete this post? This action cannot be undone.
           </ModalBody>
           <ModalFooter>
-            <Button onClick={handleDeletePost.bind(null, selectedPostId)}>Delete</Button>
+            <Button colorScheme="red" mr={3} onClick={() => handleDeletePost(selectedPostId || '' )} isLoading={isDeleting}>
+              Delete
+            </Button>
             <Button onClick={onClose}>Cancel</Button>
           </ModalFooter>
         </ModalContent>

@@ -5,21 +5,20 @@ import { postsIndex } from '~/server/algoliaClient';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
 	const { userId } = getAuth(req);
+	const postId = req.query.id as string;
 
-	if (!userId) {
-		return res.status(401).json({ error: 'Unauthorized' });
-	}
-
-	const postId = parseInt(req.query.id as string, 10);
-
-	if (isNaN(postId)) {
+	if (!postId) {
 		return res.status(400).json({ error: 'Invalid post ID' });
 	}
 
 	if (req.method === 'DELETE') {
+		if (!userId) {
+			return res.status(401).json({ error: 'Unauthorized' });
+		}
+
 		try {
 			const post = await db.post.findUnique({
-				where: { id: postId.toString() },
+				where: { id: postId },
 			});
 
 			if (!post || post.authorId !== userId) {
@@ -27,14 +26,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 			}
 
 			// Delete associated comments and likes
-			await db.comment.deleteMany({ where: { postId: postId.toString() } });
-			await db.like.deleteMany({ where: { postId: postId.toString() } });
+			await db.comment.deleteMany({ where: { postId } });
+			await db.like.deleteMany({ where: { postId } });
 
 			// Delete the post from the database
-			await db.post.delete({ where: { id: postId.toString() } });
+			await db.post.delete({ where: { id: postId } });
 
 			// Remove the post from Algolia index
-			await postsIndex.deleteObject(postId.toString());
+			await postsIndex.deleteObject(postId);
 
 			res.status(200).json({ message: 'Post deleted successfully.' });
 		} catch (error) {
