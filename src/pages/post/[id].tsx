@@ -1,8 +1,11 @@
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/router';
 import { GetServerSideProps } from 'next';
 import { db } from '~/server/db';
-import { Post, User, Comment as CommentType, Like } from '@prisma/client';
+import { PostWithAuthor } from '~/types/types';
+import { useState, useEffect } from 'react';
+import { useUser } from '@clerk/nextjs';
+import PostItem from '~/components/postItem';
+import { getAuth } from '@clerk/nextjs/server';
+import { SignInDialog } from '~/components/signInDialog';
 import {
   Avatar,
   AvatarFallback,
@@ -11,72 +14,29 @@ import {
 import { Button } from '~/components/ui/button';
 import { Textarea } from '~/components/ui/textarea';
 import { ScrollArea } from '~/components/ui/scroll-area';
-import {
-  HeartIcon,
-  MessageCircleIcon,
-  ShareIcon,
-} from 'lucide-react';
-import { useUser } from '@clerk/nextjs';
+import { HeartIcon, MessageCircleIcon, ShareIcon } from 'lucide-react';
 import Link from 'next/link';
-import { SignInDialog } from '~/components/signInDialog';
-import DeleteCommentButton from '~/components/deleteComment'; 
-
-interface PostWithAuthorAndComments extends Post {
-  author: User;
-  comments: (CommentType & { user: User })[];
-  likes: Like[];
-}
-
-interface SerializedPost
-  extends Omit<
-    PostWithAuthorAndComments,
-    'createdAt' | 'updatedAt' | 'author' | 'comments' | 'likes'
-  > {
-  createdAt: string;
-  updatedAt: string;
-  author: {
-    id: string;
-    username: string;
-    avatarUrl?: string;
-  };
-  comments: {
-    id: number;
-    content: string;
-    createdAt: string;
-    user: {
-      id: string;
-      username: string;
-      avatarUrl?: string;
-    };
-  }[];
-  likes: {
-    id: number;
-    createdAt: string; 
-    userId: string;
-    postId: string;
-  }[];
-}
+import DeleteCommentButton from '~/components/deleteComment';
 
 interface PostPageProps {
-  post: SerializedPost;
+  post: PostWithAuthor;
   status: string;
 }
 
-function PostPage({ post, status }: PostPageProps) {
-  const router = useRouter();
+export default function PostPage({ post, status }: PostPageProps) {
   const { user, isSignedIn } = useUser();
-  const [likesCount, setLikesCount] = useState(post.likes.length);
-  const [hasLiked, setHasLiked] = useState(false);
-  const [comments, setComments] = useState(post.comments);
+  const [likesCount, setLikesCount] = useState(post.likesCount);
+  const [hasLiked, setHasLiked] = useState(post.likedByCurrentUser);
+  const [comments, setComments] = useState(post.comments || []);
   const [newComment, setNewComment] = useState('');
   const [isCopySuccess, setIsCopySuccess] = useState(false);
   const [dialogOpen, setDialogOpen] = useState<'signIn' | 'signUp' | null>(null);
 
   useEffect(() => {
     if (user) {
-      setHasLiked(post.likes.some((like) => like.userId === user.id));
+      setHasLiked(post.likedByCurrentUser);
     }
-  }, [user, post.likes]);
+  }, [user, post.likedByCurrentUser]);
 
   const handleLike = async () => {
     if (!isSignedIn) {
@@ -118,14 +78,11 @@ function PostPage({ post, status }: PostPageProps) {
     }
 
     try {
-      const response = await fetch(
-        `/api/posts/${post.id}/comments`,
-        {
-          method: 'POST',
-          body: JSON.stringify({ content: newComment }),
-          headers: { 'Content-Type': 'application/json' },
-        }
-      );
+      const response = await fetch(`/api/posts/${post.id}/comments`, {
+        method: 'POST',
+        body: JSON.stringify({ content: newComment }),
+        headers: { 'Content-Type': 'application/json' },
+      });
 
       if (response.ok) {
         const comment = await response.json();
@@ -149,17 +106,39 @@ function PostPage({ post, status }: PostPageProps) {
     setTimeout(() => setIsCopySuccess(false), 2000);
   };
 
-  const handleDeleteComment = (commentId: number) => {
-    const id = Number(commentId);
-    setComments((prev) => prev.filter((comment) => comment.id !== id));
+  const handleDeleteComment = async (commentId: number) => {
+    try {
+      const response = await fetch(`/api/posts/${post.id}/comments`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        setComments((prev) => prev.filter((comment) => comment.id !== commentId));
+      } else {
+        const errorData = await response.json();
+        console.error('Failed to delete comment:', errorData.error || errorData.message);
+        alert(`Failed to delete comment: ${errorData.error || errorData.message}`);
+      }
+    } catch (error) {
+      console.error('Error deleting comment:', error);
+      alert('An unexpected error occurred while deleting the comment.');
+    }
+  };
+
+  const handleCommentClick = () => {
+    // Scroll to comments section
+    const commentsSection = document.getElementById('comments-section');
+    if (commentsSection) {
+      commentsSection.scrollIntoView({ behavior: 'smooth' });
+    }
   };
 
   // Handle the status prop to conditionally render content
   if (status === 'processing' || status === 'invalid') {
     return (
-      <div className="flex-1 p-4">
+      <div className="flex-1">
         <ScrollArea className="w-full h-full">
-          <div className="flex flex-col w-full p-4">
+          <div className="flex flex-col w-full">
             {status === 'processing' && (
               <p>Your game is being processed. Please check back shortly.</p>
             )}
@@ -173,27 +152,27 @@ function PostPage({ post, status }: PostPageProps) {
   }
 
   return (
-    <div className="flex-1 p-4">
+    <div className="flex-1 p-0">
       {/* Content Wrapper */}
       <ScrollArea className="w-full h-full">
-        <div className="flex flex-col w-full p-4">
+        <div className="flex flex-col w-full p-0 space-y-0">
+          {/* Post Item */}
+          <PostItem
+            post={post}
+            isCopySuccess={isCopySuccess}
+            onShare={handleShare}
+            onCommentClick={handleCommentClick}
+            showSeparator={false} // Remove the separator line
+            layout="post" // Use 'post' layout
+            isActive={true}
+          />
+
           {/* Post Content */}
-          <h1 className="text-3xl font-bold mb-4">{post.title}</h1>
-          <p className="mb-6">{post.content}</p>
+          <p className="mt-4 p-2">{post.content}</p>
 
-          {/* Game Display */}
-          <div className="relative w-full h-[80vh] bg-gray-800 rounded-md overflow-hidden mb-6">
-            <iframe
-              src={post.fileUrl || ''}
-              title={post.title}
-              className="w-full h-full"
-              frameBorder="0"
-              allowFullScreen
-            ></iframe>
-          </div>
-
-          {/* Interaction buttons */}
-          <div className="flex items-center space-x-4 mb-6">
+          {/* Interaction Buttons and Author Info In a Single Line */}
+          <div className="flex items-center space-x-4 mr-2 p-2">
+            {/* Like Button */}
             <Button
               variant="ghost"
               size="icon"
@@ -201,21 +180,26 @@ function PostPage({ post, status }: PostPageProps) {
               onClick={handleLike}
             >
               <HeartIcon
-                className={`h-6 w-6 ${hasLiked ? 'text-red-500' : 'text-white'}`}
+                className={`h-6 w-6 ${
+                  hasLiked ? 'text-red-500' : 'text-white'
+                }`}
                 fill={hasLiked ? 'currentColor' : 'none'}
               />
             </Button>
             <span>{likesCount}</span>
 
+            {/* Comment Button */}
             <Button
               variant="ghost"
               size="icon"
               className="rounded-full bg-gray-800 hover:bg-gray-700"
+              onClick={handleCommentClick}
             >
               <MessageCircleIcon className="h-6 w-6 text-white" />
             </Button>
             <span>{comments.length}</span>
 
+            {/* Share Button */}
             <Button
               variant="ghost"
               size="icon"
@@ -226,14 +210,19 @@ function PostPage({ post, status }: PostPageProps) {
             </Button>
             {isCopySuccess && <span>Link copied!</span>}
 
-            {/* Author Avatar and Profile Link */}
+            {/* Author Avatar and Username */}
             <Link href={`/profile/${post.author.id}`}>
               <div className="flex items-center space-x-2 cursor-pointer">
                 <Avatar className="h-10 w-10">
                   {post.author.avatarUrl ? (
-                    <AvatarImage src={post.author.avatarUrl} alt={`${post.author.username}'s Avatar`} />
+                    <AvatarImage
+                      src={post.author.avatarUrl}
+                      alt={`${post.author.username}'s Avatar`}
+                    />
                   ) : (
-                    <AvatarFallback>{post.author.username.charAt(0)}</AvatarFallback>
+                    <AvatarFallback>
+                      {post.author.username?.charAt(0) || 'A'}
+                    </AvatarFallback>
                   )}
                 </Avatar>
                 <span className="font-semibold">@{post.author.username}</span>
@@ -242,7 +231,7 @@ function PostPage({ post, status }: PostPageProps) {
           </div>
 
           {/* Comments Section */}
-          <div className="w-full mb-6">
+          <div id="comments-section" className="w-full mb-6">
             <h2 className="text-2xl font-semibold mb-4">Comments</h2>
             <div className="space-y-4">
               {comments.map((comment) => (
@@ -251,15 +240,18 @@ function PostPage({ post, status }: PostPageProps) {
                   className="flex items-start space-x-4"
                 >
                   <Link href={`/profile/${comment.user.id}`}>
-                      <Avatar className="cursor-pointer">
+                    <Avatar className="cursor-pointer">
+                      {comment.user.avatarUrl ? (
                         <AvatarImage
                           src={comment.user.avatarUrl}
                           alt={`${comment.user.username}'s Avatar`}
                         />
+                      ) : (
                         <AvatarFallback>
-                          {comment.user.username.charAt(0)}
+                          {comment.user.username?.charAt(0) || 'U'}
                         </AvatarFallback>
-                      </Avatar>
+                      )}
+                    </Avatar>
                   </Link>
                   <div className="flex-1">
                     <div className="flex items-center justify-between">
@@ -267,21 +259,20 @@ function PostPage({ post, status }: PostPageProps) {
                         {comment.user.username}
                       </p>
                       <DeleteCommentButton
-                        comment={{
-                          id: Number(comment.id),
-                          user: comment.user,
-                          post: post,
-                        }}
+                        comment={comment}
+                        postId={post.id}
                         postAuthorId={post.authorId}
-                        currentUser={user ? { id: user.id, username: user.username || '' } : null}
+                        currentUser={
+                          user
+                            ? { id: user.id, username: user.username || '' }
+                            : null
+                        }
                         onDelete={handleDeleteComment}
                       />
                     </div>
                     <p>{comment.content}</p>
                     <p className="text-gray-500 text-sm">
-                      {new Date(
-                        comment.createdAt
-                      ).toLocaleString()}
+                      {new Date(comment.createdAt).toLocaleString()}
                     </p>
                   </div>
                 </div>
@@ -293,9 +284,7 @@ function PostPage({ post, status }: PostPageProps) {
               <div className="mt-6">
                 <Textarea
                   value={newComment}
-                  onChange={(e) =>
-                    setNewComment(e.target.value)
-                  }
+                  onChange={(e) => setNewComment(e.target.value)}
                   placeholder="Add a comment..."
                   className="w-full mb-2 bg-gray-800 text-white"
                 />
@@ -318,7 +307,7 @@ function PostPage({ post, status }: PostPageProps) {
           {/* Back to Home Button */}
           <Button
             variant="link"
-            onClick={() => router.back()}
+            onClick={() => window.history.back()}
             className="mt-4 text-blue-500 hover:underline"
           >
             &larr; Back to Home
@@ -338,13 +327,10 @@ function PostPage({ post, status }: PostPageProps) {
   );
 }
 
-export default PostPage;
-
-// Fetch post data from the database
-export const getServerSideProps: GetServerSideProps = async (
-  context
-) => {
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  const { userId } = getAuth(context.req);
   const { id } = context.params!;
+
   const post = await db.post.findUnique({
     where: { id: id as string },
     include: {
@@ -357,7 +343,18 @@ export const getServerSideProps: GetServerSideProps = async (
           createdAt: 'asc',
         },
       },
-      likes: true,
+      likes: userId
+        ? {
+            where: { userId },
+            select: { id: true },
+          }
+        : false,
+      _count: {
+        select: {
+          likes: true,
+          comments: true,
+        },
+      },
     },
   });
 
@@ -369,31 +366,32 @@ export const getServerSideProps: GetServerSideProps = async (
 
   const status = post.status;
 
-  const serializedPost = {
-    ...post,
+  const serializedPost: PostWithAuthor = {
+    id: post.id,
+    title: post.title,
+    content: post.content,
     createdAt: post.createdAt.toISOString(),
     updatedAt: post.updatedAt.toISOString(),
+    fileUrl: post.fileUrl,
+    status: post.status,
+    authorId: post.authorId,
     author: {
-      id: post.authorId,
-      username: post.author.username,
-      avatarUrl: post.author.avatarUrl,
+      id: post.author.id,
+      username: post.author.username || '',
+      avatarUrl: post.author.avatarUrl || '',
     },
+    likesCount: post._count.likes,
+    commentsCount: post._count.comments,
+    likedByCurrentUser: userId ? post.likes.length > 0 : false,
     comments: post.comments.map((comment) => ({
       id: comment.id,
       content: comment.content,
       createdAt: comment.createdAt.toISOString(),
       user: {
         id: comment.user.id,
-        username: comment.user.username,
-        avatarUrl: comment.user.avatarUrl,
+        username: comment.user.username || '',
+        avatarUrl: comment.user.avatarUrl || '',
       },
-    })),
-    likes: post.likes.map((like) => ({
-      id: like.id,
-      userId: like.userId,
-      postId: like.postId,
-      // Include createdAt if needed
-      // createdAt: like.createdAt.toISOString(),
     })),
   };
 

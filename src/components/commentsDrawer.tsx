@@ -5,7 +5,7 @@ import { Textarea } from './ui/textarea';
 import { useUser } from '@clerk/nextjs';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import Link from 'next/link';
-import DeleteCommentButton from './deleteComment'; // Ensure correct import
+import DeleteCommentButton from './deleteComment'; 
 
 interface User {
   id: string;
@@ -26,21 +26,22 @@ interface Comment {
     avatarUrl: string;
     username: string;
   };
-  postId: string; // Assuming postId is present
+  postId: string; 
 }
 
 interface PostWithAuthor extends Post {
   author: {
     username: string | null;
   };
+  commentsCount: number; 
 }
 
 interface CommentsDrawerProps {
   open: boolean;
   onClose: () => void;
   post: PostWithAuthor;
-  onAddComment: (postId: string) => void;
-  onDeleteComment: (postId: string, commentId: number) => void;
+  onAddComment?: (postId: string) => void;
+  onDeleteComment?: (postId: string, commentId: number) => void;
 }
 
 export function CommentsDrawer({ open, onClose, post, onAddComment, onDeleteComment }: CommentsDrawerProps) {
@@ -77,39 +78,65 @@ export function CommentsDrawer({ open, onClose, post, onAddComment, onDeleteComm
       });
 
       if (response.ok) {
-        const comment = await response.json();
+        const comment: Comment = await response.json();
         setComments((prev) => [...prev, comment]);
         setNewComment('');
-        onAddComment(post.id);
+
+        // Call onAddComment callback if provided
+        if (onAddComment) {
+          onAddComment(post.id);
+        }
       } else {
-        console.error('Failed to add comment.');
+        const errorData = await response.json();
+        console.error('Failed to add comment:', errorData.message || response.statusText);
       }
     } catch (error) {
       console.error('Error adding comment:', error);
     }
   };
 
-  const handleDeleteComment = (commentId: number) => {
-    setComments((prev) => prev.filter((comment) => comment.id !== commentId));
-    onDeleteComment(post.id, commentId);
+  const handleDeleteComment = async (commentId: number) => {
+    try {
+      const response = await fetch(`/api/posts/${post.id}/comments?commentId=${commentId}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        setComments((prev) => prev.filter((comment) => comment.id !== commentId));
+
+        // Call onDeleteComment callback if provided
+        if (onDeleteComment) {
+          onDeleteComment(post.id, commentId);
+        }
+      } else {
+        const errorData = await response.json();
+        console.error('Failed to delete comment:', errorData.message || response.statusText);
+        alert(`Failed to delete comment: ${errorData.message || response.statusText}`);
+      }
+    } catch (error) {
+      console.error('Error deleting comment:', error);
+      alert('An unexpected error occurred while deleting the comment.');
+    }
   };
 
   return (
     <Drawer.Root open={open} onOpenChange={onClose}>
       <Drawer.Portal>
         {/* Overlay */}
-        <Drawer.Overlay className="fixed inset-0 bg-black opacity-0" />
+        <Drawer.Overlay className="fixed inset-0 bg-black opacity-30" />
         
         {/* Drawer Content */}
         <Drawer.Content
           className="fixed right-0 bg-gray-800 p-4 text-white overflow-y-auto shadow-lg z-40"
           style={{
             top: '72px',
-            height: 'calc(100vh - 60px)',
+            height: 'calc(100vh - 72px)',
             width: '320px',
           }}
         >
-          <Drawer.Title className="text-xl font-bold mb-4">Comments</Drawer.Title>
+          <Drawer.Title className="text-xl font-bold mb-4">
+            Comments ({comments.length})
+          </Drawer.Title>
           <Drawer.Close className="absolute top-2 right-2 text-white hover:text-gray-400">
             &times;
           </Drawer.Close>
@@ -118,7 +145,7 @@ export function CommentsDrawer({ open, onClose, post, onAddComment, onDeleteComm
               <div key={comment.id} className="flex items-start space-x-2">
                 {/* Wrap Avatar with Link */}
                 <Link href={`/profile/${comment.user.id}`}>
-                  <Avatar className="h-8 w-8">
+                  <Avatar className="h-8 w-8 cursor-pointer">
                     <AvatarImage src={comment.user.avatarUrl} alt="User Avatar" />
                     <AvatarFallback>{comment.user.username?.charAt(0) || 'U'}</AvatarFallback>
                   </Avatar>
@@ -126,7 +153,7 @@ export function CommentsDrawer({ open, onClose, post, onAddComment, onDeleteComm
                 <div className="flex-1">
                   <p className="font-semibold">{comment.user.username}</p>
                   <p>{comment.content}</p>
-                  {/* New Flex Container for Timestamp and Delete Button */}
+                  {/* Flex Container for Timestamp and Delete Button */}
                   <div className="flex items-center justify-between">
                     <p className="text-gray-500 text-xs">
                       {new Date(comment.createdAt).toLocaleString()}
@@ -134,11 +161,8 @@ export function CommentsDrawer({ open, onClose, post, onAddComment, onDeleteComm
                     {/* Conditionally render the Delete button */}
                     {(user?.id === comment.user.id || user?.id === post.authorId) && (
                       <DeleteCommentButton
-                        comment={{
-                          id: Number(comment.id),
-                          user: comment.user,
-                          post: post,
-                        }}
+                        comment={comment}
+                        postId={post.id}
                         postAuthorId={post.authorId}
                         currentUser={user ? { id: user.id, username: user.username || '' } : null}
                         onDelete={handleDeleteComment}
@@ -158,7 +182,9 @@ export function CommentsDrawer({ open, onClose, post, onAddComment, onDeleteComm
                 placeholder="Add a comment..."
                 className="w-full mb-2 bg-gray-700 text-white"
               />
-              <Button onClick={handleAddComment}>Post Comment</Button>
+              <Button onClick={handleAddComment} disabled={!newComment.trim()}>
+                Post Comment
+              </Button>
             </div>
           )}
         </Drawer.Content>

@@ -4,7 +4,7 @@ import { db } from '~/server/db';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { userId } = getAuth(req);
-  const postId = req.query.id as string; // Ensure postId is a string
+  const postId = req.query.id as string;
 
   if (!postId) {
     return res.status(400).json({ message: 'Invalid post ID' });
@@ -26,6 +26,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         id: comment.id,
         content: comment.content,
         createdAt: comment.createdAt.toISOString(),
+        postId: comment.postId,
         user: {
           id: comment.userId,
           username: comment.user.username,
@@ -86,7 +87,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(401).json({ message: 'Unauthorized' });
     }
 
-    const { commentId } = req.body;
+    const commentId = req.query.commentId as string;
 
     const numericCommentId = Number(commentId);
 

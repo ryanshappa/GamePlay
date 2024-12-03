@@ -15,18 +15,19 @@ interface Post {
 interface Comment {
   id: number;
   user: User;
-  post: Post;
 }
 
 interface DeleteCommentButtonProps {
   comment: Comment;
-  postAuthorId: string; // New prop added
+  postId: string;
+  postAuthorId: string; 
   currentUser: User | null;
   onDelete: (commentId: number) => void;
 }
 
 const DeleteCommentButton: React.FC<DeleteCommentButtonProps> = ({
   comment,
+  postId,
   postAuthorId,
   currentUser,
   onDelete,
@@ -35,37 +36,15 @@ const DeleteCommentButton: React.FC<DeleteCommentButtonProps> = ({
     currentUser &&
     (currentUser.id === comment.user.id || currentUser.id === postAuthorId);
 
-  const handleDelete = async () => {
-    if (!isAuthorized) return;
-
-    const confirmDelete = window.confirm('Are you sure you want to delete this comment?');
-    if (!confirmDelete) return;
-
-    try {
-      const response = await fetch(
-        `/api/posts/${comment.post.id}/comments`,
-        {
-          method: 'DELETE',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ commentId: comment.id }),
-        }
-      );
-
-      if (response.ok) {
-        onDelete(comment.id);
-        alert('Comment deleted successfully.');
-      } else {
-        const errorData = await response.json();
-        console.error('Failed to delete comment:', errorData.error || errorData.message);
-        alert(`Failed to delete comment: ${errorData.error || errorData.message}`);
-      }
-    } catch (error) {
-      console.error('Error deleting comment:', error);
-      alert('An unexpected error occurred while deleting the comment.');
-    }
-  };
+    const handleDelete = () => {
+      if (!isAuthorized) return;
+    
+      const confirmDelete = window.confirm('Are you sure you want to delete this comment?');
+      if (!confirmDelete) return;
+    
+      // Delegate deletion to parent component
+      onDelete(comment.id);
+    };
 
   return isAuthorized ? (
     <Button
