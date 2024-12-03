@@ -26,5 +26,11 @@ export default clerkMiddleware((auth, req: NextRequest) => {
 });
 
 export const config = {
-  matcher: ['/', '/api/:path*', '/((?!_next/static|_next/image|favicon.ico).*)', '/((?!api/updatePost|api/updatePostStatus).*)'],
+  matcher: [
+    '/',
+    '/((?!api/getPresignedUrl).*)', // Exclude /api/getPresignedUrl from middleware
+    '/api/:path*',
+    '/((?!_next/static|_next/image|favicon.ico).*)',
+    '/((?!api/updatePost|api/updatePostStatus).*)',
+  ],
 };

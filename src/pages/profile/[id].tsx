@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth, useUser } from '@clerk/nextjs';
-import { Post, User } from '@prisma/client';
+import { Post } from '@prisma/client';
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
-import { Button, useDisclosure, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, Portal } from '@chakra-ui/react';
+import { Button, Portal } from '@chakra-ui/react';
 import Link from 'next/link';
 import { EditProfileDialog } from '~/components/editProfileDialog';
 import { MoreHorizontal } from 'lucide-react'; 
@@ -33,9 +33,7 @@ export default function ProfilePage() {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [isFollowing, setIsFollowing] = useState(false);
   const [editProfileOpen, setEditProfileOpen] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false); // **State for Deletion Loading**
-  const [selectedPostId, setSelectedPostId] = useState<string | null>(null); // Change type to string | null
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -48,7 +46,6 @@ export default function ProfilePage() {
 
   useEffect(() => {
     if (userId && id && userId !== id) {
-      // Check if current user is following this user
       fetch(`/api/isFollowing?userId=${id}`)
         .then((res) => res.json())
         .then((data) => setIsFollowing(data.isFollowing))
@@ -82,15 +79,10 @@ export default function ProfilePage() {
     }
   };
 
-  const handleDeleteClick = (postId: string) => { // Change postId type to string
-    setSelectedPostId(postId);
-    onOpen();
-  };
-
-  const handleDeletePost = async (postId: string) => { // postId is strictly a string
+  const handleDeletePost = async (postId: string) => {
     if (!postId) return;
 
-    setIsDeleting(true); // Assuming you have an isDeleting state to handle loading
+    setIsDeleting(true);
 
     try {
       const response = await fetch(`/api/posts/${postId}`, {
@@ -114,8 +106,7 @@ export default function ProfilePage() {
       console.error('Error deleting post:', error);
       alert('An error occurred while deleting the post. Please try again.');
     } finally {
-      setIsDeleting(false); // Reset loading state
-      onClose();
+      setIsDeleting(false);
     }
   };
 
@@ -173,68 +164,58 @@ export default function ProfilePage() {
       <section className="px-8">
         <h2 className="text-xl font-bold mb-4">Posts</h2>
         <hr className="border-gray-800 mb-6" />
-        {user.posts.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {user.posts.map((post) => (
-              <div key={post.id} className="relative">
-                <Link href={`/post/${post.id}`}>
-                  <div className="aspect-video bg-gray-800 rounded-lg overflow-hidden relative cursor-pointer">
-                    <iframe
-                      src={post.fileUrl || '/default-file-url'}
-                      title={post.title}
-                      className="w-full h-full"
-                      frameBorder="0"
-                      allowFullScreen
-                    ></iframe>
-                    <div className="absolute bottom-0 left-0 p-2 bg-black bg-opacity-50 w-full">
-                      <p className="text-sm">{post.title}</p>
+        <div className="overflow-y-auto max-h-[calc(100vh-200px)]">
+          {user.posts.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {user.posts.map((post) => (
+                <div key={post.id} className="relative">
+                  <Link href={`/post/${post.id}`}>
+                    <div className="aspect-video bg-gray-800 rounded-lg overflow-hidden relative cursor-pointer">
+                      <iframe
+                        src={post.fileUrl || '/default-file-url'}
+                        title={post.title}
+                        className="w-full h-full"
+                        frameBorder="0"
+                        allowFullScreen
+                      ></iframe>
+                      <div className="absolute bottom-0 left-0 p-2 bg-black bg-opacity-50 w-full">
+                        <p className="text-sm">{post.title}</p>
+                      </div>
                     </div>
-                  </div>
-                </Link>
-                {userId === id && (
-                  <div className="absolute top-2 right-2">
-                    <Menu>
-                      <MenuButton className="p-1 rounded-full hover:bg-gray-700">
-                        <MoreHorizontal className="h-6 w-6" />
-                      </MenuButton>
-                      <Portal>
-                        <MenuList className="bg-gray-800 text-white z-50">
-                          <MenuItem
-                            onClick={() => handleDeleteClick(post.id)}
-                            className="px-4 py-2 hover:bg-gray-700 cursor-pointer"
-                            disabled={isDeleting}
-                          >
-                            {isDeleting ? 'Deleting...' : 'Delete Post'}
-                          </MenuItem>
-                        </MenuList>
-                      </Portal>
-                    </Menu>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p className="text-center text-gray-500">No posts yet.</p>
-        )}
+                  </Link>
+                  {userId === id && (
+                    <div className="absolute top-2 right-2">
+                      <Menu>
+                        <MenuButton
+                          as={Button}
+                          variant="ghost"
+                          size="sm"
+                          className="p-1 rounded-full hover:bg-gray-700"
+                        >
+                          <MoreHorizontal className="h-6 w-6" />
+                        </MenuButton>
+                        <Portal>
+                          <MenuList className="bg-gray-800 text-white z-50">
+                            <MenuItem
+                              onClick={() => handleDeletePost(post.id)}
+                              className="px-4 py-2 hover:bg-gray-700 cursor-pointer"
+                              disabled={isDeleting}
+                            >
+                              {isDeleting ? 'Deleting...' : 'Delete Post'}
+                            </MenuItem>
+                          </MenuList>
+                        </Portal>
+                      </Menu>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-center text-gray-500">No posts yet.</p>
+          )}
+        </div>
       </section>
-
-      {/* Delete Post Modal */}
-      <Modal isOpen={isOpen} onClose={onClose}>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>Delete Post</ModalHeader>
-          <ModalBody>
-            Are you sure you want to delete this post? This action cannot be undone.
-          </ModalBody>
-          <ModalFooter>
-            <Button colorScheme="red" mr={3} onClick={() => handleDeletePost(selectedPostId || '' )} isLoading={isDeleting}>
-              Delete
-            </Button>
-            <Button onClick={onClose}>Cancel</Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
     </div>
   );
 }
