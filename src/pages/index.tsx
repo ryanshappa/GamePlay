@@ -34,7 +34,7 @@ export default function HomePage({ posts }: HomePageProps) {
     const observerOptions = {
       root: null,
       rootMargin: '0px',
-      threshold: 0.75, // Adjust as needed
+      threshold: 0.75,
     };
 
     const observerCallback = (entries: IntersectionObserverEntry[]) => {
@@ -65,7 +65,7 @@ export default function HomePage({ posts }: HomePageProps) {
         if (el) observer.unobserve(el);
       });
     };
-  }, []);
+  }, [postList]);
 
   // Function to handle comment deletion
   const handleDeleteComment = (postId: string, commentId: number) => {
@@ -126,9 +126,10 @@ export default function HomePage({ posts }: HomePageProps) {
     <div className="w-full h-screen overflow-auto">
       <div>
         {postList.map((post, index) => {
+          const safeActiveIndex = activeIndex ?? 0;
           if (
-            index >= (activeIndex || 0) - VIRTUALIZATION_BUFFER &&
-            index <= (activeIndex || 0) + VIRTUALIZATION_BUFFER
+            index >= safeActiveIndex - VIRTUALIZATION_BUFFER &&
+            index <= safeActiveIndex + VIRTUALIZATION_BUFFER
           ) {
             return (
               <div
@@ -140,7 +141,7 @@ export default function HomePage({ posts }: HomePageProps) {
               >
                 <PostItem
                   post={post}
-                  isActive={activeIndex === index}
+                  isActive={safeActiveIndex === index}
                   onCommentClick={handleCommentClick}
                   onShare={handleShare}
                   isCopySuccess={isCopySuccess}

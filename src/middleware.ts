@@ -7,7 +7,13 @@ export default clerkMiddleware((auth, req: NextRequest) => {
 
   const { pathname } = req.nextUrl;
 
-  const publicRoutes = ['/sign-in', '/sign-up', '/_next'];
+  const publicRoutes = [
+    '/sign-in', 
+    '/sign-up', 
+    '/_next',
+    '/api/updatePost',
+    '/api/updatePostStatus'
+  ];
 
   if (publicRoutes.some((route) => pathname.startsWith(route))) {
     return NextResponse.next();
@@ -28,9 +34,8 @@ export default clerkMiddleware((auth, req: NextRequest) => {
 export const config = {
   matcher: [
     '/',
-    '/((?!api/getPresignedUrl).*)', // Exclude /api/getPresignedUrl from middleware
+    '/((?!api/getPresignedUrl).*)',
     '/api/:path*',
     '/((?!_next/static|_next/image|favicon.ico).*)',
-    '/((?!api/updatePost|api/updatePostStatus).*)',
   ],
 };
