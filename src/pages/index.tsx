@@ -24,8 +24,7 @@ export default function HomePage({ posts }: HomePageProps) {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
   const postRefs = useRef<(HTMLDivElement | null)[]>([]);
-  
-  // Add refs to postRefs.current array
+
   const addToRefs = (el: HTMLDivElement | null, index: number) => {
     postRefs.current[index] = el;
   };
@@ -34,7 +33,7 @@ export default function HomePage({ posts }: HomePageProps) {
     const observerOptions = {
       root: null,
       rootMargin: '0px',
-      threshold: 0.75,
+      threshold: 0.75, // Post considered "active" when 75% visible
     };
 
     const observerCallback = (entries: IntersectionObserverEntry[]) => {
@@ -65,9 +64,8 @@ export default function HomePage({ posts }: HomePageProps) {
         if (el) observer.unobserve(el);
       });
     };
-  }, [postList]);
+  }, []);
 
-  // Function to handle comment deletion
   const handleDeleteComment = (postId: string, commentId: number) => {
     setPostList((prevPosts) =>
       prevPosts.map((post) =>
@@ -76,7 +74,6 @@ export default function HomePage({ posts }: HomePageProps) {
           : post
       )
     );
-
     if (selectedPost && selectedPost.id === postId) {
       setSelectedPost((prevPost) =>
         prevPost
@@ -86,7 +83,6 @@ export default function HomePage({ posts }: HomePageProps) {
     }
   };
 
-  // Function to handle comment addition
   const handleAddComment = (postId: string) => {
     setPostList((prevPosts) =>
       prevPosts.map((post) =>
@@ -95,8 +91,6 @@ export default function HomePage({ posts }: HomePageProps) {
           : post
       )
     );
-
-    // Update selectedPost if it's the same post
     if (selectedPost && selectedPost.id === postId) {
       setSelectedPost((prevPost) =>
         prevPost
@@ -122,46 +116,52 @@ export default function HomePage({ posts }: HomePageProps) {
     setTimeout(() => setIsCopySuccess(false), 2000);
   };
 
+  const currentActiveIndex = activeIndex || 0;
+
   return (
     <div className="w-full h-screen overflow-auto">
       <div>
         {postList.map((post, index) => {
-          const safeActiveIndex = activeIndex ?? 0;
-          if (
-            index >= safeActiveIndex - VIRTUALIZATION_BUFFER &&
-            index <= safeActiveIndex + VIRTUALIZATION_BUFFER
-          ) {
-            return (
-              <div
-                key={post.id}
-                ref={(el) => addToRefs(el, index)}
-                className="post-item"
-                data-index={index}
-                style={{ minHeight: '100vh', overflow: 'hidden' }}
-              >
+          const inRange = index >= currentActiveIndex - VIRTUALIZATION_BUFFER &&
+                          index <= currentActiveIndex + VIRTUALIZATION_BUFFER;
+
+          return (
+            <div
+              key={post.id}
+              ref={(el) => addToRefs(el, index)}
+              className="post-item"
+              data-index={index}
+              style={{
+                minHeight: '100vh',
+                overflow: 'hidden',
+                // Add a smooth fade or placeholder background for out-of-range posts
+                background: inRange ? 'transparent' : '#000', 
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+            >
+              {inRange ? (
                 <PostItem
                   post={post}
-                  isActive={safeActiveIndex === index}
+                  isActive={activeIndex === index}
                   onCommentClick={handleCommentClick}
                   onShare={handleShare}
                   isCopySuccess={isCopySuccess}
                   showSeparator={false}
                   layout="feed"
                 />
-              </div>
-            );
-          } else {
-            return (
-              <div
-                key={post.id}
-                style={{ minHeight: '100vh' }}
-              ></div>
-            );
-          }
+              ) : (
+                // Minimal placeholder to ensure DOM element is present for IntersectionObserver
+                <div style={{ color: '#fff', textAlign: 'center' }}>
+                  Loading...
+                </div>
+              )}
+            </div>
+          );
         })}
       </div>
 
-      {/* Comments Drawer */}
       {selectedPost && (
         <CommentsDrawer
           open={commentsDrawerOpen}
@@ -172,7 +172,6 @@ export default function HomePage({ posts }: HomePageProps) {
         />
       )}
 
-      {/* Sign-In Dialog */}
       {dialogOpen === 'signIn' && (
         <SignInDialog
           open={true}
@@ -181,7 +180,6 @@ export default function HomePage({ posts }: HomePageProps) {
         />
       )}
 
-      {/* Copy Success Notification */}
       {isCopySuccess && (
         <div className="fixed bottom-4 right-4 bg-green-500 text-white px-4 py-2 rounded">
           Link copied to clipboard!
@@ -198,12 +196,8 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     include: {
       author: true,
       comments: {
-        include: {
-          user: true,
-        },
-        orderBy: {
-          createdAt: 'asc',
-        },
+        include: { user: true },
+        orderBy: { createdAt: 'asc' },
       },
       likes: userId
         ? {
@@ -212,15 +206,10 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
           }
         : false,
       _count: {
-        select: {
-          likes: true,
-          comments: true,
-        },
+        select: { likes: true, comments: true },
       },
     },
-    orderBy: {
-      createdAt: 'desc',
-    },
+    orderBy: { createdAt: 'desc' },
   });
 
   const serializedPosts: PostWithAuthor[] = posts.map((post) => ({

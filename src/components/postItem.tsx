@@ -44,9 +44,9 @@ const PostItem: React.FC<PostItemProps> = ({
   }, [isActive, post.fileUrl]);
 
   return (
-    <div className={`flex flex-col items-start ${isFeedLayout ? 'p-4 pl-8' : 'p-0'} w-full`}>
+    <div className={`flex flex-col items-start ${isFeedLayout ? 'p-0' : 'p-0'} w-full`}>
       <h2
-        className={`text-2xl font-bold ${isFeedLayout ? 'mb-4' : 'mb-2'}`} 
+        className={`text-2xl font-bold ${isFeedLayout ? 'mb-2' : 'mb-2'}`} 
       >
         {post.title}
       </h2>
@@ -75,7 +75,7 @@ const PostItem: React.FC<PostItemProps> = ({
 
         {isFeedLayout ? (
           // Interaction buttons and Creator Avatar beside the post
-          <div className="flex flex-col items-center space-y-4 ml-4 relative mt-4">
+          <div className="flex flex-col items-center space-y-4 ml-4 relative">
             <Link href={`/profile/${post.author.id}`}>
               <Avatar className="cursor-pointer">
                 <AvatarImage
@@ -129,14 +129,14 @@ const PostItem: React.FC<PostItemProps> = ({
 
       {/* Post Content - Only show in feed layout */}
       {isFeedLayout && (
-        <p className="mt-6">{post.content}</p>
+        <p className="mt-2">{post.content}</p>
       )}
 
       {/* View Post Button - only show in feed layout */}
       {isFeedLayout && (
         <Link
           href={`/post/${post.id}`}
-          className="text-blue-500 hover:underline mt-2"
+          className="text-blue-500 hover:underline mt-1"
         >
           View Post
         </Link>
@@ -144,7 +144,7 @@ const PostItem: React.FC<PostItemProps> = ({
 
       {/* Conditional Separator Line/Bar */}
       {showSeparator && (
-        <hr className="w-full border-t border-gray-300 mt-12 mb-6" />
+        <hr className="w-full border-t border-gray-300 mt-8 mb-6" />
       )}
     </div>
   );
