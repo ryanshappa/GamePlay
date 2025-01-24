@@ -7,15 +7,14 @@ import Link from 'next/link';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { SignInDialog } from './signInDialog';
 import { SignUpDialog } from './signUpDialog';
-import { SearchBar } from '~/components/searchBar'; 
-// Updated Social Media Icons Imports
+import { SearchBar } from '~/components/searchBar';
 import { FaInstagram } from 'react-icons/fa';
 import { SiTiktok } from 'react-icons/si';
 import { FaXTwitter } from "react-icons/fa6";
 
 interface LayoutProps {
   children: React.ReactNode;
-  showSearchBar?: boolean; 
+  showSearchBar?: boolean;
 }
 
 export default function Layout({ children, showSearchBar = true }: LayoutProps) {
@@ -27,15 +26,26 @@ export default function Layout({ children, showSearchBar = true }: LayoutProps) 
   const closeDialog = () => setDialogOpen(null);
 
   return (
-    <div className="flex flex-col h-screen bg-black text-white">
-      {/* Top Bar */}
-      <header className="flex items-center justify-between p-4 border-b border-gray-800 w-full">
+    // Use w-screen so we don’t have dead space on large monitors
+    <div className="flex flex-col min-h-screen w-screen bg-black text-white">
+      {/* --- Fixed Top Bar --- */}
+      <header
+        className="
+          fixed top-0 left-0 right-0 z-50
+          flex items-center justify-between
+          h-16 px-4
+          border-b border-gray-800
+          bg-black
+        "
+      >
         <div className="text-2xl font-bold font-press-start">GamePlay</div>
+
         {showSearchBar && (
           <div className="flex-grow flex justify-center mr-12">
             <SearchBar />
           </div>
         )}
+
         <div className="flex items-center">
           {isSignedIn ? (
             <DropdownMenu.Root>
@@ -75,18 +85,23 @@ export default function Layout({ children, showSearchBar = true }: LayoutProps) 
         </div>
       </header>
 
-      <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar */}
+      {/* 
+        Main content area:
+        pt-16 to push content below the fixed header (16 is the header's h-16).
+      */}
+      <div className="flex flex-1 overflow-hidden pt-16">
+        {/* Sidebar: remove border-r */}
         <aside className="w-52 p-4 flex flex-col">
-          <nav className="mt-6">
+          <nav className="mt-6 space-y-8">
             <Link href="/">
-              <div className="flex items-center space-x-6 cursor-pointer hover:text-gray-400 transition-colors duration-200 mb-8">
+              <div className="flex items-center space-x-4 cursor-pointer hover:text-gray-400">
                 <Home className="h-8 w-8" />
                 <span className="text-lg">Home</span>
               </div>
             </Link>
+
             <div
-              className="flex items-center space-x-6 cursor-pointer hover:text-gray-400 transition-colors duration-200 mb-8"
+              className="flex items-center space-x-4 cursor-pointer hover:text-gray-400"
               onClick={() => {
                 if (isSignedIn) {
                   window.location.href = '/create-post';
@@ -98,9 +113,10 @@ export default function Layout({ children, showSearchBar = true }: LayoutProps) 
               <Plus className="h-8 w-8" />
               <span className="text-lg">Create</span>
             </div>
+
             {user && (
               <div
-                className="flex items-center space-x-6 cursor-pointer hover:text-gray-400 transition-colors duration-200 mb-8"
+                className="flex items-center space-x-4 cursor-pointer hover:text-gray-400"
                 onClick={() => {
                   if (isSignedIn) {
                     window.location.href = `/profile/${user.id}`;
@@ -115,7 +131,7 @@ export default function Layout({ children, showSearchBar = true }: LayoutProps) 
             )}
           </nav>
 
-          {/* Social Media Links */}
+          {/* Social Icons at bottom */}
           <div className="mt-auto flex space-x-4">
             <Link
               href="https://x.com/TryGamePlay_"
@@ -123,7 +139,7 @@ export default function Layout({ children, showSearchBar = true }: LayoutProps) 
               rel="noopener noreferrer"
               aria-label="Twitter"
             >
-              <FaXTwitter className="h-8 w-8 hover:text-blue-400 transition-colors duration-200" />
+              <FaXTwitter className="h-8 w-8 hover:text-blue-400" />
             </Link>
             <Link
               href="https://www.tiktok.com/@try_gameplay?lang=en"
@@ -131,7 +147,7 @@ export default function Layout({ children, showSearchBar = true }: LayoutProps) 
               rel="noopener noreferrer"
               aria-label="TikTok"
             >
-              <SiTiktok className="h-8 w-8 md:h-8 md:w-8 hover:text-red-500 transition-colors duration-200" />
+              <SiTiktok className="h-8 w-8 hover:text-red-500" />
             </Link>
             <Link
               href="https://www.instagram.com/trygameplay/"
@@ -139,18 +155,18 @@ export default function Layout({ children, showSearchBar = true }: LayoutProps) 
               rel="noopener noreferrer"
               aria-label="Instagram"
             >
-              <FaInstagram className="h-8 w-8 hover:text-pink-400 transition-colors duration-200" />
+              <FaInstagram className="h-8 w-8 hover:text-pink-400" />
             </Link>
           </div>
         </aside>
 
-        {/* Main Content */}
-        <main className="flex-1 overflow-y-auto pt-4">
+        {/* Scrollable feed or post area */}
+        <main className="flex-1 overflow-y-auto">
           {children}
         </main>
       </div>
 
-      {/* Sign-In and Sign-Up Dialogs */}
+      {/* Sign-In & Sign-Up Dialogs */}
       {dialogOpen === 'signIn' && (
         <SignInDialog
           open={true}
