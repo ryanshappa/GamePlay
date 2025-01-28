@@ -36,7 +36,7 @@ export default function PostPage({ post, status }: PostPageProps) {
 
   const [nestedComments, setNestedComments] = useState<NestedComment[]>([]);
   const [newCommentText, setNewCommentText] = useState('');
-  const [replyStates, setReplyStates] = useState<{ [key: number]: ReplyState }>({});
+  const [replyStates, setReplyStates] = useState<Record<number, ReplyState>>({});
 
   // Prevent spam-click on post like
   const [likeLoading, setLikeLoading] = useState(false);
