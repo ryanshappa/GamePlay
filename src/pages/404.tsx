@@ -1,19 +1,21 @@
 import React from 'react';
 
-const Custom404 = () => {
+export default function Custom404() {
   return (
-    <div style={{ position: 'relative', width: '100%', height: '100vh' }}>
-      <iframe
-        src="https://chromedino.com/"
-        frameBorder="0"
-        scrolling="no"
-        width="100%"
-        height="100%"
-        loading="lazy"
-        style={{ position: 'absolute', width: '100%', height: '100%', zIndex: 999 }}
-      ></iframe>
+    <div className="flex flex-col items-center justify-center h-screen bg-black text-white">
+      <h1 className="text-3xl font-bold mb-4">404 - Page Not Found</h1>
+      <p className="text-lg mb-6">But here’s something to keep you entertained.</p>
+
+      <div className="relative w-full max-w-xl h-[600px] border border-gray-700 rounded overflow-hidden">
+        <iframe
+          src="https://chromedino.com/"
+          frameBorder="0"
+          scrolling="no"
+          width="100%"
+          height="100%"
+          loading="lazy"
+        ></iframe>
+      </div>
     </div>
   );
-};
-
-export default Custom404;
+}

@@ -13,10 +13,19 @@ export function LikeButton({ postId, initialLiked, initialCount }: LikeButtonPro
   const [liked, setLiked] = React.useState(initialLiked);
   const [count, setCount] = React.useState(initialCount);
 
+  // new loading state
+  const [likeLoading, setLikeLoading] = React.useState(false);
+
   const handleClick = async () => {
     if (!isSignedIn) {
       return;
     }
+
+    // If a request is already in progress, ignore further clicks
+    if (likeLoading) {
+      return;
+    }
+    setLikeLoading(true);
 
     const method = liked ? 'DELETE' : 'POST';
 
@@ -39,6 +48,8 @@ export function LikeButton({ postId, initialLiked, initialCount }: LikeButtonPro
       setLiked(liked);
       setCount(liked ? count + 1 : count - 1);
       console.error('Error updating like status:', error);
+    } finally {
+      setLikeLoading(false);
     }
   };
 
@@ -47,6 +58,7 @@ export function LikeButton({ postId, initialLiked, initialCount }: LikeButtonPro
       <button
         className="rounded-full bg-gray-800 hover:bg-gray-700 p-2"
         onClick={handleClick}
+        disabled={likeLoading}  // optionally disable the button
       >
         <HeartIcon
           className={`h-6 w-6 ${liked ? 'text-red-500' : 'text-white'}`}

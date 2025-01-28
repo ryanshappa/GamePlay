@@ -13,27 +13,61 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (req.method === 'GET') {
     try {
       const comments = await db.comment.findMany({
-        where: { postId },
+        where: {
+          postId,
+          parentId: null,
+        },
         include: {
           user: true,
+          commentLikes: true,
+          children: {
+            include: {
+              user: true,
+              commentLikes: true,
+              children: {
+                include: {
+                  user: true,
+                  commentLikes: true,
+                  children: {
+                    include: {
+                      user: true,
+                      commentLikes: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
         },
         orderBy: {
           createdAt: 'asc',
         },
       });
 
-      const serializedComments = comments.map((comment) => ({
-        id: comment.id,
-        content: comment.content,
-        createdAt: comment.createdAt.toISOString(),
-        postId: comment.postId,
-        user: {
-          id: comment.userId,
-          username: comment.user.username,
-          avatarUrl: comment.user.avatarUrl,
-        },
-      }));
+      function serializeComment(comment: any): any {
+        const likeCount = comment.commentLikes?.length || 0;
+        const likedByCurrentUser = userId
+          ? comment.commentLikes.some((like: any) => like.userId === userId)
+          : false;
 
+        return {
+          id: comment.id,
+          content: comment.content,
+          createdAt: comment.createdAt.toISOString(),
+          postId: comment.postId,
+          parentId: comment.parentId,
+          user: {
+            id: comment.userId,
+            username: comment.user?.username ?? null,
+            avatarUrl: comment.user?.avatarUrl ?? null,
+          },
+          likeCount,
+          likedByCurrentUser,
+          children: comment.children?.map(serializeComment) || [],
+        };
+      }
+
+      const serializedComments = comments.map(serializeComment);
       return res.status(200).json(serializedComments);
     } catch (error) {
       console.error('Error fetching comments:', error);
@@ -45,8 +79,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (!userId) {
       return res.status(401).json({ message: 'Unauthorized' });
     }
-
-    const { content } = req.body;
+    const { content, parentId } = req.body;
 
     if (!content || typeof content !== 'string') {
       return res.status(400).json({ message: 'Content is required and must be a string.' });
@@ -58,6 +91,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           content,
           userId,
           postId,
+          parentId: parentId || null,
         },
         include: {
           user: true,
@@ -88,11 +122,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     const commentId = req.query.commentId as string;
-
     const numericCommentId = Number(commentId);
 
     if (!numericCommentId || isNaN(numericCommentId)) {
-      return res.status(400).json({ message: 'commentId is required and must be a valid number.' });
+      return res.status(400).json({
+        message: 'commentId is required and must be a valid number.',
+      });
     }
 
     try {
@@ -113,7 +148,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
 
       if (comment.postId !== postId) {
-        return res.status(400).json({ error: 'Comment does not belong to the specified post' });
+        return res
+          .status(400)
+          .json({ error: 'Comment does not belong to the specified post' });
       }
 
       if (comment.userId !== userId && comment.post.authorId !== userId) {

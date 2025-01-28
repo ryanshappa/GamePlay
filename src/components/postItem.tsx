@@ -112,7 +112,12 @@ const PostItem: React.FC<PostItemProps> = ({
         )}
       </div>
 
-      {isFeedLayout && <p className="mt-2">{post.content}</p>}
+      {isFeedLayout && (
+        <p className="mt-1 whitespace-pre-wrap max-w-[50%]">
+          {post.content}
+        </p>
+      )}
+
       {isFeedLayout && (
         <Link
           href={`/post/${post.id}`}

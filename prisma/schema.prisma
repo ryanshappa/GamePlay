@@ -20,6 +20,7 @@ model User {
   followers   Follow[]  @relation("Followers")
   likes       Like[]    
   comments    Comment[] 
+  commentLikes CommentLike[]
 }
 
 model Post {
@@ -53,8 +54,17 @@ model Like {
   user        User     @relation(fields: [userId], references: [id])
   postId      String
   post        Post     @relation(fields: [postId], references: [id])
-
   @@unique([userId, postId]) // Ensure a user can like a post only once
+}
+
+model CommentLike {
+  id          Int      @id @default(autoincrement())
+  createdAt   DateTime @default(now())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  commentId   Int
+  comment     Comment  @relation(fields: [commentId], references: [id])
+  @@unique([userId, commentId]) // Ensure a user can like a comment once
 }
 
 model Comment {
@@ -65,4 +75,8 @@ model Comment {
   user        User     @relation(fields: [userId], references: [id])
   postId      String
   post        Post     @relation(fields: [postId], references: [id])
+  parentId    Int?
+  parent      Comment? @relation("CommentReplies", fields: [parentId], references: [id])
+  children    Comment[] @relation("CommentReplies")
+  commentLikes CommentLike[]
 }
