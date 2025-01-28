@@ -13,6 +13,8 @@ interface CommentsDrawerProps {
   open: boolean;
   onClose: () => void;
   post: PostWithAuthor;
+  onAddComment?: (postId: string) => void;
+  onDeleteComment?: (postId: string, commentId: number) => void;
 }
 
 // A recursive item that displays comment + children
