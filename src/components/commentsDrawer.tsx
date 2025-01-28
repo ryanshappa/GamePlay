@@ -5,67 +5,204 @@ import { Textarea } from './ui/textarea';
 import { useUser } from '@clerk/nextjs';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import Link from 'next/link';
-import DeleteCommentButton from './deleteComment'; 
-
-interface User {
-  id: string;
-  username?: string;
-}
-
-interface Post {
-  id: string;
-  authorId: string;
-}
-
-interface Comment {
-  id: number;
-  content: string;
-  createdAt: string;
-  user: {
-    id: string; 
-    avatarUrl: string;
-    username: string;
-  };
-  postId: string; 
-}
-
-interface PostWithAuthor extends Post {
-  author: {
-    username: string | null;
-  };
-  commentsCount: number; 
-}
+import DeleteCommentButton from './deleteComment';
+import { NestedComment, PostWithAuthor } from '~/types/types';
+import { HeartIcon } from 'lucide-react';
 
 interface CommentsDrawerProps {
   open: boolean;
   onClose: () => void;
   post: PostWithAuthor;
-  onAddComment?: (postId: string) => void;
-  onDeleteComment?: (postId: string, commentId: number) => void;
 }
 
-export function CommentsDrawer({ open, onClose, post, onAddComment, onDeleteComment }: CommentsDrawerProps) {
+// A recursive item that displays comment + children
+function NestedCommentItemDrawer({
+  comment,
+  postId,
+  currentUserId,
+  depth = 0,
+  onNewReply,
+  onDeleteComment,
+}: {
+  comment: NestedComment;
+  postId: string;
+  currentUserId?: string;
+  depth?: number;
+  onNewReply: () => void;
+  onDeleteComment: (commentId: number) => void;
+}) {
+  const [showReplies, setShowReplies] = React.useState(false);
+  const [replyOpen, setReplyOpen] = React.useState(false);
+  const [replyText, setReplyText] = React.useState('');
+  const [likeCount, setLikeCount] = React.useState(comment.likeCount ?? 0);
+  const [liked, setLiked] = React.useState(comment.likedByCurrentUser ?? false);
+
+  const hasChildren = comment.children && comment.children.length > 0;
+
+  async function handleLike() {
+    if (!currentUserId) {
+      // Not signed in
+      return;
+    }
+    // optimistic update
+    const wasLiked = liked;
+    setLiked(!wasLiked);
+    setLikeCount((c) => (wasLiked ? c - 1 : c + 1));
+
+    try {
+      const method = wasLiked ? 'DELETE' : 'POST';
+      const res = await fetch(`/api/comments/${comment.id}/like`, { method });
+      if (!res.ok) {
+        // revert
+        setLiked(wasLiked);
+        setLikeCount((c) => (wasLiked ? c + 1 : c - 1));
+      }
+    } catch {
+      // revert
+      setLiked(wasLiked);
+      setLikeCount((c) => (wasLiked ? c + 1 : c - 1));
+    }
+  }
+
+  async function handleReplySubmit() {
+    if (!replyText.trim()) return;
+
+    try {
+      const resp = await fetch(`/api/posts/${postId}/comments`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          content: replyText,
+          parentId: comment.id,
+        }),
+      });
+      if (!resp.ok) {
+        throw new Error('Failed to submit reply');
+      }
+      setReplyText('');
+      setReplyOpen(false);
+      onNewReply(); // re-fetch or local update
+    } catch (err) {
+      console.error(err);
+      alert('Failed to submit reply');
+    }
+  }
+
+  return (
+    <div style={{ marginLeft: depth * 16 }} className="mb-3">
+      <div className="flex items-start space-x-2">
+        <Link href={`/profile/${comment.user.id}`}>
+          <Avatar className="h-8 w-8 cursor-pointer">
+            <AvatarImage src={comment.user.avatarUrl || ''} alt="User Avatar" />
+            <AvatarFallback>{comment.user.username?.charAt(0) || 'U'}</AvatarFallback>
+          </Avatar>
+        </Link>
+        <div className="flex-1">
+          {/* Comment header: username + delete button */}
+          <div className="flex items-center justify-between">
+            <p className="font-semibold">{comment.user.username}</p>
+            <DeleteCommentButton
+              comment={{
+                id: comment.id,
+                user: { id: comment.user.id, username: comment.user.username || '' },
+              }}
+              postId={postId}
+              postAuthorId="" // We'll set the actual postAuthorId from the parent
+              currentUser={currentUserId ? { id: currentUserId, username: '' } : null}
+              onDelete={(commentId) => onDeleteComment(commentId)}
+            />
+          </div>
+
+          <p>{comment.content}</p>
+          <div className="flex items-center space-x-4 mt-1 text-sm text-gray-400">
+            <span>
+              {likeCount} {likeCount === 1 ? 'like' : 'likes'}
+            </span>
+            <button
+              className="hover:text-gray-200"
+              onClick={() => setReplyOpen(!replyOpen)}
+            >
+              Reply
+            </button>
+            <button className="ml-auto flex items-center" onClick={handleLike}>
+              <HeartIcon
+                className={`h-5 w-5 mr-1 ${liked ? 'text-red-500' : 'text-gray-400'}`}
+                fill={liked ? 'currentColor' : 'none'}
+              />
+            </button>
+          </div>
+
+          {replyOpen && (
+            <div className="mt-2">
+              <textarea
+                rows={2}
+                className="w-full bg-gray-700 text-white p-2 rounded mb-1"
+                value={replyText}
+                onChange={(e) => setReplyText(e.target.value)}
+              />
+              <Button onClick={handleReplySubmit}>Post Reply</Button>
+            </div>
+          )}
+
+          {hasChildren && (
+            <button
+              onClick={() => setShowReplies(!showReplies)}
+              className="text-sm text-gray-400 hover:text-gray-200 mt-1"
+            >
+              {showReplies
+                ? `Hide replies`
+                : `View replies (${comment.children?.length || 0})`}
+            </button>
+          )}
+        </div>
+      </div>
+
+      {showReplies && hasChildren && (
+        <div className="mt-2">
+          {comment.children?.map((child) => (
+            <NestedCommentItemDrawer
+              key={child.id}
+              comment={child}
+              postId={postId}
+              currentUserId={currentUserId}
+              depth={depth + 1}
+              onNewReply={onNewReply}
+              onDeleteComment={onDeleteComment}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export function CommentsDrawer({ open, onClose, post }: CommentsDrawerProps) {
   const { user } = useUser();
-  const [comments, setComments] = React.useState<Comment[]>([]);
+  const [comments, setComments] = React.useState<NestedComment[]>([]);
   const [newComment, setNewComment] = React.useState('');
 
   React.useEffect(() => {
     if (open) {
-      fetch(`/api/posts/${post.id}/comments`)
-        .then((res) => res.json())
-        .then((data) => {
-          if (Array.isArray(data)) {
-            setComments(data);
-          } else {
-            console.error('Unexpected data format:', data);
-            setComments([]);
-          }
-        })
-        .catch((err) => console.error(err));
+      fetchComments();
     }
   }, [open, post.id]);
 
-  const handleAddComment = async () => {
+  async function fetchComments() {
+    try {
+      const res = await fetch(`/api/posts/${post.id}/comments`);
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        setComments(data);
+      } else {
+        console.error('Unexpected data format:', data);
+        setComments([]);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async function handleAddComment() {
     if (!newComment.trim()) {
       return;
     }
@@ -77,55 +214,46 @@ export function CommentsDrawer({ open, onClose, post, onAddComment, onDeleteComm
         headers: { 'Content-Type': 'application/json' },
       });
 
-      if (response.ok) {
-        const comment: Comment = await response.json();
-        setComments((prev) => [...prev, comment]);
-        setNewComment('');
-
-        // Call onAddComment callback if provided
-        if (onAddComment) {
-          onAddComment(post.id);
-        }
-      } else {
+      if (!response.ok) {
         const errorData = await response.json();
         console.error('Failed to add comment:', errorData.message || response.statusText);
+      } else {
+        // the server returns the new comment as a top-level comment
+        setNewComment('');
+        fetchComments(); // re-fetch all comments
       }
     } catch (error) {
       console.error('Error adding comment:', error);
     }
-  };
+  }
 
-  const handleDeleteComment = async (commentId: number) => {
+  async function handleDeleteComment(commentId: number) {
     try {
       const response = await fetch(`/api/posts/${post.id}/comments?commentId=${commentId}`, {
         method: 'DELETE',
       });
-
-      if (response.ok) {
-        setComments((prev) => prev.filter((comment) => comment.id !== commentId));
-
-        // Call onDeleteComment callback if provided
-        if (onDeleteComment) {
-          onDeleteComment(post.id, commentId);
-        }
-      } else {
+      if (!response.ok) {
         const errorData = await response.json();
         console.error('Failed to delete comment:', errorData.message || response.statusText);
         alert(`Failed to delete comment: ${errorData.message || response.statusText}`);
+      } else {
+        // re-fetch to see updated list
+        fetchComments();
       }
     } catch (error) {
       console.error('Error deleting comment:', error);
       alert('An unexpected error occurred while deleting the comment.');
     }
-  };
+  }
+
+  function handleNewReply() {
+    fetchComments();
+  }
 
   return (
     <Drawer.Root open={open} onOpenChange={onClose}>
       <Drawer.Portal>
-        {/* Overlay */}
         <Drawer.Overlay className="fixed inset-0 bg-black opacity-30" />
-        
-        {/* Drawer Content */}
         <Drawer.Content
           className="fixed right-0 bg-gray-800 p-4 text-white overflow-y-auto shadow-lg z-40"
           style={{
@@ -135,45 +263,27 @@ export function CommentsDrawer({ open, onClose, post, onAddComment, onDeleteComm
           }}
         >
           <Drawer.Title className="text-xl font-bold mb-4">
-            Comments ({comments.length})
+            Comments
           </Drawer.Title>
           <Drawer.Close className="absolute top-2 right-2 text-white hover:text-gray-400">
             &times;
           </Drawer.Close>
-          <div className="space-y-4">
+
+          {/* Render nested comments */}
+          <div>
             {comments.map((comment) => (
-              <div key={comment.id} className="flex items-start space-x-2">
-                {/* Wrap Avatar with Link */}
-                <Link href={`/profile/${comment.user.id}`}>
-                  <Avatar className="h-8 w-8 cursor-pointer">
-                    <AvatarImage src={comment.user.avatarUrl} alt="User Avatar" />
-                    <AvatarFallback>{comment.user.username?.charAt(0) || 'U'}</AvatarFallback>
-                  </Avatar>
-                </Link>
-                <div className="flex-1">
-                  <p className="font-semibold">{comment.user.username}</p>
-                  <p>{comment.content}</p>
-                  {/* Flex Container for Timestamp and Delete Button */}
-                  <div className="flex items-center justify-between">
-                    <p className="text-gray-500 text-xs">
-                      {new Date(comment.createdAt).toLocaleString()}
-                    </p>
-                    {/* Conditionally render the Delete button */}
-                    {(user?.id === comment.user.id || user?.id === post.authorId) && (
-                      <DeleteCommentButton
-                        comment={comment}
-                        postId={post.id}
-                        postAuthorId={post.authorId}
-                        currentUser={user ? { id: user.id, username: user.username || '' } : null}
-                        onDelete={handleDeleteComment}
-                      />
-                    )}
-                  </div>
-                </div>
-              </div>
+              <NestedCommentItemDrawer
+                key={comment.id}
+                comment={comment}
+                postId={post.id}
+                currentUserId={user?.id}
+                onNewReply={handleNewReply}
+                onDeleteComment={handleDeleteComment}
+              />
             ))}
           </div>
-          {/* Add Comment */}
+
+          {/* Add top-level comment */}
           {user && (
             <div className="mt-4">
               <Textarea

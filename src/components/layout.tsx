@@ -10,7 +10,7 @@ import { SignUpDialog } from './signUpDialog';
 import { SearchBar } from '~/components/searchBar';
 import { FaInstagram } from 'react-icons/fa';
 import { SiTiktok } from 'react-icons/si';
-import { FaXTwitter } from "react-icons/fa6";
+import { FaXTwitter } from 'react-icons/fa6';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -26,9 +26,8 @@ export default function Layout({ children, showSearchBar = true }: LayoutProps) 
   const closeDialog = () => setDialogOpen(null);
 
   return (
-    // Use w-screen so we don’t have dead space on large monitors
-    <div className="flex flex-col min-h-screen w-screen bg-black text-white">
-      {/* --- Fixed Top Bar --- */}
+    <div className="bg-black text-white w-screen min-h-screen">
+      {/* --- FIXED TOP BAR --- */}
       <header
         className="
           fixed top-0 left-0 right-0 z-50
@@ -85,86 +84,98 @@ export default function Layout({ children, showSearchBar = true }: LayoutProps) 
         </div>
       </header>
 
-      {/* 
-        Main content area:
-        pt-16 to push content below the fixed header (16 is the header's h-16).
-      */}
-      <div className="flex flex-1 overflow-hidden pt-16">
-        {/* Sidebar: remove border-r */}
-        <aside className="w-52 p-4 flex flex-col">
-          <nav className="mt-6 space-y-8">
-            <Link href="/">
-              <div className="flex items-center space-x-4 cursor-pointer hover:text-gray-400">
-                <Home className="h-8 w-8" />
-                <span className="text-lg">Home</span>
-              </div>
-            </Link>
+      {/* --- FIXED SIDEBAR --- */}
+      <aside
+        className="
+          fixed top-16 bottom-0 left-0
+          w-52 p-4
+          bg-black
+          flex flex-col
+        "
+      >
+        <nav className="mt-6 space-y-8">
+          <Link href="/">
+            <div className="flex items-center space-x-4 cursor-pointer hover:text-gray-400">
+              <Home className="h-8 w-8" />
+              <span className="text-lg">Home</span>
+            </div>
+          </Link>
 
+          <div
+            className="flex items-center space-x-4 cursor-pointer hover:text-gray-400"
+            onClick={() => {
+              if (isSignedIn) {
+                window.location.href = '/create-post';
+              } else {
+                openSignInDialog();
+              }
+            }}
+          >
+            <Plus className="h-8 w-8" />
+            <span className="text-lg">Create</span>
+          </div>
+
+          {user && (
             <div
               className="flex items-center space-x-4 cursor-pointer hover:text-gray-400"
               onClick={() => {
                 if (isSignedIn) {
-                  window.location.href = '/create-post';
+                  window.location.href = `/profile/${user.id}`;
                 } else {
                   openSignInDialog();
                 }
               }}
             >
-              <Plus className="h-8 w-8" />
-              <span className="text-lg">Create</span>
+              <UserIcon className="h-8 w-8" />
+              <span className="text-lg">Profile</span>
             </div>
+          )}
+        </nav>
 
-            {user && (
-              <div
-                className="flex items-center space-x-4 cursor-pointer hover:text-gray-400"
-                onClick={() => {
-                  if (isSignedIn) {
-                    window.location.href = `/profile/${user.id}`;
-                  } else {
-                    openSignInDialog();
-                  }
-                }}
-              >
-                <UserIcon className="h-8 w-8" />
-                <span className="text-lg">Profile</span>
-              </div>
-            )}
-          </nav>
+        {/* Social icons pinned at the bottom of the sidebar */}
+        <div className="mt-auto flex space-x-4">
+          <Link
+            href="https://x.com/TryGamePlay_"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Twitter"
+          >
+            <FaXTwitter className="h-8 w-8 hover:text-blue-400" />
+          </Link>
+          <Link
+            href="https://www.tiktok.com/@trygameplay?lang=en"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="TikTok"
+          >
+            <SiTiktok className="h-8 w-8 hover:text-red-500" />
+          </Link>
+          <Link
+            href="https://www.instagram.com/trygameplay/"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Instagram"
+          >
+            <FaInstagram className="h-8 w-8 hover:text-pink-400" />
+          </Link>
+        </div>
+      </aside>
 
-          {/* Social Icons at bottom */}
-          <div className="mt-auto flex space-x-4">
-            <Link
-              href="https://x.com/TryGamePlay_"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Twitter"
-            >
-              <FaXTwitter className="h-8 w-8 hover:text-blue-400" />
-            </Link>
-            <Link
-              href="https://www.tiktok.com/@try_gameplay?lang=en"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="TikTok"
-            >
-              <SiTiktok className="h-8 w-8 hover:text-red-500" />
-            </Link>
-            <Link
-              href="https://www.instagram.com/trygameplay/"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Instagram"
-            >
-              <FaInstagram className="h-8 w-8 hover:text-pink-400" />
-            </Link>
-          </div>
-        </aside>
-
-        {/* Scrollable feed or post area */}
-        <main className="flex-1 overflow-y-auto">
-          {children}
-        </main>
-      </div>
+      {/* 
+        MAIN CONTENT
+        - margin-left to make room for sidebar
+        - padding-top for the header
+        - h-screen + overflow-y-auto to scroll content only
+      */}
+      <main
+        className="
+          ml-52 pt-16
+          h-screen
+          overflow-y-auto
+        "
+      >
+        {children}
+      </main>
 
       {/* Sign-In & Sign-Up Dialogs */}
       {dialogOpen === 'signIn' && (

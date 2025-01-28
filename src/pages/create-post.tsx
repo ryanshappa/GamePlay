@@ -28,7 +28,7 @@ const CreatePost = () => {
     setCreatingPost(true);
     try {
       alert("Post is being created...");
-      router.push(`/post/${gameId}`);
+      router.push("/");
     } catch (error) {
       console.error("Error creating post:", error);
       alert("Failed to create post.");
