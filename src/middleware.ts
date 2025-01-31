@@ -1,41 +1,36 @@
+// middleware.ts
 import { clerkMiddleware } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
+// We want to protect only certain routes that must be authed server-side.
+// For everything else, we do a front-end check.
+const protectedRoutes = [
+  '/api/getPresignedUrl',   // or your route that actually requires user session
+  // ...any other strictly server-protected endpoints...
+];
+
 export default clerkMiddleware((auth, req: NextRequest) => {
-  console.log('Middleware executed for:', req.nextUrl.pathname);
-
   const { pathname } = req.nextUrl;
+  const { userId } = auth();
 
-  const publicRoutes = [
-    '/sign-in', 
-    '/sign-up', 
-    '/_next',
-    '/api/updatePost',
-    '/api/updatePostStatus'
-  ];
-
-  if (publicRoutes.some((route) => pathname.startsWith(route))) {
+  // If the route is not in protectedRoutes, allow access
+  if (!protectedRoutes.some((route) => pathname.startsWith(route))) {
     return NextResponse.next();
   }
 
-  // You can use `auth` here to access authentication details
-  const { userId } = auth();
-  
-  // If the user is not authenticated, redirect to sign-in
+  // If it is in protectedRoutes but user is not signed in, redirect
   if (!userId) {
-    return NextResponse.redirect(new URL('/sign-in', req.url));
+       return new NextResponse(JSON.stringify({ error: 'Unauthorized' }), {
+           status: 401,
+           headers: { 'content-type': 'application/json' },
+         });
   }
-
 
   return NextResponse.next();
 });
 
 export const config = {
-  matcher: [
-    '/',
-    '/((?!api/getPresignedUrl).*)',
-    '/api/:path*',
-    '/((?!_next/static|_next/image|favicon.ico).*)',
-  ],
+  // We only run middleware on the routes we care about
+  matcher: ['/api/getPresignedUrl', '/api/deleteAccount', '/sign-in(.*)', '/api/updateUserProfile', '/api/posts(.*)', '/api/comments(.*)', '/sign-up(.*)'],
 };

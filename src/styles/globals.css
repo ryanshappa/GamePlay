@@ -86,3 +86,10 @@
 .font-press-start {
   font-family: 'Press Start 2P', cursive;
 }
+
+/* Add this rule to remove borders and outlines from the modal */
+.dialog-content, .dialog-content * {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important; /* In case the border is a shadow */
+}

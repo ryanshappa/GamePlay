@@ -1,13 +1,17 @@
 import { db } from '~/server/db';
 import { getAuth } from '@clerk/nextjs/server';
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { NextResponse } from 'next/server';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { userId } = getAuth(req);
   const commentId = Number(req.query.commentId);
 
   if (!userId) {
-    return res.status(401).json({ error: 'Unauthorized' });
+    return new NextResponse(JSON.stringify({ error: 'Unauthorized' }), {
+      status: 401,
+      headers: { 'content-type': 'application/json' },
+    });
   }
   if (!commentId || isNaN(commentId)) {
     return res.status(400).json({ error: 'Invalid commentId' });

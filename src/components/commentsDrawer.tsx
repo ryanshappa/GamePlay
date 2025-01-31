@@ -17,7 +17,6 @@ interface CommentsDrawerProps {
   onDeleteComment?: (postId: string, commentId: number) => void;
 }
 
-// A recursive item that displays comment + children
 function NestedCommentItemDrawer({
   comment,
   postId,
@@ -100,19 +99,20 @@ function NestedCommentItemDrawer({
           </Avatar>
         </Link>
         <div className="flex-1">
-          {/* Comment header: username + delete button */}
           <div className="flex items-center justify-between">
             <p className="font-semibold">{comment.user.username}</p>
-            <DeleteCommentButton
-              comment={{
-                id: comment.id,
-                user: { id: comment.user.id, username: comment.user.username || '' },
-              }}
-              postId={postId}
-              postAuthorId="" // We'll set the actual postAuthorId from the parent
-              currentUser={currentUserId ? { id: currentUserId, username: '' } : null}
-              onDelete={(commentId) => onDeleteComment(commentId)}
-            />
+            {currentUserId && (
+              <DeleteCommentButton
+                comment={{
+                  id: comment.id,
+                  user: { id: comment.user.id, username: comment.user.username || '' },
+                }}
+                postId={postId}
+                postAuthorId="" // We'll set the actual postAuthorId from the parent
+                currentUser={currentUserId ? { id: currentUserId, username: '' } : null}
+                onDelete={(commentId) => onDeleteComment(commentId)}
+              />
+            )}
           </div>
 
           <p>{comment.content}</p>
@@ -120,12 +120,14 @@ function NestedCommentItemDrawer({
             <span>
               {likeCount} {likeCount === 1 ? 'like' : 'likes'}
             </span>
-            <button
-              className="hover:text-gray-200"
-              onClick={() => setReplyOpen(!replyOpen)}
-            >
-              Reply
-            </button>
+            {currentUserId && (
+              <button
+                className="hover:text-gray-200"
+                onClick={() => setReplyOpen(!replyOpen)}
+              >
+                Reply
+              </button>
+            )}
             <button className="ml-auto flex items-center" onClick={handleLike}>
               <HeartIcon
                 className={`h-5 w-5 mr-1 ${liked ? 'text-red-500' : 'text-gray-400'}`}
@@ -134,7 +136,7 @@ function NestedCommentItemDrawer({
             </button>
           </div>
 
-          {replyOpen && (
+          {replyOpen && currentUserId && (
             <div className="mt-2">
               <textarea
                 rows={2}
@@ -271,7 +273,6 @@ export function CommentsDrawer({ open, onClose, post }: CommentsDrawerProps) {
             &times;
           </Drawer.Close>
 
-          {/* Render nested comments */}
           <div>
             {comments.map((comment) => (
               <NestedCommentItemDrawer
@@ -285,7 +286,6 @@ export function CommentsDrawer({ open, onClose, post }: CommentsDrawerProps) {
             ))}
           </div>
 
-          {/* Add top-level comment */}
           {user && (
             <div className="mt-4">
               <Textarea

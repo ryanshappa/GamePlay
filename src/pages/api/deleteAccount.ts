@@ -25,7 +25,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       res.status(200).json({ message: 'Account deleted successfully.' });
     } catch (error: any) {
-      console.error('Error deleting account:', error.message || error);
+      console.error('Error deleting account:', error);
       
       // Enhanced error handling based on error types
       if (error.code === 'P2025') { // Example: Prisma's "Record to delete does not exist."
