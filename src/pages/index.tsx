@@ -4,9 +4,9 @@ import { PostWithAuthor } from '~/types/types';
 import React, { useEffect, useRef, useState } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { CommentsDrawer } from '~/components/commentsDrawer';
-import { getAuth } from '@clerk/nextjs/server';
 import PostItem from '~/components/postItem';
-import { SignInDialog } from '~/components/signInDialog';
+import { SignInModal } from '~/components/signInModal';
+
 
 interface HomePageProps {
   posts: PostWithAuthor[];
@@ -16,7 +16,7 @@ const VIRTUALIZATION_BUFFER = 1;
 
 export default function HomePage({ posts }: HomePageProps) {
   const { user, isSignedIn } = useUser();
-  const [dialogOpen, setDialogOpen] = useState<'signIn' | 'signUp' | null>(null);
+  const [signInOpen, setSignInOpen] = useState(false);
   const [commentsDrawerOpen, setCommentsDrawerOpen] = useState(false);
   const [selectedPost, setSelectedPost] = useState<PostWithAuthor | null>(null);
   const [postList, setPostList] = useState<PostWithAuthor[]>(posts);
@@ -101,10 +101,6 @@ export default function HomePage({ posts }: HomePageProps) {
   };
 
   const handleCommentClick = (post: PostWithAuthor) => {
-    if (!isSignedIn) {
-      setDialogOpen('signIn');
-      return;
-    }
     setSelectedPost(post);
     setCommentsDrawerOpen(true);
   };
@@ -172,11 +168,10 @@ export default function HomePage({ posts }: HomePageProps) {
         />
       )}
 
-      {dialogOpen === 'signIn' && (
-        <SignInDialog
-          open={true}
-          onOpenChange={() => setDialogOpen(null)}
-          onSwitchToSignUp={() => setDialogOpen('signUp')}
+      {signInOpen && (
+        <SignInModal
+          open={signInOpen}
+          onOpenChange={setSignInOpen}
         />
       )}
 
@@ -190,8 +185,6 @@ export default function HomePage({ posts }: HomePageProps) {
 }
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  const { userId } = getAuth(context.req);
-
   const posts = await db.post.findMany({
     include: {
       author: true,
@@ -199,12 +192,6 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         include: { user: true },
         orderBy: { createdAt: 'asc' },
       },
-      likes: userId
-        ? {
-            where: { userId },
-            select: { id: true },
-          }
-        : false,
       _count: {
         select: { likes: true, comments: true },
       },
@@ -228,7 +215,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     },
     likesCount: post._count.likes,
     commentsCount: post._count.comments,
-    likedByCurrentUser: userId ? post.likes.length > 0 : false,
+    likedByCurrentUser: false,
     comments: post.comments.map((comment) => ({
       id: comment.id,
       content: comment.content,

@@ -33,11 +33,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       // Update the user in Algolia index
       await usersIndex.saveObject({
-        objectID: userId, // Ensure objectID matches the user ID
+        objectID: userId,
         username: user.username,
         bio: user.bio,
         avatarUrl: user.avatarUrl,
-        // Add other fields as necessary
       });
 
       res.status(200).json({ message: 'Profile updated successfully', user });

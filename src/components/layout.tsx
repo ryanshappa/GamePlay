@@ -1,3 +1,4 @@
+// layout.tsx
 import React, { useState } from 'react';
 import { useUser, SignOutButton } from '@clerk/nextjs';
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
@@ -5,12 +6,12 @@ import { Button } from '~/components/ui/button';
 import { User as UserIcon, Settings, LogOut, Home, Plus } from 'lucide-react';
 import Link from 'next/link';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
-import { SignInDialog } from './signInDialog';
-import { SignUpDialog } from './signUpDialog';
 import { SearchBar } from '~/components/searchBar';
 import { FaInstagram } from 'react-icons/fa';
 import { SiTiktok } from 'react-icons/si';
 import { FaXTwitter } from 'react-icons/fa6';
+import { SignInModal } from '~/components/signInModal';
+import { SignUpModal } from '~/components/signUpModal';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -19,24 +20,21 @@ interface LayoutProps {
 
 export default function Layout({ children, showSearchBar = true }: LayoutProps) {
   const { user, isSignedIn } = useUser();
-  const [dialogOpen, setDialogOpen] = useState<'signIn' | 'signUp' | null>(null);
 
-  const openSignInDialog = () => setDialogOpen('signIn');
-  const openSignUpDialog = () => setDialogOpen('signUp');
-  const closeDialog = () => setDialogOpen(null);
+  // Two local states for controlling the modals
+  const [signInOpen, setSignInOpen] = useState(false);
+  const [signUpOpen, setSignUpOpen] = useState(false);
 
   return (
     <div className="bg-black text-white w-screen min-h-screen">
       {/* --- FIXED TOP BAR --- */}
-      <header
-        className="
-          fixed top-0 left-0 right-0 z-50
-          flex items-center justify-between
-          h-16 px-4
-          border-b border-gray-800
-          bg-black
-        "
-      >
+      <header className="
+        fixed top-0 left-0 right-0 z-50
+        flex items-center justify-between
+        h-16 px-4
+        border-b border-gray-800
+        bg-black
+      ">
         <div className="text-2xl font-bold font-press-start">GamePlay</div>
 
         {showSearchBar && (
@@ -77,22 +75,22 @@ export default function Layout({ children, showSearchBar = true }: LayoutProps) 
               </DropdownMenu.Content>
             </DropdownMenu.Root>
           ) : (
-            <Button variant="ghost" onClick={openSignInDialog}>
-              Sign In
-            </Button>
+            <>
+              <Button variant="ghost" onClick={() => setSignInOpen(true)}>
+                Sign In
+              </Button>
+            </>
           )}
         </div>
       </header>
 
       {/* --- FIXED SIDEBAR --- */}
-      <aside
-        className="
-          fixed top-16 bottom-0 left-0
-          w-52 p-4
-          bg-black
-          flex flex-col
-        "
-      >
+      <aside className="
+        fixed top-16 bottom-0 left-0
+        w-52 p-4
+        bg-black
+        flex flex-col
+      ">
         <nav className="mt-6 space-y-8">
           <Link href="/">
             <div className="flex items-center space-x-4 cursor-pointer hover:text-gray-400">
@@ -104,10 +102,11 @@ export default function Layout({ children, showSearchBar = true }: LayoutProps) 
           <div
             className="flex items-center space-x-4 cursor-pointer hover:text-gray-400"
             onClick={() => {
+              // If user is signed in, go to create-post
               if (isSignedIn) {
                 window.location.href = '/create-post';
               } else {
-                openSignInDialog();
+                setSignInOpen(true);
               }
             }}
           >
@@ -122,7 +121,7 @@ export default function Layout({ children, showSearchBar = true }: LayoutProps) 
                 if (isSignedIn) {
                   window.location.href = `/profile/${user.id}`;
                 } else {
-                  openSignInDialog();
+                  setSignInOpen(true);
                 }
               }}
             >
@@ -161,37 +160,20 @@ export default function Layout({ children, showSearchBar = true }: LayoutProps) 
         </div>
       </aside>
 
-      {/* 
-        MAIN CONTENT
-        - margin-left to make room for sidebar
-        - padding-top for the header
-        - h-screen + overflow-y-auto to scroll content only
-      */}
-      <main
-        className="
-          ml-52 pt-16
-          h-screen
-          overflow-y-auto
-        "
-      >
+      {/* MAIN CONTENT AREA */}
+      <main className="ml-52 pt-16 h-screen overflow-y-auto">
         {children}
       </main>
 
-      {/* Sign-In & Sign-Up Dialogs */}
-      {dialogOpen === 'signIn' && (
-        <SignInDialog
-          open={true}
-          onOpenChange={closeDialog}
-          onSwitchToSignUp={openSignUpDialog}
-        />
-      )}
-      {dialogOpen === 'signUp' && (
-        <SignUpDialog
-          open={true}
-          onOpenChange={closeDialog}
-          onSwitchToSignIn={openSignInDialog}
-        />
-      )}
+      {/* Clerk's SignIn & SignUp modals */}
+      <SignInModal
+        open={signInOpen}
+        onOpenChange={setSignInOpen}
+      />
+      <SignUpModal
+        open={signUpOpen}
+        onOpenChange={setSignUpOpen}
+      />
     </div>
   );
 }

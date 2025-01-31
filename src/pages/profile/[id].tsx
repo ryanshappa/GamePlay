@@ -13,6 +13,7 @@ import {
   MenuList,
   MenuItem,
 } from '@chakra-ui/react';
+import UserProfile from '../../components/UserProfile';
 
 interface UserProfile {
   id: string;
@@ -109,6 +110,24 @@ export default function ProfilePage() {
       setIsDeleting(false);
     }
   };
+
+  const handleUserUpdate = (updatedUser: any) => {
+    setUser(updatedUser);
+  };
+
+  const fetchUserData = async () => {
+    try {
+      const response = await fetch(`/api/getUserProfile?id=${user?.id}`);
+      const data = await response.json();
+      setUser(data.user);
+    } catch (error) {
+      console.error('Failed to fetch user data:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchUserData();
+  }, []);
 
   if (!user) return <div>Loading...</div>;
 
@@ -216,6 +235,8 @@ export default function ProfilePage() {
           )}
         </div>
       </section>
+
+      <UserProfile initialUser={user} onUserUpdate={fetchUserData} />
     </div>
   );
 }

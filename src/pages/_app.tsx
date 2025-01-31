@@ -8,7 +8,7 @@ import '~/styles/globals.css';
 import Layout from '~/components/layout';
 import { ReactElement, ReactNode } from 'react';
 import { NextPage } from 'next';
-
+import { dark, neobrutalism, shadesOfPurple } from '@clerk/themes';
 type NextPageWithLayout = NextPage & {
   getLayout?: (page: ReactElement) => ReactNode;
 };
@@ -39,7 +39,13 @@ const MyApp: AppType = ({ Component, pageProps }: AppPropsWithLayout) => {
           rel="stylesheet"
         />
       </Head>
-      <ClerkProvider {...pageProps}>
+      <ClerkProvider
+        {...pageProps}
+        appearance={{
+          baseTheme: neobrutalism,
+          signIn: { baseTheme: neobrutalism },
+        }}
+      >
         <div className={GeistSans.className}>
           {getLayout(<Component {...pageProps} />)}
         </div>
