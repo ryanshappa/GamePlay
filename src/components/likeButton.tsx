@@ -1,71 +1,90 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { HeartIcon } from 'lucide-react';
 import { useAuth } from '@clerk/nextjs';
 
-interface LikeButtonProps {
+export interface LikeButtonProps {
   postId: string;
   initialLiked: boolean;
   initialCount: number;
+  /** "column" (default) or "row" for layout */
+  orientation?: 'column' | 'row';
 }
 
-export function LikeButton({ postId, initialLiked, initialCount }: LikeButtonProps) {
+export function LikeButton({ postId, initialLiked, initialCount, orientation = 'column' }: LikeButtonProps) {
   const { isSignedIn } = useAuth();
   const [liked, setLiked] = React.useState(initialLiked);
   const [count, setCount] = React.useState(initialCount);
+  const [loading, setLoading] = React.useState(false);
 
-  // new loading state
-  const [likeLoading, setLikeLoading] = React.useState(false);
+  // On mount, if signed in, fetch the actual like status
+  useEffect(() => {
+    if (isSignedIn) {
+      fetch(`/api/posts/${postId}/isLiked`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (typeof data.liked === 'boolean') {
+            setLiked(data.liked);
+          }
+        })
+        .catch((err) => console.error("Error fetching like status:", err));
+    }
+  }, [isSignedIn, postId]);
 
   const handleClick = async () => {
-    if (!isSignedIn) {
-      return;
-    }
+    if (!isSignedIn || loading) return;
+    setLoading(true);
 
-    // If a request is already in progress, ignore further clicks
-    if (likeLoading) {
-      return;
-    }
-    setLikeLoading(true);
+    const oldLiked = liked;
+    const oldCount = count;
+    const newLiked = !oldLiked;
+    const newCount = oldLiked ? oldCount - 1 : oldCount + 1;
+    setLiked(newLiked);
+    setCount(newCount);
 
-    const method = liked ? 'DELETE' : 'POST';
-
-    setLiked(!liked);
-    setCount(liked ? count - 1 : count + 1);
+    const method = oldLiked ? 'DELETE' : 'POST';
 
     try {
-      const response = await fetch(`/api/posts/${postId}/like`, {
-        method,
-      });
-
-      if (!response.ok) {
-        // Revert UI changes if API call fails
-        setLiked(liked);
-        setCount(liked ? count + 1 : count - 1);
+      const res = await fetch(`/api/posts/${postId}/like`, { method });
+      if (!res.ok) {
+        // Revert changes if the request fails
+        setLiked(oldLiked);
+        setCount(oldCount);
         console.error('Failed to update like status.');
       }
-    } catch (error) {
-      // Revert UI changes on error
-      setLiked(liked);
-      setCount(liked ? count + 1 : count - 1);
-      console.error('Error updating like status:', error);
+    } catch (err) {
+      setLiked(oldLiked);
+      setCount(oldCount);
+      console.error('Error updating like status:', err);
     } finally {
-      setLikeLoading(false);
+      setLoading(false);
     }
   };
 
+  // Choose the container classes based on orientation.
+  const containerClasses =
+    orientation === 'row'
+      ? 'flex items-center space-x-1'
+      : 'flex flex-col items-center';
+
   return (
-    <div className="flex flex-col items-center">
+    <div className={containerClasses}>
       <button
         className="rounded-full bg-gray-800 hover:bg-gray-700 p-2"
         onClick={handleClick}
-        disabled={likeLoading}  // optionally disable the button
+        disabled={loading}
       >
         <HeartIcon
           className={`h-6 w-6 ${liked ? 'text-red-500' : 'text-white'}`}
           fill={liked ? 'currentColor' : 'none'}
         />
       </button>
-      <span className="text-white mt-1">{count}</span>
+      {/* When in row mode, show the count right next to the icon */}
+      {orientation === 'row' ? (
+        <span className="text-white">{count}</span>
+      ) : (
+        // In column mode, the count appears below.
+        <span className="text-white mt-1">{count}</span>
+      )}
     </div>
   );
 }

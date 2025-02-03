@@ -21,6 +21,7 @@ model User {
   likes       Like[]    
   comments    Comment[] 
   commentLikes CommentLike[]
+  savedPosts  SavedPost[]
 }
 
 model Post {
@@ -36,6 +37,7 @@ model Post {
   comments    Comment[] 
   engine      String    @default("Unity")
   status      String?
+  savedPosts  SavedPost[]
 }
 
 model Follow {
@@ -79,4 +81,16 @@ model Comment {
   parent      Comment? @relation("CommentReplies", fields: [parentId], references: [id])
   children    Comment[] @relation("CommentReplies")
   commentLikes CommentLike[]
+}
+
+model SavedPost {
+  id        Int     @id @default(autoincrement())
+  userId    String
+  postId    String
+  createdAt DateTime @default(now())
+
+  user  User @relation(fields: [userId], references: [id])
+  post  Post @relation(fields: [postId], references: [id])
+
+  @@unique([userId, postId]) // each user can save a post only once
 }

@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { useUser, SignOutButton } from '@clerk/nextjs';
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
 import { Button } from '~/components/ui/button';
-import { User as UserIcon, Settings, LogOut, Home, Plus } from 'lucide-react';
+import { User as UserIcon, Settings, LogOut, Home, Plus, HelpCircle } from 'lucide-react'
 import Link from 'next/link';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { SearchBar } from '~/components/searchBar';
@@ -71,6 +71,10 @@ export default function Layout({ children, showSearchBar = true }: LayoutProps) 
                 <DropdownMenu.Item className="flex items-center space-x-3 p-3 hover:bg-gray-700 cursor-pointer">
                   <LogOut className="h-5 w-5" />
                   <SignOutButton>Logout</SignOutButton>
+                </DropdownMenu.Item>
+                <DropdownMenu.Item className="flex items-center space-x-3 p-3 hover:bg-gray-700 cursor-pointer">
+                  <HelpCircle className="h-5 w-5" />
+                  <Link href="/help">Help</Link>
                 </DropdownMenu.Item>
               </DropdownMenu.Content>
             </DropdownMenu.Root>

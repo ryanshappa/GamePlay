@@ -1,5 +1,15 @@
 import * as React from 'react';
-import * as Drawer from '@radix-ui/react-dialog';
+import {
+    Sheet,
+    SheetContent,
+    SheetTrigger,
+    SheetHeader,
+    SheetFooter,
+    SheetTitle,
+    SheetDescription,
+    SheetClose,
+   } from '~/components/ui/sheet';
+   
 import { Button } from './ui/button';
 import { Textarea } from './ui/textarea';
 import { useUser } from '@clerk/nextjs';
@@ -255,52 +265,43 @@ export function CommentsDrawer({ open, onClose, post }: CommentsDrawerProps) {
   }
 
   return (
-    <Drawer.Root open={open} onOpenChange={onClose}>
-      <Drawer.Portal>
-        <Drawer.Overlay className="fixed inset-0 bg-black opacity-30" />
-        <Drawer.Content
-          className="fixed right-0 bg-gray-800 p-4 text-white overflow-y-auto shadow-lg z-40"
-          style={{
-            top: '72px',
-            height: 'calc(100vh - 72px)',
-            width: '320px',
-          }}
-        >
-          <Drawer.Title className="text-xl font-bold mb-4">
-            Comments
-          </Drawer.Title>
-          <Drawer.Close className="absolute top-2 right-2 text-white hover:text-gray-400">
-            &times;
-          </Drawer.Close>
+    <Sheet open={open} onOpenChange={onClose}>
+      <SheetContent
+        side="right"
+        className="p-4 bg-gray-800 text-white w-[320px]"
+        style={{ opacity: 0.95 }}
+      >
+        <SheetHeader>
+          <SheetTitle className="text-xl font-bold mb-4 text-white">Comments</SheetTitle>
+        </SheetHeader>
 
-          <div>
-            {comments.map((comment) => (
-              <NestedCommentItemDrawer
-                key={comment.id}
-                comment={comment}
-                postId={post.id}
-                currentUserId={user?.id}
-                onNewReply={handleNewReply}
-                onDeleteComment={handleDeleteComment}
-              />
-            ))}
+        <div>
+          {comments.map((comment) => (
+            <NestedCommentItemDrawer
+              key={comment.id}
+              comment={comment}
+              postId={post.id}
+              currentUserId={user?.id}
+              onNewReply={handleNewReply}
+              onDeleteComment={handleDeleteComment}
+            />
+          ))}
+        </div>
+
+        {user && (
+          <div className="mt-4">
+            <Textarea
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+              placeholder="Add a comment..."
+              className="w-full mb-2 bg-gray-700 text-white"
+            />
+            <Button onClick={handleAddComment} disabled={!newComment.trim()}>
+              Post Comment
+            </Button>
           </div>
-
-          {user && (
-            <div className="mt-4">
-              <Textarea
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                placeholder="Add a comment..."
-                className="w-full mb-2 bg-gray-700 text-white"
-              />
-              <Button onClick={handleAddComment} disabled={!newComment.trim()}>
-                Post Comment
-              </Button>
-            </div>
-          )}
-        </Drawer.Content>
-      </Drawer.Portal>
-    </Drawer.Root>
+        )}
+      </SheetContent>
+    </Sheet>
   );
 }

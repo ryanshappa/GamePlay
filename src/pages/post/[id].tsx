@@ -8,10 +8,12 @@ import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
 import { Button } from '~/components/ui/button';
 import { Textarea } from '~/components/ui/textarea';
 import { ScrollArea } from '~/components/ui/scroll-area';
-import { HeartIcon, MessageCircleIcon, ShareIcon } from 'lucide-react';
+import { HeartIcon, MessageCircleIcon, ShareIcon, Bookmark } from 'lucide-react';
 import Link from 'next/link';
 import DeleteCommentButton from '~/components/deleteComment';
 import { SignInModal } from '~/components/signInModal';
+import { SaveButton } from '~/components/saveButton';
+import CommentLikeButton from '~/components/CommentLikeButton';
 
 // We define a separate NestedCommentItem at the bottom
 
@@ -27,6 +29,7 @@ export default function PostPage({ post, status }: PostPageProps) {
   const [comments, setComments] = useState(post.comments || []);
   const [newComment, setNewComment] = useState('');
   const [isCopySuccess, setIsCopySuccess] = useState(false);
+  const [saved, setSaved] = useState(false);
 
   const [signInOpen, setSignInOpen] = useState(false);
 
@@ -113,6 +116,21 @@ export default function PostPage({ post, status }: PostPageProps) {
     if (commentsSec) commentsSec.scrollIntoView({ behavior: 'smooth' });
   };
 
+  async function handleSaveToggle() {
+    if (!isSignedIn) {
+      setSignInOpen(true);
+      return;
+    }
+    try {
+      const method = saved ? 'DELETE' : 'POST';
+      const resp = await fetch(`/api/posts/${post.id}/save`, { method });
+      if (!resp.ok) throw new Error('Failed to toggle save');
+      setSaved(!saved);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
   if (status === 'processing' || status === 'invalid') {
     return (
       <div className="flex-1">
@@ -147,21 +165,6 @@ export default function PostPage({ post, status }: PostPageProps) {
 
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center space-x-4">
-            {/* Like button */}
-            <Button variant="ghost" size="icon" className="bg-gray-800" onClick={handleLike}>
-              <HeartIcon
-                className={`h-6 w-6 ${hasLiked ? 'text-red-500' : 'text-white'}`}
-                fill={hasLiked ? 'currentColor' : 'none'}
-              />
-            </Button>
-            <span>{likesCount}</span>
-
-            {/* Comment button */}
-            <Button variant="ghost" size="icon" className="bg-gray-800" onClick={handleCommentClick}>
-              <MessageCircleIcon className="h-6 w-6 text-white" />
-            </Button>
-            <span>{comments.length}</span>
-
             {/* Author info */}
             <Link href={`/profile/${post.author.id}`}>
               <div className="flex items-center space-x-2 cursor-pointer">
@@ -169,18 +172,49 @@ export default function PostPage({ post, status }: PostPageProps) {
                   {post.author.avatarUrl ? (
                     <AvatarImage
                       src={post.author.avatarUrl}
-                      alt={post.author.username || ''}
                     />
                   ) : (
                     <AvatarFallback>{post.author.username?.charAt(0) || 'A'}</AvatarFallback>
                   )}
                 </Avatar>
-                <span className="font-semibold">@{post.author.username}</span>
               </div>
             </Link>
 
+            {/* Like button */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="bg-gray-800 rounded-full p-2 hover:bg-gray-700"
+              onClick={handleCommentClick}
+            >
+              <HeartIcon className="h-6 w-6 text-white" />
+            </Button>
+            <span>{comments.length}</span>
+
+            {/* Comment button */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="bg-gray-800 rounded-full p-2 hover:bg-gray-700"
+              onClick={handleCommentClick}
+            >
+              <MessageCircleIcon className="h-6 w-6 text-white" />
+            </Button>
+            <span>{comments.length}</span>
+
+            {/* Save (bookmark) button */}
+            <SaveButton
+              postId={post.id}
+              initialSaved={post.savedByCurrentUser || false}
+            />
+
             {/* Share */}
-            <Button variant="ghost" size="icon" className="bg-gray-800" onClick={handleShare}>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="bg-gray-800 rounded-full p-2 hover:bg-gray-700"
+              onClick={handleShare}
+            >
               <ShareIcon className="h-6 w-6 text-white" />
             </Button>
             {isCopySuccess && <span>Link copied!</span>}
@@ -410,20 +444,18 @@ function NestedCommentItem({
         <p>{comment.content}</p>
         {/* Like + reply row */}
         <div className="flex items-center space-x-3 mt-1 text-sm text-gray-400">
-          <button className="flex items-center space-x-1" onClick={handleLike}>
-            <HeartIcon
-              className={`h-5 w-5 ${liked ? 'text-red-500' : 'text-gray-400'}`}
-              fill={liked ? 'currentColor' : 'none'}
-            />
-            <span>{likeCount} {likeCount === 1 ? 'like' : 'likes'}</span>
-          </button>
+          <CommentLikeButton 
+            commentId={comment.id}
+            initialLiked={comment.likedByCurrentUser}
+            initialCount={comment.likeCount}
+          />
           {currentUser && (
-            <button onClick={() => setReplyOpen(!replyOpen)}>
+            <button onClick={() => setReplyOpen(!replyOpen)} className="hover:text-gray-200">
               Reply
             </button>
           )}
           {hasChildren && (
-            <button onClick={() => setShowReplies(!showReplies)}>
+            <button onClick={() => setShowReplies(!showReplies)} className="text-sm hover:text-gray-200">
               {showReplies
                 ? `Hide replies`
                 : `View replies (${comment.children.length})`}

@@ -40,6 +40,7 @@ export interface PostWithAuthor {
   likesCount: number;
   commentsCount: number;
   likedByCurrentUser: boolean;
+  savedByCurrentUser?: boolean;
 
   comments?: NestedComment[];
 }

@@ -3,7 +3,7 @@ import { db } from '~/server/db';
 import { PostWithAuthor } from '~/types/types';
 import React, { useEffect, useRef, useState } from 'react';
 import { useUser } from '@clerk/nextjs';
-import { CommentsDrawer } from '~/components/commentsDrawer';
+import { CommentsDrawer } from '~/components/commentsSheet';
 import PostItem from '~/components/postItem';
 import { SignInModal } from '~/components/signInModal';
 
