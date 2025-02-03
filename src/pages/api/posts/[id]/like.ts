@@ -6,9 +6,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const postId = req.query.id as string;
 
   if (req.method === 'POST') {
-
     const { userId } = getAuth(req);
-
     if (!userId) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
@@ -16,10 +14,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     try {
       const existingLike = await db.like.findUnique({
         where: {
-          userId_postId: {
-            userId,
-            postId: postId,
-          },
+          userId_postId: { userId, postId },
         },
       });
 
@@ -28,10 +23,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
 
       await db.like.create({
-        data: {
-          userId,
-          postId: postId,
-        },
+        data: { userId, postId },
       });
 
       res.status(200).json({ message: 'Post liked successfully' });
@@ -40,9 +32,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       res.status(500).json({ error: 'Internal server error' });
     }
   } else if (req.method === 'DELETE') {
-    // Handle unliking a post
     const { userId } = getAuth(req);
-
     if (!userId) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
@@ -50,10 +40,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     try {
       await db.like.delete({
         where: {
-          userId_postId: {
-            userId,
-            postId: postId,
-          },
+          userId_postId: { userId, postId },
         },
       });
 

@@ -1,3 +1,4 @@
+// src/components/postItem.tsx
 import React, { useRef, useEffect, useState } from 'react';
 import { PostWithAuthor } from '~/types/types';
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
@@ -5,6 +6,7 @@ import { Button } from '~/components/ui/button';
 import { HeartIcon, MessageCircleIcon, ShareIcon } from 'lucide-react';
 import Link from 'next/link';
 import { LikeButton } from '~/components/likeButton';
+import { SaveButton } from '~/components/saveButton';
 
 interface PostItemProps {
   post: PostWithAuthor;
@@ -39,19 +41,15 @@ const PostItem: React.FC<PostItemProps> = ({
 
   return (
     <div className="flex flex-col w-full">
-      {/* Title flush left in feed layout */}
-      {isFeedLayout && (
-        <h2 className="text-2xl font-bold mb-2">{post.title}</h2>
-      )}
+      {isFeedLayout && <h2 className="text-2xl font-bold mb-2">{post.title}</h2>}
 
       <div className={`relative ${isFeedLayout ? 'flex items-start' : 'flex flex-col items-center'}`}>
-        {/* The container that is offset from the left for the game itself */}
         <div
           className={`
             ${isFeedLayout
-              ? 'ml-6 w-[880px] h-[490px]' // or your desired size
+              ? 'ml-6 w-[880px] h-[490px]'
               : 'w-[120vh] h-[80vh] bg-black'
-            } 
+            }
             rounded-md overflow-hidden
           `}
         >
@@ -66,7 +64,6 @@ const PostItem: React.FC<PostItemProps> = ({
           ></iframe>
         </div>
 
-        {/* Interaction buttons in feed layout */}
         {isFeedLayout && (
           <div className="flex flex-col items-center space-y-4 ml-4 relative">
             <Link href={`/profile/${post.author.id}`}>
@@ -83,6 +80,7 @@ const PostItem: React.FC<PostItemProps> = ({
               initialLiked={post.likedByCurrentUser}
               initialCount={post.likesCount}
             />
+
             <Button
               variant="ghost"
               size="icon"
@@ -92,6 +90,12 @@ const PostItem: React.FC<PostItemProps> = ({
               <MessageCircleIcon className="h-6 w-6" />
             </Button>
             <span>{post.commentsCount}</span>
+
+            {/* Use the new SaveButton here */}
+            <SaveButton
+              postId={post.id}
+              initialSaved={post.savedByCurrentUser || false}
+            />
 
             <div className="flex items-center">
               <Button
@@ -127,7 +131,6 @@ const PostItem: React.FC<PostItemProps> = ({
         </Link>
       )}
 
-      {/* If it's a single post, place the title inside "post" layout if you want to. */}
       {!isFeedLayout && (
         <h2 className="text-2xl font-bold mt-4 mb-2">{post.title}</h2>
       )}

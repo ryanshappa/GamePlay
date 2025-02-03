@@ -131,6 +131,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     try {
+      // First, delete all comment-like records for this comment.
+      await db.commentLike.deleteMany({
+        where: { commentId: numericCommentId },
+      });
+
+      // Then, find the comment (including its post and author info) to check authorization.
       const comment = await db.comment.findUnique({
         where: { id: numericCommentId },
         include: {
@@ -153,10 +159,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           .json({ error: 'Comment does not belong to the specified post' });
       }
 
+      // Only allow deletion if the current user is the comment author or the post author.
       if (comment.userId !== userId && comment.post.authorId !== userId) {
         return res.status(403).json({ error: 'Forbidden' });
       }
 
+      // Finally, delete the comment.
       await db.comment.delete({
         where: { id: numericCommentId },
       });

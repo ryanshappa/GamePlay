@@ -35,6 +35,8 @@ export default function ProfilePage() {
   const [isFollowing, setIsFollowing] = useState(false);
   const [editProfileOpen, setEditProfileOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [activeTab, setActiveTab] = useState<'posts' | 'saved'>('posts');
+  const [savedPosts, setSavedPosts] = useState<Post[]>([]);
 
   useEffect(() => {
     if (id) {
@@ -53,6 +55,15 @@ export default function ProfilePage() {
         .catch((err) => console.error(err));
     }
   }, [userId, id]);
+
+  useEffect(() => {
+    if (activeTab === 'saved' && userId) {
+      fetch(`/api/getUserSavedPosts`)
+        .then((res) => res.json())
+        .then((data) => setSavedPosts(data.map((item: any) => item.post)))
+        .catch((err) => console.error(err));
+    }
+  }, [activeTab, userId]);
 
   const handleFollowToggle = async () => {
     const endpoint = isFollowing ? '/api/unfollowUser' : '/api/followUser';
@@ -116,18 +127,21 @@ export default function ProfilePage() {
   };
 
   const fetchUserData = async () => {
+    if (!id) return;
     try {
-      const response = await fetch(`/api/getUserProfile?id=${user?.id}`);
+      const response = await fetch(`/api/getUserProfile?userId=${id}`);
       const data = await response.json();
-      setUser(data.user);
+      setUser(data.user || data);
     } catch (error) {
       console.error('Failed to fetch user data:', error);
     }
   };
 
   useEffect(() => {
-    fetchUserData();
-  }, []);
+    if (id) {
+      fetchUserData();
+    }
+  }, [id]);
 
   if (!user) return <div>Loading...</div>;
 
@@ -136,7 +150,7 @@ export default function ProfilePage() {
       {/* Profile Info */}
       <section className="p-8">
         <div className="flex items-center space-x-6">
-          <Avatar className="h-24 w-24">
+          <Avatar className="h-32 w-32">
             <AvatarImage src={user.avatarUrl} alt="Profile" />
             <AvatarFallback>{user.username?.charAt(0)}</AvatarFallback>
           </Avatar>
@@ -179,64 +193,117 @@ export default function ProfilePage() {
       {/* Edit Profile Dialog */}
       <EditProfileDialog open={editProfileOpen} onOpenChange={setEditProfileOpen} />
 
-      {/* Posts Section */}
-      <section className="px-8">
-        <h2 className="text-xl font-bold mb-4">Posts</h2>
-        <hr className="border-gray-800 mb-6" />
-        <div className="overflow-y-auto max-h-[calc(100vh-200px)]">
-          {user.posts.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {user.posts.map((post) => (
-                <div key={post.id} className="relative">
-                  <Link href={`/post/${post.id}`}>
-                    <div className="aspect-video bg-gray-800 rounded-lg overflow-hidden relative cursor-pointer">
-                      <iframe
-                        src={post.fileUrl || '/default-file-url'}
-                        title={post.title}
-                        className="w-full h-full"
-                        frameBorder="0"
-                        allowFullScreen
-                      ></iframe>
-                      <div className="absolute bottom-0 left-0 p-2 bg-black bg-opacity-50 w-full">
-                        <p className="text-sm">{post.title}</p>
-                      </div>
-                    </div>
-                  </Link>
-                  {userId === id && (
-                    <div className="absolute top-2 right-2">
-                      <Menu>
-                        <MenuButton
-                          as={Button}
-                          variant="ghost"
-                          size="sm"
-                          className="p-1 rounded-full hover:bg-gray-700"
-                        >
-                          <MoreHorizontal className="h-6 w-6" />
-                        </MenuButton>
-                        <Portal>
-                          <MenuList className="bg-gray-800 text-white z-50">
-                            <MenuItem
-                              onClick={() => handleDeletePost(post.id)}
-                              className="px-4 py-2 hover:bg-gray-700 cursor-pointer"
-                              disabled={isDeleting}
-                            >
-                              {isDeleting ? 'Deleting...' : 'Delete Post'}
-                            </MenuItem>
-                          </MenuList>
-                        </Portal>
-                      </Menu>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-center text-gray-500">No posts yet.</p>
-          )}
-        </div>
-      </section>
+      {/* Tab Row */}
+      <div className="flex justify-center space-x-8 border-b border-gray-700 mb-2">
+        <button
+          className={`py-2 ${activeTab === 'posts'
+            ? 'font-bold border-b-2 border-white'
+            : 'text-gray-500'}`}
+          onClick={() => setActiveTab('posts')}
+        >
+          Posts
+        </button>
+        <button
+          className={`py-2 ${activeTab === 'saved'
+            ? 'font-bold border-b-2 border-white'
+            : 'text-gray-500'}`}
+          onClick={() => setActiveTab('saved')}
+        >
+          Saved
+        </button>
+      </div>
 
-      <UserProfile initialUser={user} onUserUpdate={fetchUserData} />
+      {/* Posts or Saved Section */}
+      <section className="px-8">
+        {activeTab === 'posts' && (
+          <>
+            <h2 className="text-xl font-bold mb-4">Posts</h2>
+            <div className="overflow-y-auto max-h-[calc(100vh-200px)]">
+              {user.posts.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {user.posts.map((post) => (
+                    <div key={post.id} className="relative">
+                      <Link href={`/post/${post.id}`}>
+                        <div className="aspect-video bg-gray-800 rounded-lg overflow-hidden relative cursor-pointer">
+                          <iframe
+                            src={post.fileUrl || '/default-file-url'}
+                            title={post.title}
+                            className="w-full h-full"
+                            frameBorder="0"
+                            allowFullScreen
+                          ></iframe>
+                          <div className="absolute bottom-0 left-0 p-2 bg-black bg-opacity-50 w-full">
+                            <p className="text-sm">{post.title}</p>
+                          </div>
+                        </div>
+                      </Link>
+                      {userId === id && (
+                        <div className="absolute top-2 right-2">
+                          <Menu>
+                            <MenuButton
+                              as={Button}
+                              variant="ghost"
+                              size="sm"
+                              className="p-1 rounded-full hover:bg-gray-700"
+                            >
+                              <MoreHorizontal className="h-6 w-6" />
+                            </MenuButton>
+                            <Portal>
+                              <MenuList className="bg-gray-800 text-white z-50">
+                                <MenuItem
+                                  onClick={() => handleDeletePost(post.id)}
+                                  className="px-4 py-2 hover:bg-gray-700 cursor-pointer"
+                                  disabled={isDeleting}
+                                >
+                                  {isDeleting ? 'Deleting...' : 'Delete Post'}
+                                </MenuItem>
+                              </MenuList>
+                            </Portal>
+                          </Menu>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-center text-gray-500">No posts yet.</p>
+              )}
+            </div>
+          </>
+        )}
+
+        {activeTab === 'saved' && (
+          <>
+            <h2 className="text-xl font-bold mb-4">Saved Posts</h2>
+            <div className="overflow-y-auto max-h-[calc(100vh-200px)]">
+              {savedPosts.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {savedPosts.map((post) => (
+                    <div key={post.id} className="relative">
+                      <Link href={`/post/${post.id}`}>
+                        <div className="aspect-video bg-gray-800 rounded-lg overflow-hidden relative cursor-pointer">
+                          <iframe
+                            src={post.fileUrl || '/default-file-url'}
+                            title={post.title}
+                            className="w-full h-full"
+                            frameBorder="0"
+                            allowFullScreen
+                          ></iframe>
+                          <div className="absolute bottom-0 left-0 p-2 bg-black bg-opacity-50 w-full">
+                            <p className="text-sm">{post.title}</p>
+                          </div>
+                        </div>
+                      </Link>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-center text-gray-500">No saved posts yet.</p>
+              )}
+            </div>
+          </>
+        )}
+      </section>
     </div>
   );
 }

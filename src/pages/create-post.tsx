@@ -121,6 +121,7 @@ const CreatePost = () => {
         <div className="mb-4">
           <Label htmlFor="file">Upload your game file</Label>
           <p className="text-sm text-gray-500">Please upload your game packaged as a .zip file.</p>
+          <p className="text-sm text-gray-500">Ensure your HTML file in the web build export is named "index.html".</p>
           <div className="mt-2">
             <label
               htmlFor="file"
