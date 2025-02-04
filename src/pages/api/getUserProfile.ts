@@ -35,11 +35,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         // Fetch user data from Clerk
         const clerkUser = await clerkClient.users.getUser(userId);
 
+        // Determine default username
+        const defaultUsername =
+          clerkUser.username ||
+          (clerkUser.emailAddresses[0]?.emailAddress
+            ? clerkUser.emailAddresses[0].emailAddress.split('@')[0]
+            : '');
+
         // Create user in database
         user = await db.user.create({
           data: {
             id: userId,
-            username: clerkUser.username || clerkUser.emailAddresses[0]?.emailAddress || '',
+            username: defaultUsername,
             email: clerkUser.emailAddresses[0]?.emailAddress || '',
             avatarUrl: clerkUser.imageUrl,
             bio: (clerkUser.publicMetadata?.bio as string) || '',
@@ -87,7 +94,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
 
     const likesCount = await db.like.count({
-      where: { userId },
+      where: { post: { authorId: userId } },
     });
 
     // Serialize dates in posts

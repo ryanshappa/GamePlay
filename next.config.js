@@ -18,17 +18,18 @@ const config = {
   async headers() {
     return [
       {
-        source: "/post/:id",
+        source: '/(.*)',
         headers: [
           {
-            key: "Content-Security-Policy",
+            key: 'Content-Security-Policy',
             value: `
               default-src 'self';
-              script-src 'self' 'unsafe-eval' https://*.clerk.dev;
-              style-src 'self' 'unsafe-inline';
-              frame-src 'self' https://gameplay-uploads.s3.amazonaws.com;
-              connect-src 'self' https://*.clerk.dev;
-              img-src 'self' data: https://gameplay-uploads.s3.amazonaws.com;
+              img-src 'self' data: https://gameplay-uploads.s3.amazonaws.com https://img.clerk.com;
+              script-src 'self' 'unsafe-inline' 'unsafe-eval';
+              style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+              font-src 'self' https://fonts.gstatic.com;
+              frame-src 'self' https://gameplay-uploads.s3.amazonaws.com https://gameplay-posts.s3.amazonaws.com;
+              connect-src 'self' https://*.algolia.net https://*.algolianet.com https://*.clerk.dev;
             `.replace(/\s{2,}/g, ' ').trim(),
           },
         ],

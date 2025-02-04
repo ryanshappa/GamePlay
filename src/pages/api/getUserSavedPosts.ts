@@ -5,7 +5,10 @@ import { NextApiRequest } from 'next';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { userId } = getAuth(req);
-  if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+  if (!userId) {
+    console.error('Unauthorized access attempt');
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
 
   try {
     const saved = await db.savedPost.findMany({
@@ -14,7 +17,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
     res.status(200).json(saved);
   } catch (err) {
-    console.error(err);
+    console.error('Error fetching saved posts:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 }
