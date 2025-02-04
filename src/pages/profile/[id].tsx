@@ -200,14 +200,16 @@ export default function ProfilePage() {
         >
           Posts
         </button>
-        <button
-          className={`py-2 ${activeTab === 'saved'
-            ? 'font-bold border-b-2 border-white'
-            : 'text-gray-500'}`}
-          onClick={() => setActiveTab('saved')}
-        >
-          Saved
-        </button>
+        {userId === id && (
+          <button
+            className={`py-2 ${activeTab === 'saved'
+              ? 'font-bold border-b-2 border-white'
+              : 'text-gray-500'}`}
+            onClick={() => setActiveTab('saved')}
+          >
+            Saved
+          </button>
+        )}
       </div>
 
       {/* Posts or Saved Section */}

@@ -100,6 +100,30 @@ export default function HomePage({ posts }: HomePageProps) {
     }
   };
 
+  const handleAddCommentOptimistic = async (postId: string, content: string) => {
+    if (!isSignedIn) {
+      setSignInOpen(true);
+      return;
+    }
+    if (!content.trim()) return;
+
+    try {
+      const resp = await fetch(`/api/posts/${postId}/comments`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content }),
+      });
+      if (!resp.ok) {
+        alert('Failed to add comment');
+        return;
+      }
+      // Optimistically update the comments count
+      handleAddComment(postId);
+    } catch (error) {
+      alert('Unexpected error adding comment');
+    }
+  };
+
   const handleCommentClick = (post: PostWithAuthor) => {
     setSelectedPost(post);
     setCommentsDrawerOpen(true);

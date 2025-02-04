@@ -12,8 +12,6 @@ import { HeartIcon, MessageCircleIcon, ShareIcon, Bookmark } from 'lucide-react'
 import Link from 'next/link';
 import DeleteCommentButton from '~/components/deleteComment';
 import { SignInModal } from '~/components/signInModal';
-import { SaveButton } from '~/components/saveButton';
-import CommentLikeButton from '~/components/CommentLikeButton';
 
 // We define a separate NestedCommentItem at the bottom
 
@@ -165,6 +163,21 @@ export default function PostPage({ post, status }: PostPageProps) {
 
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center space-x-4">
+            {/* Like button */}
+            <Button variant="ghost" size="icon" className="bg-gray-800" onClick={handleLike}>
+              <HeartIcon
+                className={`h-6 w-6 ${hasLiked ? 'text-red-500' : 'text-white'}`}
+                fill={hasLiked ? 'currentColor' : 'none'}
+              />
+            </Button>
+            <span>{likesCount}</span>
+
+            {/* Comment button */}
+            <Button variant="ghost" size="icon" className="bg-gray-800" onClick={handleCommentClick}>
+              <MessageCircleIcon className="h-6 w-6 text-white" />
+            </Button>
+            <span>{comments.length}</span>
+
             {/* Author info */}
             <Link href={`/profile/${post.author.id}`}>
               <div className="flex items-center space-x-2 cursor-pointer">
@@ -180,41 +193,18 @@ export default function PostPage({ post, status }: PostPageProps) {
               </div>
             </Link>
 
-            {/* Like button */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="bg-gray-800 rounded-full p-2 hover:bg-gray-700"
-              onClick={handleCommentClick}
-            >
-              <HeartIcon className="h-6 w-6 text-white" />
-            </Button>
-            <span>{comments.length}</span>
-
-            {/* Comment button */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="bg-gray-800 rounded-full p-2 hover:bg-gray-700"
-              onClick={handleCommentClick}
-            >
-              <MessageCircleIcon className="h-6 w-6 text-white" />
-            </Button>
-            <span>{comments.length}</span>
-
             {/* Save (bookmark) button */}
-            <SaveButton
-              postId={post.id}
-              initialSaved={post.savedByCurrentUser || false}
-            />
+            <Button
+              variant="ghost"
+              size="icon"
+              className="bg-gray-800"
+              onClick={handleSaveToggle}
+            >
+              <Bookmark className={`h-6 w-6 ${saved ? 'text-yellow-400' : 'text-white'}`} />
+            </Button>
 
             {/* Share */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="bg-gray-800 rounded-full p-2 hover:bg-gray-700"
-              onClick={handleShare}
-            >
+            <Button variant="ghost" size="icon" className="bg-gray-800" onClick={handleShare}>
               <ShareIcon className="h-6 w-6 text-white" />
             </Button>
             {isCopySuccess && <span>Link copied!</span>}
@@ -444,18 +434,20 @@ function NestedCommentItem({
         <p>{comment.content}</p>
         {/* Like + reply row */}
         <div className="flex items-center space-x-3 mt-1 text-sm text-gray-400">
-          <CommentLikeButton 
-            commentId={comment.id}
-            initialLiked={comment.likedByCurrentUser}
-            initialCount={comment.likeCount}
-          />
+          <button className="flex items-center space-x-1" onClick={handleLike}>
+            <HeartIcon
+              className={`h-5 w-5 ${liked ? 'text-red-500' : 'text-gray-400'}`}
+              fill={liked ? 'currentColor' : 'none'}
+            />
+            <span>{likeCount} {likeCount === 1 ? 'like' : 'likes'}</span>
+          </button>
           {currentUser && (
-            <button onClick={() => setReplyOpen(!replyOpen)} className="hover:text-gray-200">
+            <button onClick={() => setReplyOpen(!replyOpen)}>
               Reply
             </button>
           )}
           {hasChildren && (
-            <button onClick={() => setShowReplies(!showReplies)} className="text-sm hover:text-gray-200">
+            <button onClick={() => setShowReplies(!showReplies)}>
               {showReplies
                 ? `Hide replies`
                 : `View replies (${comment.children.length})`}
