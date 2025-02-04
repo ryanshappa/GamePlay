@@ -127,21 +127,18 @@ export default function ProfilePage() {
   };
 
   const fetchUserData = async () => {
-    if (!id) return;
     try {
-      const response = await fetch(`/api/getUserProfile?userId=${id}`);
+      const response = await fetch(`/api/getUserProfile?id=${user?.id}`);
       const data = await response.json();
-      setUser(data.user || data);
+      setUser(data.user);
     } catch (error) {
       console.error('Failed to fetch user data:', error);
     }
   };
 
   useEffect(() => {
-    if (id) {
-      fetchUserData();
-    }
-  }, [id]);
+    fetchUserData();
+  }, []);
 
   if (!user) return <div>Loading...</div>;
 
@@ -304,6 +301,7 @@ export default function ProfilePage() {
           </>
         )}
       </section>
+
     </div>
   );
 }
