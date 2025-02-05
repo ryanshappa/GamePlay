@@ -32,5 +32,5 @@ export default clerkMiddleware((auth, req: NextRequest) => {
 
 export const config = {
   // We only run middleware on the routes we care about
-  matcher: ['/api/getPresignedUrl', '/post/:path*', '/api/deleteAccount', '/sign-in(.*)', '/api/updateUserProfile', '/api/posts(.*)', '/api/comments(.*)', '/api/getUserSavedPosts', '/sign-up(.*)'],
+  matcher: ['/api/getPresignedUrl', '/api/deleteAccount', '/sign-in(.*)', '/api/updateUserProfile', '/api/posts(.*)', '/api/comments(.*)', '/api/getUserSavedPosts', '/sign-up(.*)'],
 };

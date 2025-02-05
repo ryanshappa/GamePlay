@@ -164,7 +164,7 @@ export default function PostPage({ post, status }: PostPageProps) {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center space-x-4">
             {/* Like button */}
-            <Button variant="ghost" size="icon" className="bg-gray-800" onClick={handleLike}>
+            <Button variant="ghost" size="icon" className="bg-gray-800 rounded-full" onClick={handleLike}>
               <HeartIcon
                 className={`h-6 w-6 ${hasLiked ? 'text-red-500' : 'text-white'}`}
                 fill={hasLiked ? 'currentColor' : 'none'}
@@ -173,7 +173,7 @@ export default function PostPage({ post, status }: PostPageProps) {
             <span>{likesCount}</span>
 
             {/* Comment button */}
-            <Button variant="ghost" size="icon" className="bg-gray-800" onClick={handleCommentClick}>
+            <Button variant="ghost" size="icon" className="bg-gray-800 rounded-full" onClick={handleCommentClick}>
               <MessageCircleIcon className="h-6 w-6 text-white" />
             </Button>
             <span>{comments.length}</span>
@@ -197,14 +197,14 @@ export default function PostPage({ post, status }: PostPageProps) {
             <Button
               variant="ghost"
               size="icon"
-              className="bg-gray-800"
+              className="bg-gray-800 rounded-full"
               onClick={handleSaveToggle}
             >
               <Bookmark className={`h-6 w-6 ${saved ? 'text-yellow-400' : 'text-white'}`} />
             </Button>
 
             {/* Share */}
-            <Button variant="ghost" size="icon" className="bg-gray-800" onClick={handleShare}>
+            <Button variant="ghost" size="icon" className="bg-gray-800 rounded-full" onClick={handleShare}>
               <ShareIcon className="h-6 w-6 text-white" />
             </Button>
             {isCopySuccess && <span>Link copied!</span>}

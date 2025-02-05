@@ -127,15 +127,11 @@ export default function Layout({ children, showSearchBar = true }: LayoutProps) 
                 <span className="text-lg">Profile</span>
               </div>
             </Link>
-          ) : (
-            <Button variant="ghost" onClick={() => setSignInOpen(true)} className="mb-6">
-              Sign In
-            </Button>
-          )}
+          ) : null}
         </nav>
 
         {/* Social icons pinned at the bottom of the sidebar */}
-        <div className="mt-auto flex space-x-4">
+        {/* <div className="mt-auto flex space-x-4">
           <Link
             href="https://x.com/TryGamePlay_"
             target="_blank"
@@ -160,7 +156,7 @@ export default function Layout({ children, showSearchBar = true }: LayoutProps) 
           >
             <FaInstagram className="h-8 w-8 hover:text-pink-400" />
           </Link>
-        </div>
+        </div> */}
       </aside>
 
       {/* MAIN CONTENT AREA */}

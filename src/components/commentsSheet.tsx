@@ -2,12 +2,8 @@ import * as React from 'react';
 import {
     Sheet,
     SheetContent,
-    SheetTrigger,
     SheetHeader,
-    SheetFooter,
     SheetTitle,
-    SheetDescription,
-    SheetClose,
    } from '~/components/ui/sheet';
    
 import { Button } from './ui/button';
