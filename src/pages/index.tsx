@@ -1,4 +1,3 @@
-
 import { GetServerSideProps } from 'next';
 import { db } from '~/server/db';
 import { PostWithAuthor } from '~/types/types';
@@ -28,6 +27,7 @@ export default function HomePage({ posts }: HomePageProps) {
     postRefs.current[index] = el;
   };
 
+  // Intersection Observer to figure out which post is "active"
   useEffect(() => {
     const observerOptions = {
       root: null,
@@ -49,6 +49,7 @@ export default function HomePage({ posts }: HomePageProps) {
       }
     };
     const observer = new IntersectionObserver(observerCallback, observerOptions);
+
     postRefs.current.forEach((el) => {
       if (el) observer.observe(el);
     });
@@ -59,7 +60,10 @@ export default function HomePage({ posts }: HomePageProps) {
     };
   }, []);
 
-  // Optimistic comment addition: update the post's commentsCount in local state.
+  /**
+   * Optimistic comment addition:
+   * We'll add to the post's commentsCount in state if the user is signed in.
+   */
   const handleAddCommentOptimistic = async (postId: string, content: string) => {
     if (!isSignedIn) {
       setSignInOpen(true);
@@ -77,14 +81,40 @@ export default function HomePage({ posts }: HomePageProps) {
         alert('Failed to add comment');
         return;
       }
-      // Update the post's commentsCount locally.
-      setPostList((prevPosts) =>
-        prevPosts.map((post) =>
-          post.id === postId ? { ...post, commentsCount: post.commentsCount + 1 } : post
+      // Update commentsCount in local state
+      setPostList((prev) =>
+        prev.map((p) =>
+          p.id === postId ? { ...p, commentsCount: p.commentsCount + 1 } : p
         )
       );
     } catch (error) {
       alert('Unexpected error adding comment');
+    }
+  };
+
+  /**
+   * Optimistic comment deletion:
+   * We'll decrement the post's commentsCount in state.
+   */
+  const handleDeleteCommentOptimistic = async (postId: string, commentId: number) => {
+    try {
+      const resp = await fetch(`/api/posts/${postId}/comments?commentId=${commentId}`, {
+        method: 'DELETE',
+      });
+      if (!resp.ok) {
+        alert('Failed to delete comment');
+        return;
+      }
+      // Decrement the feed's comment count
+      setPostList((prev) =>
+        prev.map((p) =>
+          p.id === postId
+            ? { ...p, commentsCount: Math.max(0, p.commentsCount - 1) }
+            : p
+        )
+      );
+    } catch (error) {
+      alert('Unexpected error deleting comment');
     }
   };
 
@@ -109,6 +139,7 @@ export default function HomePage({ posts }: HomePageProps) {
           const inRange =
             index >= currentActiveIndex - VIRTUALIZATION_BUFFER &&
             index <= currentActiveIndex + VIRTUALIZATION_BUFFER;
+
           return (
             <div
               key={post.id}
@@ -149,8 +180,11 @@ export default function HomePage({ posts }: HomePageProps) {
           open={commentsDrawerOpen}
           onClose={() => setCommentsDrawerOpen(false)}
           post={selectedPost}
+          // The child’s onAddComment callback expects just (content), so we capture selectedPost.id here
           onAddComment={(content) => handleAddCommentOptimistic(selectedPost.id, content)}
-          // onDeleteComment: if needed...
+          onDeleteComment={(commentId) =>
+            handleDeleteCommentOptimistic(selectedPost.id, commentId)
+          }
         />
       )}
 
