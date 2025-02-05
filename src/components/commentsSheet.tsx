@@ -1,15 +1,11 @@
 import * as React from 'react';
 import {
-    Sheet,
-    SheetContent,
-    SheetTrigger,
-    SheetHeader,
-    SheetFooter,
-    SheetTitle,
-    SheetDescription,
-    SheetClose,
-   } from '~/components/ui/sheet';
-   
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from '~/components/ui/sheet';
+
 import { Button } from './ui/button';
 import { Textarea } from './ui/textarea';
 import { useUser } from '@clerk/nextjs';
@@ -23,8 +19,12 @@ interface CommentsDrawerProps {
   open: boolean;
   onClose: () => void;
   post: PostWithAuthor;
-  onAddComment?: (postId: string) => void;
-  onDeleteComment?: (postId: string, commentId: number) => void;
+  /**
+   * The parent only needs the comment content or ID,
+   * because it already knows which post is selected.
+   */
+  onAddComment?: (content: string) => void;
+  onDeleteComment?: (commentId: number) => void;
 }
 
 function NestedCommentItemDrawer({
@@ -105,7 +105,9 @@ function NestedCommentItemDrawer({
         <Link href={`/profile/${comment.user.id}`}>
           <Avatar className="h-8 w-8 cursor-pointer">
             <AvatarImage src={comment.user.avatarUrl || ''} alt="User Avatar" />
-            <AvatarFallback>{comment.user.username?.charAt(0) || 'U'}</AvatarFallback>
+            <AvatarFallback>
+              {comment.user.username?.charAt(0) || 'U'}
+            </AvatarFallback>
           </Avatar>
         </Link>
         <div className="flex-1">
@@ -118,8 +120,8 @@ function NestedCommentItemDrawer({
                   user: { id: comment.user.id, username: comment.user.username || '' },
                 }}
                 postId={postId}
-                postAuthorId="" // We'll set the actual postAuthorId from the parent
-                currentUser={currentUserId ? { id: currentUserId, username: '' } : null}
+                postAuthorId="" // We'll set the actual postAuthorId if needed
+                currentUser={{ id: currentUserId, username: '' }}
                 onDelete={(commentId) => onDeleteComment(commentId)}
               />
             )}
@@ -140,7 +142,9 @@ function NestedCommentItemDrawer({
             )}
             <button className="ml-auto flex items-center" onClick={handleLike}>
               <HeartIcon
-                className={`h-5 w-5 mr-1 ${liked ? 'text-red-500' : 'text-gray-400'}`}
+                className={`h-5 w-5 mr-1 ${
+                  liked ? 'text-red-500' : 'text-gray-400'
+                }`}
                 fill={liked ? 'currentColor' : 'none'}
               />
             </button>
@@ -165,7 +169,7 @@ function NestedCommentItemDrawer({
             >
               {showReplies
                 ? `Hide replies`
-                : `View replies (${comment.children?.length || 0})`}
+                : `View replies (${comment.children?.length ?? 0})`}
             </button>
           )}
         </div>
@@ -190,7 +194,13 @@ function NestedCommentItemDrawer({
   );
 }
 
-export function CommentsDrawer({ open, onClose, post }: CommentsDrawerProps) {
+export function CommentsDrawer({
+  open,
+  onClose,
+  post,
+  onAddComment,
+  onDeleteComment,
+}: CommentsDrawerProps) {
   const { user } = useUser();
   const [comments, setComments] = React.useState<NestedComment[]>([]);
   const [newComment, setNewComment] = React.useState('');
@@ -216,10 +226,12 @@ export function CommentsDrawer({ open, onClose, post }: CommentsDrawerProps) {
     }
   }
 
-  async function handleAddComment() {
-    if (!newComment.trim()) {
-      return;
-    }
+  /**
+   * Local fetch approach if no parent callback is provided.
+   * (Used if you want to function standalone.)
+   */
+  async function handleAddCommentLocal() {
+    if (!newComment.trim()) return;
 
     try {
       const response = await fetch(`/api/posts/${post.id}/comments`, {
@@ -227,21 +239,37 @@ export function CommentsDrawer({ open, onClose, post }: CommentsDrawerProps) {
         body: JSON.stringify({ content: newComment }),
         headers: { 'Content-Type': 'application/json' },
       });
-
       if (!response.ok) {
         const errorData = await response.json();
         console.error('Failed to add comment:', errorData.message || response.statusText);
       } else {
-        // the server returns the new comment as a top-level comment
         setNewComment('');
-        fetchComments(); // re-fetch all comments
+        await fetchComments(); // refresh local comments
       }
     } catch (error) {
       console.error('Error adding comment:', error);
     }
   }
 
-  async function handleDeleteComment(commentId: number) {
+  /**
+   * Final method that either calls parent or does local fetch
+   */
+  async function handleAddCommentFinal() {
+    if (!newComment.trim()) {
+      return;
+    }
+    if (onAddComment) {
+      // Call parent's “optimistic” approach
+      onAddComment(newComment);
+      setNewComment('');
+      // Re-fetch to keep local list in sync
+      await fetchComments();
+    } else {
+      await handleAddCommentLocal();
+    }
+  }
+
+  async function handleDeleteCommentLocal(commentId: number) {
     try {
       const response = await fetch(`/api/posts/${post.id}/comments?commentId=${commentId}`, {
         method: 'DELETE',
@@ -251,12 +279,21 @@ export function CommentsDrawer({ open, onClose, post }: CommentsDrawerProps) {
         console.error('Failed to delete comment:', errorData.message || response.statusText);
         alert(`Failed to delete comment: ${errorData.message || response.statusText}`);
       } else {
-        // re-fetch to see updated list
-        fetchComments();
+        await fetchComments(); // re-fetch to see updated list
       }
     } catch (error) {
       console.error('Error deleting comment:', error);
       alert('An unexpected error occurred while deleting the comment.');
+    }
+  }
+
+  async function handleDeleteCommentFinal(commentId: number) {
+    if (onDeleteComment) {
+      onDeleteComment(commentId);
+      // Then re-fetch to keep local comments in sync
+      await fetchComments();
+    } else {
+      await handleDeleteCommentLocal(commentId);
     }
   }
 
@@ -272,7 +309,9 @@ export function CommentsDrawer({ open, onClose, post }: CommentsDrawerProps) {
         style={{ opacity: 0.95 }}
       >
         <SheetHeader>
-          <SheetTitle className="text-xl font-bold mb-4 text-white">Comments</SheetTitle>
+          <SheetTitle className="text-xl font-bold mb-4 text-white">
+            Comments
+          </SheetTitle>
         </SheetHeader>
 
         <div>
@@ -283,7 +322,7 @@ export function CommentsDrawer({ open, onClose, post }: CommentsDrawerProps) {
               postId={post.id}
               currentUserId={user?.id}
               onNewReply={handleNewReply}
-              onDeleteComment={handleDeleteComment}
+              onDeleteComment={handleDeleteCommentFinal}
             />
           ))}
         </div>
@@ -296,7 +335,7 @@ export function CommentsDrawer({ open, onClose, post }: CommentsDrawerProps) {
               placeholder="Add a comment..."
               className="w-full mb-2 bg-gray-700 text-white"
             />
-            <Button onClick={handleAddComment} disabled={!newComment.trim()}>
+            <Button onClick={handleAddCommentFinal} disabled={!newComment.trim()}>
               Post Comment
             </Button>
           </div>

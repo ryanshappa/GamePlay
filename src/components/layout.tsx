@@ -12,6 +12,7 @@ import { SiTiktok } from 'react-icons/si';
 import { FaXTwitter } from 'react-icons/fa6';
 import { SignInModal } from '~/components/signInModal';
 import { SignUpModal } from '~/components/signUpModal';
+import { useRouter } from 'next/router';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -20,6 +21,7 @@ interface LayoutProps {
 
 export default function Layout({ children, showSearchBar = true }: LayoutProps) {
   const { user, isSignedIn } = useUser();
+  const router = useRouter();
 
   // Two local states for controlling the modals
   const [signInOpen, setSignInOpen] = useState(false);
@@ -95,20 +97,20 @@ export default function Layout({ children, showSearchBar = true }: LayoutProps) 
         bg-black
         flex flex-col
       ">
-        <nav className="mt-6 space-y-8">
+        <nav className="mt-6">
           <Link href="/">
-            <div className="flex items-center space-x-4 cursor-pointer hover:text-gray-400">
+            <div className="flex items-center space-x-4 cursor-pointer hover:text-gray-400 mb-6">
               <Home className="h-8 w-8" />
               <span className="text-lg">Home</span>
             </div>
           </Link>
 
           <div
-            className="flex items-center space-x-4 cursor-pointer hover:text-gray-400"
+            className="flex items-center space-x-4 cursor-pointer hover:text-gray-400 mb-6"
             onClick={() => {
-              // If user is signed in, go to create-post
+              // Use Next.js router for navigation
               if (isSignedIn) {
-                window.location.href = '/create-post';
+                router.push('/create-post');
               } else {
                 setSignInOpen(true);
               }
@@ -118,25 +120,18 @@ export default function Layout({ children, showSearchBar = true }: LayoutProps) 
             <span className="text-lg">Create</span>
           </div>
 
-          {user && (
-            <div
-              className="flex items-center space-x-4 cursor-pointer hover:text-gray-400"
-              onClick={() => {
-                if (isSignedIn) {
-                  window.location.href = `/profile/${user.id}`;
-                } else {
-                  setSignInOpen(true);
-                }
-              }}
-            >
-              <UserIcon className="h-8 w-8" />
-              <span className="text-lg">Profile</span>
-            </div>
-          )}
+          {user ? (
+            <Link href={`/profile/${user.id}`}>
+              <div className="flex items-center space-x-4 cursor-pointer hover:text-gray-400 mb-6">
+                <UserIcon className="h-8 w-8" />
+                <span className="text-lg">Profile</span>
+              </div>
+            </Link>
+          ) : null}
         </nav>
 
         {/* Social icons pinned at the bottom of the sidebar */}
-        <div className="mt-auto flex space-x-4">
+        {/* <div className="mt-auto flex space-x-4">
           <Link
             href="https://x.com/TryGamePlay_"
             target="_blank"
@@ -161,7 +156,7 @@ export default function Layout({ children, showSearchBar = true }: LayoutProps) 
           >
             <FaInstagram className="h-8 w-8 hover:text-pink-400" />
           </Link>
-        </div>
+        </div> */}
       </aside>
 
       {/* MAIN CONTENT AREA */}
