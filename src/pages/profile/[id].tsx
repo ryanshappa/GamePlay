@@ -6,7 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
 import { Button, Portal } from '@chakra-ui/react';
 import Link from 'next/link';
 import { EditProfileDialog } from '~/components/editProfileDialog';
-import { MoreHorizontal } from 'lucide-react'; 
+import { MoreHorizontal } from 'lucide-react';
 import {
   Menu,
   MenuButton,
@@ -29,40 +29,39 @@ interface UserProfile {
 
 export default function ProfilePage() {
   const router = useRouter();
-
-  // Wait until the router is ready
-  if (!router.isReady) return <div>Loading...</div>;
-
   const { id } = router.query;
+  const profileId = typeof id === 'string' ? id : '';
+
   const { userId } = useAuth();
   const { user: currentUser } = useUser();
-  const [user, setUser] = useState<UserProfile | null>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [isFollowing, setIsFollowing] = useState(false);
   const [editProfileOpen, setEditProfileOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [activeTab, setActiveTab] = useState<'posts' | 'saved'>('posts');
   const [savedPosts, setSavedPosts] = useState<Post[]>([]);
 
-  // Only fetch the user profile when id is defined.
+  // Fetch user profile once the router is ready and id is defined.
   useEffect(() => {
-    if (id && typeof id === 'string') {
-      fetch(`/api/getUserProfile?userId=${id}`)
+    if (router.isReady && profileId) {
+      fetch(`/api/getUserProfile?userId=${profileId}`)
         .then((res) => res.json())
-        .then((data) => setUser(data))
+        .then((data) => setUserProfile(data))
         .catch((err) => console.error(err));
     }
-  }, [id]);
+  }, [router.isReady, profileId]);
 
-  // Call the isFollowing endpoint only when id is defined and the viewer isn't the profile owner.
+  // Fetch isFollowing only if viewer is not the profile owner.
   useEffect(() => {
-    if (userId && id && typeof id === 'string' && userId !== id) {
-      fetch(`/api/isFollowing?userId=${id}`)
+    if (router.isReady && userId && profileId && userId !== profileId) {
+      fetch(`/api/isFollowing?userId=${profileId}`)
         .then((res) => res.json())
         .then((data) => setIsFollowing(data.isFollowing))
         .catch((err) => console.error(err));
     }
-  }, [userId, id]);
+  }, [router.isReady, userId, profileId]);
 
+  // Fetch saved posts if the "saved" tab is active.
   useEffect(() => {
     if (activeTab === 'saved' && userId) {
       fetch(`/api/getUserSavedPosts`)
@@ -83,7 +82,7 @@ export default function ProfilePage() {
       });
 
       if (response.ok) {
-        setUser((prevUser) => {
+        setUserProfile((prevUser) => {
           if (!prevUser) return prevUser;
           return {
             ...prevUser,
@@ -104,24 +103,34 @@ export default function ProfilePage() {
   };
 
   const handleUserUpdate = (updatedUser: any) => {
-    setUser(updatedUser);
+    setUserProfile(updatedUser);
   };
 
+  // A helper function to re-fetch user profile data.
   const fetchUserData = async () => {
+    if (!profileId) return;
     try {
-      const response = await fetch(`/api/getUserProfile?id=${user?.id}`);
+      const response = await fetch(`/api/getUserProfile?userId=${profileId}`);
       const data = await response.json();
-      setUser(data.user);
+      setUserProfile(data.user || data);
     } catch (error) {
       console.error('Failed to fetch user data:', error);
     }
   };
 
   useEffect(() => {
-    fetchUserData();
-  }, []);
+    if (profileId) {
+      fetchUserData();
+    }
+  }, [profileId]);
 
-  if (!user) return <div>Loading...</div>;
+  // If router isn't ready or profileId is empty, show a loading indicator.
+  if (!router.isReady || !profileId) {
+    return <div>Loading...</div>;
+  }
+
+  // Render your profile page if userProfile is loaded.
+  if (!userProfile) return <div>Loading profile...</div>;
 
   return (
     <div>
@@ -129,33 +138,33 @@ export default function ProfilePage() {
       <section className="p-8">
         <div className="flex items-center space-x-6">
           <Avatar className="h-32 w-32">
-            <AvatarImage src={user.avatarUrl} alt="Profile" />
-            <AvatarFallback>{user.username?.charAt(0)}</AvatarFallback>
+            <AvatarImage src={userProfile.avatarUrl} alt="Profile" />
+            <AvatarFallback>{userProfile.username?.charAt(0)}</AvatarFallback>
           </Avatar>
           <div>
-            <h1 className="text-2xl font-bold">@{user.username}</h1>
+            <h1 className="text-2xl font-bold">@{userProfile.username}</h1>
             <div className="mt-2 flex space-x-4">
               <span>
-                <strong>{user.followersCount}</strong> Followers
+                <strong>{userProfile.followersCount}</strong> Followers
               </span>
               <span>
-                <strong>{user.followingCount}</strong> Following
+                <strong>{userProfile.followingCount}</strong> Following
               </span>
               <span>
-                <strong>{user.likesCount}</strong> Likes
+                <strong>{userProfile.likesCount}</strong> Likes
               </span>
             </div>
-            <p className="mt-2">{user.bio}</p>
+            <p className="mt-2">{userProfile.bio}</p>
           </div>
         </div>
         <div className="mt-6">
-          {userId !== id && (
+          {userId !== profileId && (
             <FollowButton
-              profileId={id as string}
+              profileId={profileId}
               initialIsFollowing={isFollowing}
               onFollowChange={(newState) => {
                 setIsFollowing(newState);
-                setUser((prevUser) => {
+                setUserProfile((prevUser) => {
                   if (!prevUser) return prevUser;
                   const newFollowersCount = newState
                     ? prevUser.followersCount + 1
@@ -165,7 +174,7 @@ export default function ProfilePage() {
               }}
             />
           )}
-          {userId === id && (
+          {userId === profileId && (
             <Button
               className="bg-green-600 text-white px-4 py-2 rounded-full"
               onClick={() => setEditProfileOpen(true)}
@@ -189,7 +198,7 @@ export default function ProfilePage() {
         >
           Posts
         </button>
-        {userId === id && (
+        {userId === profileId && (
           <button
             className={`py-2 ${activeTab === 'saved'
               ? 'font-bold border-b-2 border-white'
@@ -203,13 +212,13 @@ export default function ProfilePage() {
 
       {/* Posts or Saved Section */}
       <section className="px-8">
-        {activeTab === 'posts' && (
+        {activeTab === 'posts' ? (
           <>
             <h2 className="text-xl font-bold mb-4">Posts</h2>
             <div className="overflow-y-auto max-h-[calc(100vh-200px)]">
-              {user.posts.length > 0 ? (
+              {userProfile.posts.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {user.posts.map((post) => (
+                  {userProfile.posts.map((post) => (
                     <div key={post.id} className="relative">
                       <Link href={`/post/${post.id}`}>
                         <div className="aspect-video bg-gray-800 rounded-lg overflow-hidden relative cursor-pointer">
@@ -225,7 +234,7 @@ export default function ProfilePage() {
                           </div>
                         </div>
                       </Link>
-                      {userId === id && (
+                      {userId === profileId && (
                         <div className="absolute top-2 right-2">
                           <Menu>
                             <MenuButton
@@ -258,9 +267,7 @@ export default function ProfilePage() {
               )}
             </div>
           </>
-        )}
-
-        {activeTab === 'saved' && (
+        ) : (
           <>
             <h2 className="text-xl font-bold mb-4">Saved Posts</h2>
             <div className="overflow-y-auto max-h-[calc(100vh-200px)]">
@@ -292,7 +299,6 @@ export default function ProfilePage() {
           </>
         )}
       </section>
-
     </div>
   );
 }
