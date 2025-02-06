@@ -14,6 +14,7 @@ import {
   MenuItem,
 } from '@chakra-ui/react';
 import UserProfile from '../../components/UserProfile';
+import { FollowButton } from '~/components/followButton';
 
 interface UserProfile {
   id: string;
@@ -28,6 +29,10 @@ interface UserProfile {
 
 export default function ProfilePage() {
   const router = useRouter();
+
+  // Wait until the router is ready
+  if (!router.isReady) return <div>Loading...</div>;
+
   const { id } = router.query;
   const { userId } = useAuth();
   const { user: currentUser } = useUser();
@@ -38,8 +43,9 @@ export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState<'posts' | 'saved'>('posts');
   const [savedPosts, setSavedPosts] = useState<Post[]>([]);
 
+  // Only fetch the user profile when id is defined.
   useEffect(() => {
-    if (id) {
+    if (id && typeof id === 'string') {
       fetch(`/api/getUserProfile?userId=${id}`)
         .then((res) => res.json())
         .then((data) => setUser(data))
@@ -47,8 +53,9 @@ export default function ProfilePage() {
     }
   }, [id]);
 
+  // Call the isFollowing endpoint only when id is defined and the viewer isn't the profile owner.
   useEffect(() => {
-    if (userId && id && userId !== id) {
+    if (userId && id && typeof id === 'string' && userId !== id) {
       fetch(`/api/isFollowing?userId=${id}`)
         .then((res) => res.json())
         .then((data) => setIsFollowing(data.isFollowing))
@@ -64,32 +71,6 @@ export default function ProfilePage() {
         .catch((err) => console.error(err));
     }
   }, [activeTab, userId]);
-
-  const handleFollowToggle = async () => {
-    const endpoint = isFollowing ? '/api/unfollowUser' : '/api/followUser';
-    const response = await fetch(endpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ followingId: id }),
-    });
-
-    if (response.ok) {
-      setIsFollowing(!isFollowing);
-      setUser((prevUser) => {
-        if (!prevUser) return prevUser;
-        return {
-          ...prevUser,
-          followersCount: isFollowing
-            ? prevUser.followersCount - 1
-            : prevUser.followersCount + 1,
-        };
-      });
-    } else {
-      console.error('Failed to update follow status');
-    }
-  };
 
   const handleDeletePost = async (postId: string) => {
     if (!postId) return;
@@ -169,12 +150,20 @@ export default function ProfilePage() {
         </div>
         <div className="mt-6">
           {userId !== id && (
-            <Button
-              className="bg-blue-600 text-white px-4 py-2 rounded-full"
-              onClick={handleFollowToggle}
-            >
-              {isFollowing ? 'Unfollow' : 'Follow'}
-            </Button>
+            <FollowButton
+              profileId={id as string}
+              initialIsFollowing={isFollowing}
+              onFollowChange={(newState) => {
+                setIsFollowing(newState);
+                setUser((prevUser) => {
+                  if (!prevUser) return prevUser;
+                  const newFollowersCount = newState
+                    ? prevUser.followersCount + 1
+                    : prevUser.followersCount - 1;
+                  return { ...prevUser, followersCount: newFollowersCount };
+                });
+              }}
+            />
           )}
           {userId === id && (
             <Button
