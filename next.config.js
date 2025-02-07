@@ -37,7 +37,8 @@ const config = {
                 https://*.algolianet.com
                 https://*.clerk.dev
                 https://*.clerk.com
-                https://*.clerk.accounts.dev;
+                https://*.clerk.accounts.dev
+                https://gameplay-uploads.s3.us-east-2.amazonaws.com;
               worker-src
                 'self'
                 blob:;
