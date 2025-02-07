@@ -14,7 +14,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(401).json({ message: "Unauthorized" });
   }
 
-  const { fileName, title, content, engine } = req.body;
+  const { fileName, title, content, engine, enableSharedArrayBuffer } = req.body;
 
   if (!fileName || !title || !engine) {
     return res.status(400).json({ message: "File name, title, and engine are required" });
@@ -37,6 +37,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         fileUrl: '', 
         engine,
         status: 'processing', // Set initial status
+        requiresSharedArrayBufferSupport: enableSharedArrayBuffer ? true : false, 
       },
     });
 
@@ -48,6 +49,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         postId: postId,
         userid: userId,
         engine,
+        sharedarraybuffer: enableSharedArrayBuffer ? 'true' : 'false', // Include the flag in metadata
       },
     };
 

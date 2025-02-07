@@ -68,6 +68,7 @@ exports.handler = async (event) => {
       // 4. Upload each extracted file to the destination bucket, preserving folder paths
       console.log('Uploading extracted files to the destination bucket.');
       for (const entry of zip.files) {
+        console.log("Processing file:", entry.path);
         if (entry.type === 'File') {
           const filePath = entry.path; // This includes any subfolders
           console.log(`Processing file: ${filePath}`);
@@ -105,8 +106,16 @@ exports.handler = async (event) => {
         }
       }
 
-      // 5. Construct public URL for index.html
-      const gameUrl = `https://${destinationBucketName}.s3.amazonaws.com/${gameId}/index.html`;
+      // 5. Construct public URL for index.html, with or without SharedArrayBuffer
+      const sharedArrayBufferEnabled = Metadata.sharedarraybuffer === 'true';
+      let gameUrl;
+      if (sharedArrayBufferEnabled) {
+        // Use the experimental CDN domain for SharedArrayBuffer-enabled builds
+        gameUrl = `https://html.itch.zone/${destinationBucketName}/${gameId}/index.html`;
+      } else {
+        // Fallback to standard S3
+        gameUrl = `https://${destinationBucketName}.s3.amazonaws.com/${gameId}/index.html`;
+      }
 
       // 6. Update the post with the final URL
       await axios.post(`${apiEndpoint}/updatePost`, {
