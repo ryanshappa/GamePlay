@@ -106,16 +106,8 @@ exports.handler = async (event) => {
         }
       }
 
-      // 5. Construct public URL for index.html, with or without SharedArrayBuffer
-      const sharedArrayBufferEnabled = Metadata.sharedarraybuffer === 'true';
-      let gameUrl;
-      if (sharedArrayBufferEnabled) {
-        // Use the experimental CDN domain for SharedArrayBuffer-enabled builds
-        gameUrl = `https://html.itch.zone/${destinationBucketName}/${gameId}/index.html`;
-      } else {
-        // Fallback to standard S3
-        gameUrl = `https://${destinationBucketName}.s3.amazonaws.com/${gameId}/index.html`;
-      }
+      // Always use the CloudFront URL for every post:
+      const gameUrl = `https://d3m5ww9qfhz0t7.cloudfront.net/${gameId}/index.html`;
 
       // 6. Update the post with the final URL
       await axios.post(`${apiEndpoint}/updatePost`, {
