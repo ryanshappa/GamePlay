@@ -16,7 +16,6 @@ const CreatePost = () => {
   const [creatingPost, setCreatingPost] = useState(false);
   const [fileKey, setFileKey] = useState<string>("");
   const [gameId, setGameId] = useState<string>("");
-  const [enableSharedArrayBuffer, setEnableSharedArrayBuffer] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,7 +44,7 @@ const CreatePost = () => {
 
       setUploading(true);
       try {
-        // Request a presigned URL from the server
+        // Request a presigned URL from the server (no experimental flag now)
         const res = await fetch("/api/getPresignedUrl", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -54,7 +53,6 @@ const CreatePost = () => {
             title,
             content,
             engine,
-            enableSharedArrayBuffer,
           }),
         });
 
@@ -144,20 +142,6 @@ const CreatePost = () => {
             />
           </div>
           {uploading && <p className="text-sm text-blue-500">Uploading file...</p>}
-        </div>
-
-        <div className="mb-4">
-          <label className="flex items-center space-x-2">
-            <input
-              type="checkbox"
-              checked={enableSharedArrayBuffer}
-              onChange={(e) => setEnableSharedArrayBuffer(e.target.checked)}
-              className="form-checkbox"
-            />
-            <span className="text-sm text-yellow-300">
-              Enable SharedArrayBuffer support (Experimental) – only enable if your Godot game uses extensions.
-            </span>
-          </label>
         </div>
 
         <Button type="submit" disabled={uploading || creatingPost}>

@@ -14,7 +14,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(401).json({ message: "Unauthorized" });
   }
 
-  const { fileName, title, content, engine, enableSharedArrayBuffer } = req.body;
+  const { fileName, title, content, engine } = req.body;
 
   if (!fileName || !title || !engine) {
     return res.status(400).json({ message: "File name, title, and engine are required" });
@@ -27,7 +27,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Ensure the user exists
     await ensureUserExists(userId);
 
-    // Store the post metadata in the database
     await db.post.create({
       data: {
         id: postId,
@@ -36,8 +35,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         authorId: userId,
         fileUrl: '', 
         engine,
-        status: 'processing', // Set initial status
-        requiresSharedArrayBufferSupport: enableSharedArrayBuffer ? true : false, 
+        status: 'processing',
       },
     });
 
@@ -49,12 +47,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         postId: postId,
         userid: userId,
         engine,
-        sharedarraybuffer: enableSharedArrayBuffer ? 'true' : 'false', // Include the flag in metadata
       },
     };
 
     const command = new PutObjectCommand(params);
-
     const presignedUrl = await getSignedUrl(s3Client, command, { expiresIn: 3600 }); // URL valid for 1 hour
 
     return res.status(200).json({ presignedUrl, fileKey, postId });

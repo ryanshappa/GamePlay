@@ -29,15 +29,20 @@ const PostItem: React.FC<PostItemProps> = ({
 }) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const isFeedLayout = layout === 'feed';
-  const [iframeSrc, setIframeSrc] = useState(post.fileUrl || '');
+  
+  // Build the proxy URL using your API route.
+  const [iframeSrc, setIframeSrc] = useState(
+    `/api/proxy/game/${post.id}/index.html`
+  );
 
   useEffect(() => {
     if (isActive) {
-      setIframeSrc((post.fileUrl || '') + '?t=' + new Date().getTime());
+      // Append a cache buster to force refresh when active.
+      setIframeSrc(`/api/proxy/game/${post.id}/index.html?t=${new Date().getTime()}`);
     } else {
       setIframeSrc('about:blank');
     }
-  }, [isActive, post.fileUrl]);
+  }, [isActive, post.id]);
 
   return (
     <div className="flex flex-col w-full">
@@ -46,10 +51,7 @@ const PostItem: React.FC<PostItemProps> = ({
       <div className={`relative ${isFeedLayout ? 'flex items-start' : 'flex flex-col items-center'}`}>
         <div
           className={`
-            ${isFeedLayout
-              ? 'ml-6 w-[880px] h-[490px]'
-              : 'w-[120vh] h-[80vh] bg-black'
-            }
+            ${isFeedLayout ? 'ml-6 w-[880px] h-[490px]' : 'w-[120vh] h-[80vh] bg-black'}
             rounded-md overflow-hidden
           `}
         >
@@ -69,9 +71,7 @@ const PostItem: React.FC<PostItemProps> = ({
             <Link href={`/profile/${post.author.id}`}>
               <Avatar className="cursor-pointer">
                 <AvatarImage src={post.author.avatarUrl || ''} alt="Author Avatar" />
-                <AvatarFallback>
-                  {post.author.username?.charAt(0) || 'A'}
-                </AvatarFallback>
+                <AvatarFallback>{post.author.username?.charAt(0) || 'A'}</AvatarFallback>
               </Avatar>
             </Link>
 
@@ -91,7 +91,7 @@ const PostItem: React.FC<PostItemProps> = ({
             </Button>
             <span>{post.commentsCount}</span>
 
-            {/* Use the new SaveButton here */}
+            {/* Use the SaveButton */}
             <SaveButton
               postId={post.id}
               initialSaved={post.savedByCurrentUser || false}
