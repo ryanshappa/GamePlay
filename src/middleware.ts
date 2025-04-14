@@ -1,40 +1,29 @@
-import { clerkMiddleware } from '@clerk/nextjs/server';
+// middleware.ts
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-// We want to protect only certain routes that must be authed server-side.
-// For everything else, we do a front-end check.
-const protectedRoutes = [
-  '/api/getPresignedUrl',   // or your route that actually requires user session
-  // ...any other strictly server-protected endpoints...
-];
+// Define the route prefixes where we need cross-origin isolation.
+const isolatedPaths = ['/api/proxy/', '/post/']; // Adjust this list as needed.
 
-export default clerkMiddleware((auth, req: NextRequest) => {
+export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
-  const { userId } = auth();
-
-  // Exclude the proxy path from Clerk protection:
-  if (pathname.startsWith('/api/proxy/')) {
-    return NextResponse.next();
+  
+  // If the pathname begins with any isolated prefix, add the headers.
+  const requiresIsolation = isolatedPaths.some((prefix) => pathname.startsWith(prefix));
+  
+  if (requiresIsolation) {
+    const res = NextResponse.next();
+    res.headers.set('Cross-Origin-Opener-Policy', 'same-origin');
+    res.headers.set('Cross-Origin-Embedder-Policy', 'require-corp');
+    res.headers.set('Cross-Origin-Resource-Policy', 'cross-origin');
+    return res;
   }
-
-  // If the route is not in protectedRoutes, allow access
-  if (!protectedRoutes.some((route) => pathname.startsWith(route))) {
-    return NextResponse.next();
-  }
-
-  // If it is in protectedRoutes but user is not signed in, redirect
-  if (!userId) {
-       return new NextResponse(JSON.stringify({ error: 'Unauthorized' }), {
-           status: 401,
-           headers: { 'content-type': 'application/json' },
-         });
-  }
-
+  
+  // Otherwise, do nothing.
   return NextResponse.next();
-});
+}
 
 export const config = {
-  // We only run middleware on the routes we care about
-  matcher: ['/api/getPresignedUrl', '/api/deleteAccount', '/sign-in(.*)', '/api/updateUserProfile', '/api/posts(.*)', '/api/comments(.*)', '/api/followUser', '/api/unfollowUser', '/api/isFollowing', '/api/getUserSavedPosts', '/sign-up(.*)'],
+  // Apply the middleware only to the isolated routes.
+  matcher: ['/api/proxy/:path*', '/post/:path*'],
 };
