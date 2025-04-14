@@ -1,4 +1,3 @@
-// next.config.js
 import "./src/env.js";
 
 /** @type {import("next").NextConfig} */
@@ -12,10 +11,9 @@ const config = {
   async headers() {
     return [
       {
-        // Apply isolation and security headers to every route
+        // Apply isolation and security headers to every route.
         source: "/(.*)",
         headers: [
-          // Enable cross-origin isolation:
           {
             key: "Cross-Origin-Opener-Policy",
             value: "same-origin",
@@ -28,7 +26,6 @@ const config = {
             key: "Cross-Origin-Resource-Policy",
             value: "cross-origin",
           },
-          // Apply a Content Security Policy that allows necessary external resources.
           {
             key: "Content-Security-Policy",
             value: `

@@ -3,7 +3,7 @@
     /* Base Options: */
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "target": "es2022",
+    "target": "ESNext",
     "allowJs": true,
     "resolveJsonModule": true,
     "moduleDetection": "force",
@@ -35,7 +35,9 @@
       "~/*": [
         "./src/*"
       ]
-    }
+    },
+    "outDir": "dist",
+    "forceConsistentCasingInFileNames": true
   },
   "include": [
     ".eslintrc.cjs",
@@ -44,7 +46,9 @@
     "**/*.tsx",
     "**/*.cjs",
     "**/*.js",
-    ".next/types/**/*.ts"
+    ".next/types/**/*.ts",
+    "server.ts",
+    "src/**/*"
   ],
   "exclude": [
     "node_modules",

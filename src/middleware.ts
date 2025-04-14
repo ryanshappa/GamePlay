@@ -13,10 +13,10 @@ export default clerkMiddleware((auth, req: NextRequest) => {
   const { pathname } = req.nextUrl;
   const { userId } = auth();
 
-    // Exclude the proxy path from Clerk protection:
-    if (pathname.startsWith('/api/proxy/game/')) {
-      return NextResponse.next();
-    }
+  // Exclude the proxy path from Clerk protection:
+  if (pathname.startsWith('/api/proxy/')) {
+    return NextResponse.next();
+  }
 
   // If the route is not in protectedRoutes, allow access
   if (!protectedRoutes.some((route) => pathname.startsWith(route))) {
