@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Button } from '~/components/ui/button';
-import { useUser } from '@clerk/nextjs';
+import { useAuth } from '~/contexts/AuthContext';
 
 interface FollowButtonProps {
   profileId: string; // the profile to be followed/unfollowed
@@ -9,7 +9,7 @@ interface FollowButtonProps {
 }
 
 export function FollowButton({ profileId, initialIsFollowing, onFollowChange }: FollowButtonProps) {
-  const { user } = useUser();
+  const { user } = useAuth();
   const [isFollowing, setIsFollowing] = useState(initialIsFollowing);
   const [loading, setLoading] = useState(false);
 
@@ -44,7 +44,7 @@ export function FollowButton({ profileId, initialIsFollowing, onFollowChange }: 
   return (
     <Button
       onClick={handleToggleFollow}
-      disabled={loading}
+      disabled={loading || !user}
       className={`${isFollowing ? 'bg-green-600' : 'bg-blue-600'} text-white px-4 py-2 rounded-full`}
     >
       {isFollowing ? 'Following' : 'Follow'}

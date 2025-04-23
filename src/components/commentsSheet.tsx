@@ -8,7 +8,7 @@ import {
 
 import { Button } from './ui/button';
 import { Textarea } from './ui/textarea';
-import { useUser } from '@clerk/nextjs';
+import { useAuth } from '~/contexts/AuthContext';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import Link from 'next/link';
 import DeleteCommentButton from './deleteComment';
@@ -201,7 +201,7 @@ export function CommentsDrawer({
   onAddComment,
   onDeleteComment,
 }: CommentsDrawerProps) {
-  const { user } = useUser();
+  const { user, loading } = useAuth();
   const [comments, setComments] = React.useState<NestedComment[]>([]);
   const [newComment, setNewComment] = React.useState('');
 
@@ -259,7 +259,7 @@ export function CommentsDrawer({
       return;
     }
     if (onAddComment) {
-      // Call parent's “optimistic” approach
+      // Call parent's "optimistic" approach
       onAddComment(newComment);
       setNewComment('');
       // Re-fetch to keep local list in sync
@@ -338,6 +338,12 @@ export function CommentsDrawer({
             <Button onClick={handleAddCommentFinal} disabled={!newComment.trim()}>
               Post Comment
             </Button>
+          </div>
+        )}
+
+        {!user && !loading && (
+          <div className="mt-4 text-center text-gray-400">
+            <p>Sign in to comment</p>
           </div>
         )}
       </SheetContent>

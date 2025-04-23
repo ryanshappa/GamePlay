@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
-import { useUser } from '@clerk/nextjs';
+import { useAuth } from '~/contexts/AuthContext';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -8,47 +8,56 @@ import { Textarea } from './ui/textarea';
 import { Cross2Icon } from '@radix-ui/react-icons';
 
 export function EditProfileDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
-  const { user } = useUser();
+  const { user } = useAuth();
   const [username, setUsername] = React.useState<string>(user?.username || '');
   const [bio, setBio] = React.useState<string>((user?.publicMetadata?.bio as string) || '');
   const [avatarUrl, setAvatarUrl] = React.useState<string>(user?.imageUrl || '');
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
+
+  // Update local state when user data is loaded
+  React.useEffect(() => {
+    if (user) {
+      setUsername(user.username || '');
+      setBio((user.publicMetadata?.bio as string) || '');
+      setAvatarUrl(user.imageUrl || '');
+    }
+  }, [user]);
 
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      // Optionally show a preview immediately
-      // setAvatarUrl(URL.createObjectURL(file));
+      
+      // Create a temporary URL for preview
+      const previewUrl = URL.createObjectURL(file);
+      setAvatarUrl(previewUrl);
 
       try {
-        // Upload the avatar
-        await user?.setProfileImage({ file });
-
-        // Refresh user data
-        await user?.reload();
-
-        // Update avatarUrl state with the new URL from Clerk
-        setAvatarUrl(user?.imageUrl || '');
-
-        // Update the avatar URL in your database
-        const avatarUrl = user?.imageUrl;
-        await fetch('/api/updateUserProfile', {
+        // Create a FormData object to upload the file
+        const formData = new FormData();
+        formData.append('avatar', file);
+        
+        const response = await fetch('/api/uploadAvatar', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ avatarUrl }),
+          body: formData,
         });
+        
+        if (!response.ok) {
+          throw new Error('Failed to upload avatar');
+        }
+        
+        const data = await response.json();
+        setAvatarUrl(data.avatarUrl);
       } catch (error: any) {
         console.error('Error uploading avatar:', error);
-        const errorMessage =
-          error.errors?.[0]?.longMessage ||
-          error.errors?.[0]?.message ||
-          error.message ||
-          'Failed to upload avatar. Please try again.';
-        alert(errorMessage);
+        alert('Failed to upload avatar. Please try again.');
       }
     }
   };
 
   const handleSaveChanges = async () => {
+    if (!user) return;
+    
+    setIsSubmitting(true);
     try {
       const response = await fetch('/api/updateUserProfile', {
         method: 'POST',
@@ -56,7 +65,7 @@ export function EditProfileDialog({ open, onOpenChange }: { open: boolean; onOpe
         body: JSON.stringify({
           username,
           bio,
-          avatarUrl: user?.imageUrl,
+          avatarUrl,
         }),
       });
 
@@ -65,19 +74,16 @@ export function EditProfileDialog({ open, onOpenChange }: { open: boolean; onOpe
         throw new Error(errorData.error || 'Failed to update profile.');
       }
 
-      // Refresh user data
-      await user?.reload();
-
       alert('Profile updated successfully.');
       onOpenChange(false);
+      
+      // Force a refresh of the auth context
+      window.location.reload();
     } catch (error: any) {
       console.error('Error updating profile:', error);
-      const errorMessage =
-        error.errors?.[0]?.longMessage ||
-        error.errors?.[0]?.message ||
-        error.message ||
-        'An error occurred while updating your profile. Please try again.';
-      alert(errorMessage);
+      alert(error.message || 'An error occurred while updating your profile. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -116,8 +122,12 @@ export function EditProfileDialog({ open, onOpenChange }: { open: boolean; onOpe
                 className="w-full h-32 bg-gray-700 text-white"
               />
             </div>
-            <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white" onClick={handleSaveChanges}>
-              Save Changes
+            <Button 
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white" 
+              onClick={handleSaveChanges}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? 'Saving...' : 'Save Changes'}
             </Button>
           </div>
         </Dialog.Content>

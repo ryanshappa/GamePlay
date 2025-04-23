@@ -2,7 +2,7 @@ import { GetServerSideProps } from 'next';
 import { db } from '~/server/db';
 import { PostWithAuthor } from '~/types/types';
 import React, { useEffect, useRef, useState } from 'react';
-import { useUser } from '@clerk/nextjs';
+import { useAuth } from '~/contexts/AuthContext';
 import { CommentsDrawer } from '~/components/commentsSheet';
 import PostItem from '~/components/postItem';
 import { SignInModal } from '~/components/signInModal';
@@ -14,7 +14,7 @@ interface HomePageProps {
 const VIRTUALIZATION_BUFFER = 1;
 
 export default function HomePage({ posts }: HomePageProps) {
-  const { isSignedIn } = useUser();
+  const { user } = useAuth();
   const [signInOpen, setSignInOpen] = useState(false);
   const [commentsDrawerOpen, setCommentsDrawerOpen] = useState(false);
   const [selectedPost, setSelectedPost] = useState<PostWithAuthor | null>(null);
@@ -65,7 +65,7 @@ export default function HomePage({ posts }: HomePageProps) {
    * We'll add to the post's commentsCount in state if the user is signed in.
    */
   const handleAddCommentOptimistic = async (postId: string, content: string) => {
-    if (!isSignedIn) {
+    if (!user) {
       setSignInOpen(true);
       return;
     }
@@ -180,7 +180,7 @@ export default function HomePage({ posts }: HomePageProps) {
           open={commentsDrawerOpen}
           onClose={() => setCommentsDrawerOpen(false)}
           post={selectedPost}
-          // The child’s onAddComment callback expects just (content), so we capture selectedPost.id here
+          // The child's onAddComment callback expects just (content), so we capture selectedPost.id here
           onAddComment={(content) => handleAddCommentOptimistic(selectedPost.id, content)}
           onDeleteComment={(commentId) =>
             handleDeleteCommentOptimistic(selectedPost.id, commentId)

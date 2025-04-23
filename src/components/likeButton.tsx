@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { HeartIcon } from 'lucide-react';
-import { useAuth } from '@clerk/nextjs';
+import { useAuth } from '~/contexts/AuthContext';
 
 export interface LikeButtonProps {
   postId: string;
@@ -11,14 +11,14 @@ export interface LikeButtonProps {
 }
 
 export function LikeButton({ postId, initialLiked, initialCount, orientation = 'column' }: LikeButtonProps) {
-  const { isSignedIn } = useAuth();
+  const { user } = useAuth();
   const [liked, setLiked] = React.useState(initialLiked);
   const [count, setCount] = React.useState(initialCount);
   const [loading, setLoading] = React.useState(false);
 
   // On mount, if signed in, fetch the actual like status
   useEffect(() => {
-    if (isSignedIn) {
+    if (user) {
       fetch(`/api/posts/${postId}/isLiked`)
         .then((res) => res.json())
         .then((data) => {
@@ -28,10 +28,10 @@ export function LikeButton({ postId, initialLiked, initialCount, orientation = '
         })
         .catch((err) => console.error("Error fetching like status:", err));
     }
-  }, [isSignedIn, postId]);
+  }, [user, postId]);
 
   const handleClick = async () => {
-    if (!isSignedIn || loading) return;
+    if (!user || loading) return;
     setLoading(true);
 
     const oldLiked = liked;

@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { Bookmark } from 'lucide-react';
-import { useAuth } from '@clerk/nextjs';
+import { useAuth } from '~/contexts/AuthContext';
 
 interface SaveButtonProps {
   postId: string;
@@ -8,13 +8,13 @@ interface SaveButtonProps {
 }
 
 export function SaveButton({ postId, initialSaved }: SaveButtonProps) {
-  const { isSignedIn } = useAuth();
+  const { user } = useAuth();
   const [saved, setSaved] = React.useState(initialSaved);
   const [loading, setLoading] = React.useState(false);
 
   // On mount, if the user is signed in, fetch the actual save status.
   useEffect(() => {
-    if (isSignedIn) {
+    if (user) {
       fetch(`/api/posts/${postId}/isSaved`)
         .then((res) => res.json())
         .then((data) => {
@@ -24,10 +24,10 @@ export function SaveButton({ postId, initialSaved }: SaveButtonProps) {
         })
         .catch((err) => console.error("Error fetching save status:", err));
     }
-  }, [isSignedIn, postId]);
+  }, [user, postId]);
 
   const handleClick = async () => {
-    if (!isSignedIn || loading) return;
+    if (!user || loading) return;
     setLoading(true);
 
     // Store the old state in case we need to revert.
