@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { useAuth, useUser } from '@clerk/nextjs';
+import { useAuth } from '~/contexts/AuthContext';
 import { Post } from '@prisma/client';
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
 import { Button, Portal } from '@chakra-ui/react';
@@ -32,8 +32,7 @@ export default function ProfilePage() {
   const { id } = router.query;
   const profileId = typeof id === 'string' ? id : '';
 
-  const { userId } = useAuth();
-  const { user: currentUser } = useUser();
+  const { user } = useAuth();
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [isFollowing, setIsFollowing] = useState(false);
   const [editProfileOpen, setEditProfileOpen] = useState(false);
@@ -53,23 +52,23 @@ export default function ProfilePage() {
 
   // Fetch isFollowing only if viewer is not the profile owner.
   useEffect(() => {
-    if (router.isReady && userId && profileId && userId !== profileId) {
+    if (router.isReady && user?.id && profileId && user.id !== profileId) {
       fetch(`/api/isFollowing?userId=${profileId}`)
         .then((res) => res.json())
         .then((data) => setIsFollowing(data.isFollowing))
         .catch((err) => console.error(err));
     }
-  }, [router.isReady, userId, profileId]);
+  }, [router.isReady, user?.id, profileId]);
 
   // Fetch saved posts if the "saved" tab is active.
   useEffect(() => {
-    if (activeTab === 'saved' && userId) {
+    if (activeTab === 'saved' && user?.id) {
       fetch(`/api/getUserSavedPosts`)
         .then((res) => res.json())
         .then((data) => setSavedPosts(data.map((item: any) => item.post)))
         .catch((err) => console.error(err));
     }
-  }, [activeTab, userId]);
+  }, [activeTab, user?.id]);
 
   const handleDeletePost = async (postId: string) => {
     if (!postId) return;
@@ -102,28 +101,6 @@ export default function ProfilePage() {
     }
   };
 
-  const handleUserUpdate = (updatedUser: any) => {
-    setUserProfile(updatedUser);
-  };
-
-  // A helper function to re-fetch user profile data.
-  const fetchUserData = async () => {
-    if (!profileId) return;
-    try {
-      const response = await fetch(`/api/getUserProfile?userId=${profileId}`);
-      const data = await response.json();
-      setUserProfile(data.user || data);
-    } catch (error) {
-      console.error('Failed to fetch user data:', error);
-    }
-  };
-
-  useEffect(() => {
-    if (profileId) {
-      fetchUserData();
-    }
-  }, [profileId]);
-
   // If router isn't ready or profileId is empty, show a loading indicator.
   if (!router.isReady || !profileId) {
     return <div>Loading...</div>;
@@ -144,21 +121,24 @@ export default function ProfilePage() {
           <div>
             <h1 className="text-2xl font-bold">@{userProfile.username}</h1>
             <div className="mt-2 flex space-x-4">
-              <span>
-                <strong>{userProfile.followersCount}</strong> Followers
-              </span>
-              <span>
-                <strong>{userProfile.followingCount}</strong> Following
-              </span>
-              <span>
-                <strong>{userProfile.likesCount}</strong> Likes
-              </span>
+              <div>
+                <span className="font-bold">{userProfile.posts.length}</span>{' '}
+                <span className="text-gray-400">posts</span>
+              </div>
+              <div>
+                <span className="font-bold">{userProfile.followersCount}</span>{' '}
+                <span className="text-gray-400">followers</span>
+              </div>
+              <div>
+                <span className="font-bold">{userProfile.followingCount}</span>{' '}
+                <span className="text-gray-400">following</span>
+              </div>
             </div>
-            <p className="mt-2">{userProfile.bio}</p>
+            <p className="mt-2 text-gray-300">{userProfile.bio}</p>
           </div>
         </div>
         <div className="mt-6">
-          {userId !== profileId && (
+          {user?.id !== profileId && (
             <FollowButton
               profileId={profileId}
               initialIsFollowing={isFollowing}
@@ -174,7 +154,7 @@ export default function ProfilePage() {
               }}
             />
           )}
-          {userId === profileId && (
+          {user?.id === profileId && (
             <Button
               className="bg-green-600 text-white px-4 py-2 rounded-full"
               onClick={() => setEditProfileOpen(true)}
@@ -198,7 +178,7 @@ export default function ProfilePage() {
         >
           Posts
         </button>
-        {userId === profileId && (
+        {user?.id === profileId && (
           <button
             className={`py-2 ${activeTab === 'saved'
               ? 'font-bold border-b-2 border-white'
@@ -234,7 +214,7 @@ export default function ProfilePage() {
                           </div>
                         </div>
                       </Link>
-                      {userId === profileId && (
+                      {user?.id === profileId && (
                         <div className="absolute top-2 right-2">
                           <Menu>
                             <MenuButton

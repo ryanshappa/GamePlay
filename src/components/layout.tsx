@@ -1,6 +1,6 @@
 // layout.tsx
 import React, { useState } from 'react';
-import { useUser, SignOutButton } from '@clerk/nextjs';
+import { useAuth } from '~/contexts/AuthContext';
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
 import { Button } from '~/components/ui/button';
 import { User as UserIcon, Settings, LogOut, Home, Plus, HelpCircle } from 'lucide-react'
@@ -20,12 +20,21 @@ interface LayoutProps {
 }
 
 export default function Layout({ children, showSearchBar = true }: LayoutProps) {
-  const { user, isSignedIn } = useUser();
+  const { user } = useAuth();
   const router = useRouter();
 
   // Two local states for controlling the modals
   const [signInOpen, setSignInOpen] = useState(false);
   const [signUpOpen, setSignUpOpen] = useState(false);
+
+  const handleSignOut = async () => {
+    try {
+      await fetch('/api/signout', { method: 'POST' });
+      window.location.href = '/'; // Redirect to home page after sign out
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
 
   return (
     <div className="bg-black text-white w-screen min-h-screen">
@@ -46,7 +55,7 @@ export default function Layout({ children, showSearchBar = true }: LayoutProps) 
         )}
 
         <div className="flex items-center">
-          {isSignedIn ? (
+          {user ? (
             <DropdownMenu.Root>
               <DropdownMenu.Trigger asChild>
                 <Button variant="ghost" className="p-0">
@@ -56,7 +65,7 @@ export default function Layout({ children, showSearchBar = true }: LayoutProps) 
                       alt="User avatar"
                     />
                     <AvatarFallback>
-                      {user.firstName?.charAt(0) || 'U'}
+                      {user.username?.charAt(0) || 'U'}
                     </AvatarFallback>
                   </Avatar>
                 </Button>
@@ -70,9 +79,9 @@ export default function Layout({ children, showSearchBar = true }: LayoutProps) 
                   <Settings className="h-5 w-5" />
                   <Link href="/settings">Settings</Link>
                 </DropdownMenu.Item>
-                <DropdownMenu.Item className="flex items-center space-x-3 p-3 hover:bg-gray-700 cursor-pointer">
+                <DropdownMenu.Item className="flex items-center space-x-3 p-3 hover:bg-gray-700 cursor-pointer" onClick={handleSignOut}>
                   <LogOut className="h-5 w-5" />
-                  <SignOutButton>Logout</SignOutButton>
+                  <span>Logout</span>
                 </DropdownMenu.Item>
                 <DropdownMenu.Item className="flex items-center space-x-3 p-3 hover:bg-gray-700 cursor-pointer">
                   <HelpCircle className="h-5 w-5" />
@@ -109,7 +118,7 @@ export default function Layout({ children, showSearchBar = true }: LayoutProps) 
             className="flex items-center space-x-4 cursor-pointer hover:text-gray-400 mb-6"
             onClick={() => {
               // Use Next.js router for navigation
-              if (isSignedIn) {
+              if (user) {
                 router.push('/create-post');
               } else {
                 setSignInOpen(true);
@@ -164,7 +173,7 @@ export default function Layout({ children, showSearchBar = true }: LayoutProps) 
         {children}
       </main>
 
-      {/* Clerk's SignIn & SignUp modals */}
+      {/* Sign In & Sign Up modals */}
       <SignInModal
         open={signInOpen}
         onOpenChange={setSignInOpen}

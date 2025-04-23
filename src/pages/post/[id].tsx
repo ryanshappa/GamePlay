@@ -2,7 +2,7 @@ import { GetServerSideProps } from 'next';
 import { db } from '~/server/db';
 import { PostWithAuthor } from '~/types/types';
 import React, { useState, useEffect } from 'react';
-import { useUser } from '@clerk/nextjs';
+import { useAuth } from '~/contexts/AuthContext';
 import PostItem from '~/components/postItem';
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
 import { Button } from '~/components/ui/button';
@@ -21,7 +21,7 @@ interface PostPageProps {
 }
 
 export default function PostPage({ post, status }: PostPageProps) {
-  const { user, isSignedIn } = useUser();
+  const { user } = useAuth();
   const [likesCount, setLikesCount] = useState(post.likesCount);
   const [hasLiked, setHasLiked] = useState(post.likedByCurrentUser);
   const [comments, setComments] = useState(post.comments || []);
@@ -38,7 +38,7 @@ export default function PostPage({ post, status }: PostPageProps) {
   }, [user, post.likedByCurrentUser]);
 
   const handleLike = async () => {
-    if (!isSignedIn) {
+    if (!user) {
       setSignInOpen(true);
       return;
     }
@@ -60,7 +60,7 @@ export default function PostPage({ post, status }: PostPageProps) {
   };
 
   const handleAddComment = async () => {
-    if (!isSignedIn) {
+    if (!user) {
       setSignInOpen(true);
       return;
     }
@@ -85,7 +85,7 @@ export default function PostPage({ post, status }: PostPageProps) {
   };
 
   const handleDeleteComment = async (commentId: number) => {
-    if (!isSignedIn) {
+    if (!user) {
       setSignInOpen(true);
       return;
     }
@@ -115,7 +115,7 @@ export default function PostPage({ post, status }: PostPageProps) {
   };
 
   async function handleSaveToggle() {
-    if (!isSignedIn) {
+    if (!user) {
       setSignInOpen(true);
       return;
     }
@@ -147,116 +147,128 @@ export default function PostPage({ post, status }: PostPageProps) {
   }
 
   return (
-    <div className="w-full min-h-screen">
-      <div className="mt-4 ml-0 mr-16">
-        <PostItem
-          post={post}
-          isCopySuccess={isCopySuccess}
-          onShare={handleShare}
-          onCommentClick={handleCommentClick}
-          showSeparator={false}
-          layout="post"
-          isActive={true}
-        />
-
-        <p className="text-sm text-gray-200 mb-4">{post.content}</p>
-
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center space-x-4">
-            {/* Like button */}
-            <Button variant="ghost" size="icon" className="bg-gray-800 rounded-full" onClick={handleLike}>
-              <HeartIcon
-                className={`h-6 w-6 ${hasLiked ? 'text-red-500' : 'text-white'}`}
-                fill={hasLiked ? 'currentColor' : 'none'}
-              />
-            </Button>
-            <span>{likesCount}</span>
-
-            {/* Comment button */}
-            <Button variant="ghost" size="icon" className="bg-gray-800 rounded-full" onClick={handleCommentClick}>
-              <MessageCircleIcon className="h-6 w-6 text-white" />
-            </Button>
-            <span>{comments.length}</span>
-
-            {/* Author info */}
-            <Link href={`/profile/${post.author.id}`}>
-              <div className="flex items-center space-x-2 cursor-pointer">
-                <Avatar className="h-10 w-10">
-                  {post.author.avatarUrl ? (
-                    <AvatarImage
-                      src={post.author.avatarUrl}
-                    />
-                  ) : (
-                    <AvatarFallback>{post.author.username?.charAt(0) || 'A'}</AvatarFallback>
-                  )}
-                </Avatar>
-              </div>
-            </Link>
-
-            {/* Save (bookmark) button */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="bg-gray-800 rounded-full"
-              onClick={handleSaveToggle}
-            >
-              <Bookmark className={`h-6 w-6 ${saved ? 'text-yellow-400' : 'text-white'}`} />
-            </Button>
-
-            {/* Share */}
-            <Button variant="ghost" size="icon" className="bg-gray-800 rounded-full" onClick={handleShare}>
-              <ShareIcon className="h-6 w-6 text-white" />
-            </Button>
-            {isCopySuccess && <span>Link copied!</span>}
+    <div className="flex-1 p-4">
+      <ScrollArea className="w-full h-full">
+        <div className="flex flex-col w-full max-w-4xl mx-auto">
+          {/* Game iframe */}
+          <div className="aspect-video w-full bg-gray-900 rounded-lg overflow-hidden mb-4">
+            <iframe
+              src={post.fileUrl || ''}
+              title={post.title}
+              className="w-full h-full"
+              frameBorder="0"
+              allowFullScreen
+            ></iframe>
           </div>
-        </div>
 
-        {/* Comments */}
-        <div id="comments-section" className="w-full my-6">
-          <h2 className="text-2xl font-semibold mb-4">Comments</h2>
-          <div className="space-y-4">
+          {/* Post title and author info */}
+          <div className="flex justify-between items-start mb-4">
+            <div>
+              <h1 className="text-2xl font-bold">{post.title}</h1>
+              <div className="flex items-center mt-2">
+                <Link href={`/profile/${post.author.id}`}>
+                  <div className="flex items-center">
+                    <Avatar className="h-8 w-8 mr-2">
+                      <AvatarImage src={post.author.avatarUrl || undefined} />
+                      <AvatarFallback>
+                        {post.author.username?.charAt(0) || 'U'}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="text-gray-300">@{post.author.username}</span>
+                  </div>
+                </Link>
+              </div>
+            </div>
+            <div className="flex space-x-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleLike}
+                className="rounded-full"
+              >
+                <HeartIcon
+                  className={`h-6 w-6 ${hasLiked ? 'text-red-500 fill-red-500' : 'text-gray-400'}`}
+                />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleCommentClick}
+                className="rounded-full"
+              >
+                <MessageCircleIcon className="h-6 w-6 text-gray-400" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleShare}
+                className="rounded-full"
+              >
+                <ShareIcon className="h-6 w-6 text-gray-400" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleSaveToggle}
+                className="rounded-full"
+              >
+                <Bookmark
+                  className={`h-6 w-6 ${saved ? 'text-yellow-500 fill-yellow-500' : 'text-gray-400'}`}
+                />
+              </Button>
+            </div>
+          </div>
+
+          {/* Post content */}
+          <div className="mb-6">
+            <p className="text-gray-300">{post.content}</p>
+          </div>
+
+          {/* Comments section */}
+          <div id="comments-section" className="mt-8">
+            <h2 className="text-xl font-bold mb-4">Comments ({comments.length})</h2>
             {comments.map((comment) => (
               <NestedCommentItem
                 key={comment.id}
                 comment={comment}
                 postId={post.id}
                 postAuthorId={post.authorId}
-                currentUser={isSignedIn ? { id: user?.id, username: user?.username || '' } : null}
+                currentUser={user ? { id: user.id, username: user.username || '' } : null}
                 onDelete={handleDeleteComment}
               />
             ))}
+
+            {/* Add comment box */}
+            {user ? (
+              <div className="mt-6">
+                <Textarea
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  placeholder="Add a comment..."
+                  className="bg-gray-800 text-white w-full mb-2"
+                />
+                <Button onClick={handleAddComment}>Post Comment</Button>
+              </div>
+            ) : (
+              <div className="mt-6">
+                <Button onClick={() => setSignInOpen(true)}>Sign in to add a comment</Button>
+              </div>
+            )}
           </div>
 
-          {/* Add comment box */}
-          {isSignedIn ? (
-            <div className="mt-6">
-              <Textarea
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                placeholder="Add a comment..."
-                className="bg-gray-800 text-white w-full mb-2"
-              />
-              <Button onClick={handleAddComment}>Post Comment</Button>
-            </div>
-          ) : (
-            <div className="mt-6">
-              <Button onClick={() => setSignInOpen(true)}>Sign in to add a comment</Button>
-            </div>
-          )}
+          {/* Back link */}
+          <Button
+            variant="link"
+            onClick={() => window.history.back()}
+            className="mt-2 text-blue-500 hover:underline"
+          >
+            &larr; Back to Home
+          </Button>
         </div>
 
-        {/* Back link */}
-        <Button
-          variant="link"
-          onClick={() => window.history.back()}
-          className="mt-2 text-blue-500 hover:underline"
-        >
-          &larr; Back to Home
-        </Button>
-      </div>
-
-      {/* signIn modal */}
-      <SignInModal open={signInOpen} onOpenChange={setSignInOpen} />
+        {/* signIn modal */}
+        <SignInModal open={signInOpen} onOpenChange={setSignInOpen} />
+      </ScrollArea>
     </div>
   );
 }

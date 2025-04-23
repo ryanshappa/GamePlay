@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { useUser } from '@clerk/nextjs';
+import { useAuth } from '~/contexts/AuthContext';
 import { Button } from '~/components/ui/button';
 import { Input } from '~/components/ui/input';
 import { Label } from '~/components/ui/label';
@@ -9,8 +9,7 @@ import { Textarea } from '~/components/ui/textarea';
 export default function SettingsPage() {
   const [privateAccount, setPrivateAccount] = useState(false);
   const router = useRouter();
-  const { user } = useUser();
-  const userId = user?.id;
+  const { user, loading } = useAuth();
 
   const [contactSubject, setContactSubject] = useState('');
   const [contactMessage, setContactMessage] = useState('');
@@ -18,13 +17,15 @@ export default function SettingsPage() {
   const [reportDetails, setReportDetails] = useState('');
 
   useEffect(() => {
-    if (!userId) {
+    if (!loading && !user) {
       router.push('/sign-in');
     }
-  }, [userId, router]);
+  }, [user, loading, router]);
 
-  if (!userId) {
-    return null; 
+  if (loading || !user) {
+    return <div className="min-h-screen bg-black text-gray-100 p-6 flex items-center justify-center">
+      <p>Loading...</p>
+    </div>; 
   }
 
   const handleDeleteAccount = async () => {

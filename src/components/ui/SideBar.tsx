@@ -2,10 +2,10 @@
 
 import Link from 'next/link';
 import { Home, Plus, User as UserIcon } from 'lucide-react';
-import { useUser } from '@clerk/nextjs';
+import { useAuth } from '~/contexts/AuthContext';
 
 export default function Sidebar() {
-  const { user } = useUser();
+  const { user } = useAuth();
 
   return (
     <aside className="w-56 p-4 flex flex-col">

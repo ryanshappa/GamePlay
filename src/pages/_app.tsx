@@ -1,14 +1,15 @@
 import Head from 'next/head';
 import { GeistSans } from 'geist/font/sans';
 import { type AppType } from 'next/app';
-import { ClerkProvider } from '@clerk/nextjs';
 import { api } from '~/utils/api';
 import { AppProps } from 'next/app';
 import '~/styles/globals.css';
 import Layout from '~/components/layout';
 import { ReactElement, ReactNode } from 'react';
 import { NextPage } from 'next';
-import { dark, neobrutalism, shadesOfPurple } from '@clerk/themes';
+import { AuthProvider } from '~/contexts/AuthContext';
+import dynamic from 'next/dynamic';
+
 type NextPageWithLayout = NextPage & {
   getLayout?: (page: ReactElement) => ReactNode;
 };
@@ -16,6 +17,12 @@ type NextPageWithLayout = NextPage & {
 type AppPropsWithLayout = AppProps & {
   Component: NextPageWithLayout;
 };
+
+// Dynamically import ClerkProvider with no SSR
+const ClerkProviderClient = dynamic(
+  () => import('@clerk/nextjs').then((mod) => mod.ClerkProvider),
+  { ssr: false }
+);
 
 const MyApp: AppType = ({ Component, pageProps }: AppPropsWithLayout) => {
   // Use the layout defined at the page level, if available
@@ -39,17 +46,14 @@ const MyApp: AppType = ({ Component, pageProps }: AppPropsWithLayout) => {
           rel="stylesheet"
         />
       </Head>
-      <ClerkProvider
-        {...pageProps}
-        appearance={{
-          baseTheme: neobrutalism,
-          signIn: { baseTheme: neobrutalism },
-        }}
-      >
-        <div className={GeistSans.className}>
-          {getLayout(<Component {...pageProps} />)}
-        </div>
-      </ClerkProvider>
+      <AuthProvider>
+        {/* This provider only exists on the browser */}
+        <ClerkProviderClient {...pageProps}>
+          <div className={GeistSans.className}>
+            {getLayout(<Component {...pageProps} />)}
+          </div>
+        </ClerkProviderClient>
+      </AuthProvider>
     </>
   );
 };

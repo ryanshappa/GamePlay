@@ -29,34 +29,11 @@ const PostItem: React.FC<PostItemProps> = ({
 }) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const isFeedLayout = layout === 'feed';
-
-  const [iframeSrc, setIframeSrc] = useState('');
+  const [iframeSrc, setIframeSrc] = useState(post.fileUrl || '');
 
   useEffect(() => {
-    if (isActive && post.fileUrl) {
-      // Remove any extra whitespace.
-      let trimmedUrl = post.fileUrl.trim();
-      
-      // Fix the common error where the protocol is "https:/" instead of "https://"
-      if (trimmedUrl.startsWith("https:/") && !trimmedUrl.startsWith("https://")) {
-        trimmedUrl = "https://" + trimmedUrl.slice(7);
-      }
-      
-      // Define the expected CloudFront prefix.
-      const CLOUD_FRONT_PREFIX = 'https://d3m5ww9qfhz0t7.cloudfront.net/';
-      
-      let relativePath = trimmedUrl;
-      // Remove the CloudFront host part if it exists.
-      if (trimmedUrl.startsWith(CLOUD_FRONT_PREFIX)) {
-        relativePath = trimmedUrl.slice(CLOUD_FRONT_PREFIX.length);
-      }
-      
-      // Log for debugging (optional)
-      // console.log("Proxied relative path: ", relativePath);
-      
-      // Build the proxy URL. (Cache-busting query parameter is appended.)
-      const proxiedUrl = `/api/proxy/${relativePath}?t=${new Date().getTime()}`;
-      setIframeSrc(proxiedUrl);
+    if (isActive) {
+      setIframeSrc((post.fileUrl || '') + '?t=' + new Date().getTime());
     } else {
       setIframeSrc('about:blank');
     }
@@ -114,6 +91,7 @@ const PostItem: React.FC<PostItemProps> = ({
             </Button>
             <span>{post.commentsCount}</span>
 
+            {/* Use the new SaveButton here */}
             <SaveButton
               postId={post.id}
               initialSaved={post.savedByCurrentUser || false}

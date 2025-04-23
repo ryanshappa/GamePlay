@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { HeartIcon } from 'lucide-react';
-import { useUser } from '@clerk/nextjs';
+import { useAuth } from '../contexts/AuthContext';
 
 export interface CommentLikeButtonProps {
   commentId: number;
@@ -9,13 +9,13 @@ export interface CommentLikeButtonProps {
 }
 
 export default function CommentLikeButton({ commentId, initialLiked, initialCount }: CommentLikeButtonProps) {
-  const { isSignedIn } = useUser();
+  const { user, loading } = useAuth();
   const [liked, setLiked] = React.useState(initialLiked);
   const [likeCount, setLikeCount] = React.useState(initialCount);
 
   // When the component mounts (or the user changes), fetch the actual like status and count.
   useEffect(() => {
-    if (isSignedIn) {
+    if (!loading && user) {
       fetch(`/api/comments/${commentId}/isLiked`)
         .then((res) => res.json())
         .then((data) => {
@@ -26,9 +26,11 @@ export default function CommentLikeButton({ commentId, initialLiked, initialCoun
         })
         .catch((err) => console.error('Error fetching comment like status:', err));
     }
-  }, [isSignedIn, commentId]);
+  }, [loading, user, commentId]);
 
   const handleLikeToggle = async () => {
+    if (!user) return;
+
     const oldLiked = liked;
     const oldCount = likeCount;
     const newLiked = !oldLiked;
@@ -52,7 +54,7 @@ export default function CommentLikeButton({ commentId, initialLiked, initialCoun
   };
 
   return (
-    <button onClick={handleLikeToggle} className="flex items-center space-x-1">
+    <button onClick={handleLikeToggle} className="flex items-center space-x-1" disabled={!user}>
       <HeartIcon
         className={`h-5 w-5 ${liked ? 'text-red-500' : 'text-gray-500'}`}
         fill={liked ? 'currentColor' : 'none'}
