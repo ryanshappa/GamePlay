@@ -73,10 +73,14 @@ export default function ProfilePage() {
   const handleDeletePost = async (postId: string) => {
     if (!postId) return;
 
+    if (!confirm('Are you sure you want to delete this post? This action cannot be undone.')) {
+      return;
+    }
+
     setIsDeleting(true);
 
     try {
-      const response = await fetch(`/api/posts/${postId}`, {
+      const response = await fetch(`/api/posts/${postId}/delete`, {
         method: 'DELETE',
       });
 
@@ -91,7 +95,7 @@ export default function ProfilePage() {
         alert('Post deleted successfully.');
       } else {
         const data = await response.json();
-        alert(`Failed to delete post: ${data.message}`);
+        alert(`Failed to delete post: ${data.error}`);
       }
     } catch (error) {
       console.error('Error deleting post:', error);

@@ -12,6 +12,7 @@ import { HeartIcon, MessageCircleIcon, ShareIcon, Bookmark } from 'lucide-react'
 import Link from 'next/link';
 import DeleteCommentButton from '~/components/deleteComment';
 import { SignInModal } from '~/components/signInModal';
+import { getAuth } from '@clerk/nextjs/server';
 
 // We define a separate NestedCommentItem at the bottom
 
@@ -33,9 +34,32 @@ export default function PostPage({ post, status }: PostPageProps) {
 
   useEffect(() => {
     if (user) {
-      setHasLiked(post.likedByCurrentUser);
+      // Check if the post is liked and saved by the current user
+      const checkPostStatus = async () => {
+        try {
+          // Fetch both like and save status in parallel
+          const [likeResponse, saveResponse] = await Promise.all([
+            fetch(`/api/posts/${post.id}/isLiked`),
+            fetch(`/api/posts/${post.id}/isSaved`)
+          ]);
+          
+          if (likeResponse.ok) {
+            const likeData = await likeResponse.json();
+            setHasLiked(likeData.liked);
+          }
+          
+          if (saveResponse.ok) {
+            const saveData = await saveResponse.json();
+            setSaved(saveData.saved);
+          }
+        } catch (error) {
+          console.error("Failed to fetch post status:", error);
+        }
+      };
+      
+      checkPostStatus();
     }
-  }, [user, post.likedByCurrentUser]);
+  }, [user, post.id]);
 
   const handleLike = async () => {
     if (!user) {
@@ -149,7 +173,7 @@ export default function PostPage({ post, status }: PostPageProps) {
   return (
     <div className="flex-1 p-4">
       <ScrollArea className="w-full h-full">
-        <div className="flex flex-col w-full max-w-4xl mx-auto">
+        <div className="flex flex-col w-full max-w-[1080px] mx-auto pl-4 ml-6">
           {/* Game iframe */}
           <div className="aspect-video w-full bg-gray-900 rounded-lg overflow-hidden mb-4">
             <iframe
@@ -161,54 +185,58 @@ export default function PostPage({ post, status }: PostPageProps) {
             ></iframe>
           </div>
 
-          {/* Post title and author info */}
-          <div className="flex justify-between items-start mb-4">
-            <div>
-              <h1 className="text-2xl font-bold">{post.title}</h1>
-              <div className="flex items-center mt-2">
-                <Link href={`/profile/${post.author.id}`}>
-                  <div className="flex items-center">
-                    <Avatar className="h-8 w-8 mr-2">
-                      <AvatarImage src={post.author.avatarUrl || undefined} />
-                      <AvatarFallback>
-                        {post.author.username?.charAt(0) || 'U'}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span className="text-gray-300">@{post.author.username}</span>
-                  </div>
-                </Link>
-              </div>
-            </div>
-            <div className="flex space-x-2">
+          {/* Post title and interaction section - restructured */}
+          <div className="flex justify-between items-center mb-4">
+            <h1 className="text-2xl font-bold">{post.title}</h1>
+            
+            {/* Interaction buttons with counts */}
+            <div className="flex items-center space-x-4">
+              {/* Author avatar moved to interaction section */}
+              <Link href={`/profile/${post.author.id}`} className="flex items-center mr-2">
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src={post.author.avatarUrl || undefined} />
+                  <AvatarFallback>
+                    {post.author.username?.charAt(0) || 'U'}
+                  </AvatarFallback>
+                </Avatar>
+                <span className="text-gray-300 ml-2">@{post.author.username}</span>
+              </Link>
+              
               <Button
                 variant="ghost"
-                size="icon"
+                size="sm"
                 onClick={handleLike}
-                className="rounded-full"
+                className="flex items-center space-x-1 rounded-full"
               >
                 <HeartIcon
                   className={`h-6 w-6 ${hasLiked ? 'text-red-500 fill-red-500' : 'text-gray-400'}`}
                 />
+                <span>{likesCount}</span>
               </Button>
+              
               <Button
                 variant="ghost"
-                size="icon"
+                size="sm"
                 onClick={handleCommentClick}
-                className="rounded-full"
+                className="flex items-center space-x-1 rounded-full"
               >
                 <MessageCircleIcon className="h-6 w-6 text-gray-400" />
+                <span>{comments.length}</span>
               </Button>
+              
               <Button
                 variant="ghost"
-                size="icon"
+                size="sm"
                 onClick={handleShare}
                 className="rounded-full"
               >
                 <ShareIcon className="h-6 w-6 text-gray-400" />
+                {isCopySuccess && <span className="ml-1 text-xs">Copied!</span>}
               </Button>
+              
               <Button
                 variant="ghost"
-                size="icon"
+                size="sm"
                 onClick={handleSaveToggle}
                 className="rounded-full"
               >
@@ -276,6 +304,8 @@ export default function PostPage({ post, status }: PostPageProps) {
 // SSR
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const { id } = context.params!;
+  const { userId } = getAuth(context.req);
+  
   const post = await db.post.findUnique({
     where: { id: id as string },
     include: {
@@ -298,6 +328,10 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         orderBy: { createdAt: 'asc' },
       },
       _count: { select: { likes: true, comments: true } },
+      // Check if current user has liked this post
+      likes: userId ? {
+        where: { userId }
+      } : undefined,
     },
   });
 
@@ -321,7 +355,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     },
     likesCount: post._count.likes,
     commentsCount: post._count.comments,
-    likedByCurrentUser: false, // do a front-end check if needed
+    likedByCurrentUser: userId ? post.likes && post.likes.length > 0 : false,
     comments: post.comments.map(serializeComment),
   };
 
@@ -344,7 +378,7 @@ function serializeComment(comment: any) {
       avatarUrl: comment.user.avatarUrl || '',
     },
     likeCount: comment.likeCount || 0, 
-    likedByCurrentUser: false, // or do some logic
+    likedByCurrentUser: false, // This will be updated by the client-side API call
     children: comment.children?.map(serializeComment) || [],
   };
 }
@@ -372,6 +406,26 @@ function NestedCommentItem({
   const [likeCount, setLikeCount] = useState(comment.likeCount);
   const [liked, setLiked] = useState(comment.likedByCurrentUser);
   const hasChildren = comment.children && comment.children.length > 0;
+
+  // Fetch comment like status on mount
+  useEffect(() => {
+    if (currentUser) {
+      const fetchCommentLikeStatus = async () => {
+        try {
+          const response = await fetch(`/api/comments/${comment.id}/isLiked`);
+          if (response.ok) {
+            const data = await response.json();
+            setLiked(data.liked);
+            setLikeCount(data.likeCount);
+          }
+        } catch (error) {
+          console.error("Failed to fetch comment like status:", error);
+        }
+      };
+      
+      fetchCommentLikeStatus();
+    }
+  }, [comment.id, currentUser]);
 
   // "Reply" handler
   async function handleReplySubmit() {
