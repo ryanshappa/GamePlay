@@ -6,6 +6,7 @@ import { useAuth } from '~/contexts/AuthContext';
 import { CommentsDrawer } from '~/components/commentsSheet';
 import PostItem from '~/components/postItem';
 import { SignInModal } from '~/components/signInModal';
+import { MobilePostItem } from '~/components/MobilePostItem';
 
 interface HomePageProps {
   posts: PostWithAuthor[];
@@ -20,7 +21,7 @@ export default function HomePage({ posts }: HomePageProps) {
   const [selectedPost, setSelectedPost] = useState<PostWithAuthor | null>(null);
   const [postList, setPostList] = useState<PostWithAuthor[]>(posts);
   const [isCopySuccess, setIsCopySuccess] = useState(false);
-  const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  const [activeIndex, setActiveIndex] = useState<number>(0);
 
   const postRefs = useRef<(HTMLDivElement | null)[]>([]);
   const addToRefs = (el: HTMLDivElement | null, index: number) => {
@@ -130,57 +131,102 @@ export default function HomePage({ posts }: HomePageProps) {
     setTimeout(() => setIsCopySuccess(false), 2000);
   };
 
-  const currentActiveIndex = activeIndex || 0;
+  const currentActiveIndex = activeIndex;
 
   return (
-    <div className="w-full h-screen overflow-auto">
-      <div>
-        {postList.map((post, index) => {
-          const inRange =
-            index >= currentActiveIndex - VIRTUALIZATION_BUFFER &&
-            index <= currentActiveIndex + VIRTUALIZATION_BUFFER;
+    <>
+      {/* Mobile Feed */}
+      <div className="md:hidden w-full h-screen">
+        <div
+          className="
+            flex flex-col h-screen w-screen
+            overflow-y-auto
+            snap-y snap-mandatory
+            scrollbar-hide
+          "
+        >
+          {postList.map((post, index) => {
+            const i0 = currentActiveIndex;
+            const inRange = (
+              index === i0 ||
+              index === i0 - 1 ||
+              index === i0 + 1
+            );
 
-          return (
-            <div
-              key={post.id}
-              ref={(el) => addToRefs(el, index)}
-              className="post-item"
-              data-index={index}
-              style={{
-                minHeight: '100vh',
-                overflow: 'hidden',
-                background: inRange ? 'transparent' : '#000',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              {inRange ? (
-                <PostItem
-                  post={post}
-                  isActive={activeIndex === index}
-                  onCommentClick={handleCommentClick}
-                  onShare={handleShare}
-                  isCopySuccess={isCopySuccess}
-                  showSeparator={false}
-                  layout="feed"
-                />
-              ) : (
-                <div style={{ color: '#fff', textAlign: 'center' }}>
-                  Loading...
-                </div>
-              )}
-            </div>
-          );
-        })}
+            return (
+              <div
+                key={post.id}
+                ref={(el) => addToRefs(el, index)}
+                data-index={index}
+                className="snap-start flex-shrink-0 w-screen h-screen relative"
+              >
+                {inRange ? (
+                  <MobilePostItem 
+                    post={post}
+                    onCommentClick={() => handleCommentClick(post)}
+                    onShare={handleShare}
+                  />
+                ) : (
+                  <div className="w-full h-full bg-black flex items-center justify-center">
+                    <span className="text-white">Loading...</span>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
       </div>
 
+      {/* Desktop Feed */}
+      <div className="hidden md:block w-full h-screen overflow-auto">
+        <div>
+          {postList.map((post, index) => {
+            const inRange =
+              index >= currentActiveIndex - VIRTUALIZATION_BUFFER &&
+              index <= currentActiveIndex + VIRTUALIZATION_BUFFER;
+
+            return (
+              <div
+                key={post.id}
+                ref={(el) => addToRefs(el, index)}
+                className="post-item"
+                data-index={index}
+                style={{
+                  minHeight: '100vh',
+                  overflow: 'hidden',
+                  background: inRange ? 'transparent' : '#000',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                {inRange ? (
+                  <PostItem
+                    post={post}
+                    isActive={activeIndex === index}
+                    onCommentClick={handleCommentClick}
+                    onShare={handleShare}
+                    isCopySuccess={isCopySuccess}
+                    showSeparator={false}
+                    layout="feed"
+                  />
+                ) : (
+                  <div style={{ color: '#fff', textAlign: 'center' }}>
+                    Loading...
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+      
+      {/* Modals and notifications - keep these for both layouts */}
       {selectedPost && (
         <CommentsDrawer
           open={commentsDrawerOpen}
           onClose={() => setCommentsDrawerOpen(false)}
           post={selectedPost}
-          // The child's onAddComment callback expects just (content), so we capture selectedPost.id here
           onAddComment={(content) => handleAddCommentOptimistic(selectedPost.id, content)}
           onDeleteComment={(commentId) =>
             handleDeleteCommentOptimistic(selectedPost.id, commentId)
@@ -193,11 +239,11 @@ export default function HomePage({ posts }: HomePageProps) {
       )}
 
       {isCopySuccess && (
-        <div className="fixed bottom-4 right-4 bg-green-500 text-white px-4 py-2 rounded">
+        <div className="fixed bottom-4 right-4 bg-green-500 text-white px-4 py-2 rounded z-50">
           Link copied to clipboard!
         </div>
       )}
-    </div>
+    </>
   );
 }
 

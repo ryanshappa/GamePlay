@@ -114,7 +114,7 @@ export default function ProfilePage() {
   if (!userProfile) return <div>Loading profile...</div>;
 
   return (
-    <div>
+    <div className="bg-black text-white min-h-screen">
       {/* Profile Info */}
       <section className="p-8">
         <div className="flex items-center space-x-6">
