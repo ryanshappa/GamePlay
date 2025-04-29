@@ -100,76 +100,78 @@ export default function Layout({ children, showSearchBar = true }: LayoutProps) 
       </header>
 
       {/* --- FIXED SIDEBAR --- */}
-      <aside className="
-        fixed top-16 bottom-0 left-0
-        w-52 p-4
-        bg-black
-        flex flex-col
-      ">
-        <nav className="mt-6">
-          <Link href="/">
-            <div className="flex items-center space-x-4 cursor-pointer hover:text-gray-400 mb-6">
-              <Home className="h-8 w-8" />
-              <span className="text-lg">Home</span>
-            </div>
-          </Link>
-
-          <div
-            className="flex items-center space-x-4 cursor-pointer hover:text-gray-400 mb-6"
-            onClick={() => {
-              // Use Next.js router for navigation
-              if (user) {
-                router.push('/create-post');
-              } else {
-                setSignInOpen(true);
-              }
-            }}
-          >
-            <Plus className="h-8 w-8" />
-            <span className="text-lg">Create</span>
-          </div>
-
-          {user ? (
-            <Link href={`/profile/${user.id}`}>
+      {showSearchBar ? (
+        <aside className="
+          fixed top-16 bottom-0 left-0
+          w-52 p-4
+          bg-black
+          flex flex-col
+        ">
+          <nav className="mt-6">
+            <Link href="/">
               <div className="flex items-center space-x-4 cursor-pointer hover:text-gray-400 mb-6">
-                <UserIcon className="h-8 w-8" />
-                <span className="text-lg">Profile</span>
+                <Home className="h-8 w-8" />
+                <span className="text-lg">Home</span>
               </div>
             </Link>
-          ) : null}
-        </nav>
 
-        {/* Social icons pinned at the bottom of the sidebar */}
-        {/* <div className="mt-auto flex space-x-4">
-          <Link
-            href="https://x.com/TryGamePlay_"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="Twitter"
-          >
-            <FaXTwitter className="h-8 w-8 hover:text-blue-400" />
-          </Link>
-          <Link
-            href="https://www.tiktok.com/@trygameplay?lang=en"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="TikTok"
-          >
-            <SiTiktok className="h-8 w-8 hover:text-red-500" />
-          </Link>
-          <Link
-            href="https://www.instagram.com/trygameplay/"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="Instagram"
-          >
-            <FaInstagram className="h-8 w-8 hover:text-pink-400" />
-          </Link>
-        </div> */}
-      </aside>
+            <div
+              className="flex items-center space-x-4 cursor-pointer hover:text-gray-400 mb-6"
+              onClick={() => {
+                // Use Next.js router for navigation
+                if (user) {
+                  router.push('/create-post');
+                } else {
+                  setSignInOpen(true);
+                }
+              }}
+            >
+              <Plus className="h-8 w-8" />
+              <span className="text-lg">Create</span>
+            </div>
+
+            {user ? (
+              <Link href={`/profile/${user.id}`}>
+                <div className="flex items-center space-x-4 cursor-pointer hover:text-gray-400 mb-6">
+                  <UserIcon className="h-8 w-8" />
+                  <span className="text-lg">Profile</span>
+                </div>
+              </Link>
+            ) : null}
+          </nav>
+
+          {/* Social icons pinned at the bottom of the sidebar */}
+          {/* <div className="mt-auto flex space-x-4">
+            <Link
+              href="https://x.com/TryGamePlay_"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Twitter"
+            >
+              <FaXTwitter className="h-8 w-8 hover:text-blue-400" />
+            </Link>
+            <Link
+              href="https://www.tiktok.com/@trygameplay?lang=en"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="TikTok"
+            >
+              <SiTiktok className="h-8 w-8 hover:text-red-500" />
+            </Link>
+            <Link
+              href="https://www.instagram.com/trygameplay/"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Instagram"
+            >
+              <FaInstagram className="h-8 w-8 hover:text-pink-400" />
+            </Link>
+          </div> */}
+        </aside>
+      ) : null}
 
       {/* MAIN CONTENT AREA */}
-      <main className="ml-52 pt-16 h-screen overflow-y-auto">
+      <main className={`${showSearchBar ? 'ml-52' : 'ml-4'} pt-16 h-screen overflow-y-auto`}>
         {children}
       </main>
 

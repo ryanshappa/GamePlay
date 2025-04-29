@@ -20,7 +20,7 @@ const CreatePost = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!title || !fileKey) {
+    if (!title.trim() || !fileKey) {
       alert("Please provide a title and upload a game.");
       return;
     }
@@ -82,12 +82,13 @@ const CreatePost = () => {
   };
 
   return (
-    <div className="p-8">
-      <h1 className="text-2xl font-bold mb-4">Create a New Post</h1>
-      <form onSubmit={handleSubmit}>
-        <div className="mb-4">
+    <div className="p-4 ml-4 mt-0">
+      <h1 className="text-2xl font-bold mb-3">Create a New Post</h1>
+      <form onSubmit={handleSubmit} className="max-w-3xl">
+        <div className="mb-3">
           <Label className="block text-sm font-medium mb-1">Title</Label>
           <Input
+            required
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
@@ -96,17 +97,17 @@ const CreatePost = () => {
           />
         </div>
 
-        <div className="mb-4">
+        <div className="mb-3">
           <Label className="block text-sm font-medium mb-1">Content</Label>
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
             placeholder="Enter a description for your game (optional)"
-            className="w-full h-32 p-2 border rounded bg-gray-800 text-white"
+            className="w-full h-24 p-2 border rounded bg-gray-800 text-white"
           />
         </div>
 
-        <div className="mb-4">
+        <div className="mb-3">
           <Label className="block text-sm font-medium mb-1">Game Engine</Label>
           <select
             value={engine}
@@ -121,11 +122,14 @@ const CreatePost = () => {
         <div className="mb-4">
           <Label htmlFor="file">Upload your game file</Label>
           <p className="text-sm text-gray-500">Please upload your game packaged as a .zip file.</p>
-          <p className="text-sm text-gray-500">Ensure your HTML file in the web build export is named "index.html".</p>
-          <div className="mt-2">
+          <p className="text-sm text-gray-500 mb-2">Ensure your HTML file in the web build export is named "index.html".</p>
+          <div className="mt-1">
             <label
               htmlFor="file"
-              className="bg-blue-600 text-white py-2 px-4 rounded cursor-pointer hover:bg-blue-700 inline-block"
+              className={`
+                bg-blue-600 text-white py-2 px-4 rounded inline-block
+                ${!title.trim() ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-700'}
+              `}
             >
               {file ? "Change File" : "Choose File"}
             </label>
@@ -138,13 +142,17 @@ const CreatePost = () => {
               accept=".zip"
               onChange={handleFileChange}
               className="hidden"
-              disabled={uploading}
+              disabled={uploading || !title.trim()}
             />
           </div>
           {uploading && <p className="text-sm text-blue-500">Uploading file...</p>}
         </div>
 
-        <Button type="submit" disabled={uploading || creatingPost}>
+        <Button
+          type="submit"
+          disabled={!title.trim() || !fileKey || uploading || creatingPost}
+          className={!title.trim() || !fileKey ? 'opacity-50 cursor-not-allowed' : ''}
+        >
           {creatingPost ? "Creating Post..." : "Create Post"}
         </Button>
       </form>
