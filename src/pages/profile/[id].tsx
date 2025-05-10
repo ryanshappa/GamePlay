@@ -45,7 +45,10 @@ export default function ProfilePage() {
     if (router.isReady && profileId) {
       fetch(`/api/getUserProfile?userId=${profileId}`)
         .then((res) => res.json())
-        .then((data) => setUserProfile(data))
+        .then((data) => {
+          // ensure data conforms to UserProfile
+          setUserProfile(data as UserProfile);
+        })
         .catch((err) => console.error(err));
     }
   }, [router.isReady, profileId]);
@@ -55,7 +58,11 @@ export default function ProfilePage() {
     if (router.isReady && user?.id && profileId && user.id !== profileId) {
       fetch(`/api/isFollowing?userId=${profileId}`)
         .then((res) => res.json())
-        .then((data) => setIsFollowing(data.isFollowing))
+        .then((data) => {
+          // ensure correct typing
+          const { isFollowing } = data as { isFollowing: boolean };
+          setIsFollowing(isFollowing);
+        })
         .catch((err) => console.error(err));
     }
   }, [router.isReady, user?.id, profileId]);
@@ -65,7 +72,11 @@ export default function ProfilePage() {
     if (activeTab === 'saved' && user?.id) {
       fetch(`/api/getUserSavedPosts`)
         .then((res) => res.json())
-        .then((data) => setSavedPosts(data.map((item: any) => item.post)))
+        .then((data) => {
+          // ensure array items have a post property
+          const items = data as { post: Post }[];
+          setSavedPosts(items.map((item) => item.post));
+        })
         .catch((err) => console.error(err));
     }
   }, [activeTab, user?.id]);

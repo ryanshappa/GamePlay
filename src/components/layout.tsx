@@ -1,6 +1,7 @@
 // layout.tsx
 import React, { useState } from 'react';
 import { useAuth } from '~/contexts/AuthContext';
+import { useClerk } from '@clerk/nextjs';
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
 import { Button } from '~/components/ui/button';
 import { User as UserIcon, Settings, LogOut, Home, Plus, HelpCircle } from 'lucide-react'
@@ -21,6 +22,7 @@ interface LayoutProps {
 
 export default function Layout({ children, showSearchBar = true }: LayoutProps) {
   const { user } = useAuth();
+  const { signOut } = useClerk();
   const router = useRouter();
 
   // Two local states for controlling the modals
@@ -29,8 +31,7 @@ export default function Layout({ children, showSearchBar = true }: LayoutProps) 
 
   const handleSignOut = async () => {
     try {
-      await fetch('/api/signout', { method: 'POST' });
-      window.location.href = '/'; // Redirect to home page after sign out
+      await signOut();
     } catch (error) {
       console.error('Error signing out:', error);
     }

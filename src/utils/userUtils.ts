@@ -1,7 +1,8 @@
-import { clerkClient } from '@clerk/nextjs/server';
+import { clerkClient } from '@clerk/clerk-sdk-node';
 import { db } from '~/server/db';
 
 export async function ensureUserExists(userId: string) {
+  // clerkClient is already a configured client, no need to await
   const user = await clerkClient.users.getUser(userId);
 
   const existingUser = await db.user.findUnique({

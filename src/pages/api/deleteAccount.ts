@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { clerkClient, getAuth } from '@clerk/nextjs/server';
+import { getAuth } from '@clerk/nextjs/server';
+import { clerkClient } from '@clerk/clerk-sdk-node';
 import { db } from '~/server/db';
 import { usersIndex } from '~/server/algoliaClient';
 
@@ -12,8 +13,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   if (req.method === 'DELETE') {
     try {
-
-
       // Delete the user from the database
       const deletedUser = await db.user.delete({ where: { id: userId } });
 
@@ -21,6 +20,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       await usersIndex.deleteObject(userId);
 
       // Delete the user from Clerk
+      // clerkClient is already a configured client, no need to await
       await clerkClient.users.deleteUser(userId);
 
       res.status(200).json({ message: 'Account deleted successfully.' });

@@ -10,6 +10,7 @@ import { Textarea } from '~/components/ui/textarea';
 import { ScrollArea } from '~/components/ui/scroll-area';
 import { HeartIcon, MessageCircleIcon, ShareIcon, Bookmark } from 'lucide-react';
 import Link from 'next/link';
+import { NestedComment } from '~/types/types';
 import DeleteCommentButton from '~/components/deleteComment';
 import { SignInModal } from '~/components/signInModal';
 import { getAuth } from '@clerk/nextjs/server';
@@ -44,13 +45,14 @@ export default function PostPage({ post, status }: PostPageProps) {
           ]);
           
           if (likeResponse.ok) {
-            const likeData = await likeResponse.json();
-            setHasLiked(likeData.liked);
+            // ensure correct typing
+            const { liked } = (await likeResponse.json()) as { liked: boolean };
+            setHasLiked(liked);
           }
           
           if (saveResponse.ok) {
-            const saveData = await saveResponse.json();
-            setSaved(saveData.saved);
+            const { saved } = (await saveResponse.json()) as { saved: boolean };
+            setSaved(saved);
           }
         } catch (error) {
           console.error("Failed to fetch post status:", error);
@@ -367,7 +369,17 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   };
 };
 
-function serializeComment(comment: any) {
+// Convert a raw comment from Prisma into a NestedComment for client
+type RawComment = {
+  id: number;
+  content: string;
+  createdAt: Date;
+  user: { id: string; username?: string | null; avatarUrl?: string | null };
+  likeCount?: number;
+  likedByCurrentUser?: boolean;
+  children?: RawComment[];
+};
+function serializeComment(comment: RawComment): NestedComment {
   return {
     id: comment.id,
     content: comment.content,
@@ -394,7 +406,7 @@ function NestedCommentItem({
   currentUser,
   onDelete,
 }: {
-  comment: any;
+  comment: NestedComment;
   postId: string;
   postAuthorId: string;
   currentUser: { id: string; username: string } | null;
@@ -459,18 +471,28 @@ function NestedCommentItem({
     }
     const wasLiked = liked;
     setLiked(!wasLiked);
-    setLikeCount((c: number) => wasLiked ? c - 1 : c + 1);
+    setLikeCount((c) => {
+      // Handle the case where c might be undefined
+      const currentCount = c ?? 0; // Use nullish coalescing to default to 0
+      return wasLiked ? currentCount - 1 : currentCount + 1;
+    });
 
     try {
       const method = wasLiked ? 'DELETE' : 'POST';
       const resp = await fetch(`/api/comments/${comment.id}/like`, { method });
       if (!resp.ok) {
         setLiked(wasLiked);
-        setLikeCount((c: number) => wasLiked ? c + 1 : c - 1);
+        setLikeCount((c) => {
+          const currentCount = c ?? 0;
+          return wasLiked ? currentCount + 1 : currentCount - 1;
+        });
       }
     } catch {
       setLiked(wasLiked);
-      setLikeCount((c: number) => wasLiked ? c + 1 : c - 1);
+      setLikeCount((c) => {
+        const currentCount = c ?? 0;
+        return wasLiked ? currentCount + 1 : currentCount - 1;
+      });
     }
   }
 
@@ -516,7 +538,7 @@ function NestedCommentItem({
             <button onClick={() => setShowReplies(!showReplies)}>
               {showReplies
                 ? `Hide replies`
-                : `View replies (${comment.children.length})`}
+                : `View replies (${comment.children?.length ?? 0})`}
             </button>
           )}
         </div>
@@ -535,7 +557,7 @@ function NestedCommentItem({
 
         {showReplies && hasChildren && (
           <div className="ml-6 mt-2">
-            {comment.children.map((child: any) => (
+            {comment.children?.map((child: NestedComment) => (
               <NestedCommentItem
                 key={child.id}
                 comment={child}

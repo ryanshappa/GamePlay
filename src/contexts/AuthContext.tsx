@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { useClerk, useAuth as useClerkAuth, useUser } from '@clerk/nextjs';
 
 interface User {
   id: string;
@@ -19,24 +20,20 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue>({ user: null, loading: true });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const { user: clerkUser, isLoaded } = useUser();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const response = await fetch('/api/me');
-        const data = await response.json();
-        setUser(data.user);
-      } catch (error) {
-        console.error('Error fetching user data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchUser();
-  }, []);
+    if (isLoaded) {
+      setUser(clerkUser ? {
+        id: clerkUser.id,
+        username: clerkUser.username || undefined,
+        imageUrl: clerkUser.imageUrl || undefined,
+        publicMetadata: clerkUser.publicMetadata || {}
+      } : null);
+    }
+  }, [clerkUser, isLoaded]);
 
   return (
     <AuthContext.Provider value={{ user, loading }}>
