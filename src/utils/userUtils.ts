@@ -2,6 +2,7 @@ import { clerkClient } from '@clerk/nextjs/server';
 import { db } from '~/server/db';
 
 export async function ensureUserExists(userId: string) {
+  // clerkClient is already a configured client, no need to await
   const clerk = await clerkClient();
   const user = await clerk.users.getUser(userId);
 
