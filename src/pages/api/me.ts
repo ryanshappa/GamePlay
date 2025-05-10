@@ -1,4 +1,5 @@
-import { getAuth, clerkClient } from '@clerk/nextjs/server';
+import { getAuth } from '@clerk/nextjs/server';
+import { clerkClient } from '@clerk/clerk-sdk-node';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -9,8 +10,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   
   try {
     // Fetch full user details from Clerk
-    const clerk = await clerkClient();
-    const clerkUser = await clerk.users.getUser(userId);
+    // clerkClient is already a configured client, no need to await
+    const clerkUser = await clerkClient.users.getUser(userId);
     
     // Map Clerk user to our application's user format
     const user = {
