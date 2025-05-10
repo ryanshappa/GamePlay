@@ -123,27 +123,21 @@ const CreatePost = () => {
           <Label htmlFor="file">Upload your game file</Label>
           <p className="text-sm text-gray-500">Please upload your game packaged as a .zip file.</p>
           <p className="text-sm text-gray-500 mb-2">Ensure your HTML file in the web build export is named "index.html".</p>
-          <div className="mt-1">
-            <label
-              htmlFor="file"
-              className={`
-                bg-blue-600 text-white py-2 px-4 rounded inline-block
-                ${!title.trim() ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-700'}
-              `}
-            >
+          <div className="mt-2 inline-block relative">
+            <label className="bg-blue-600 text-white py-2 px-4 rounded cursor-pointer hover:bg-blue-700 inline-block relative overflow-hidden">
               {file ? "Change File" : "Choose File"}
+              <input
+                type="file"
+                id="file"
+                accept=".zip"
+                onChange={handleFileChange}
+                disabled={uploading}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              />
             </label>
             <span className="ml-2 text-white">
               {file ? file.name : "No file chosen"}
             </span>
-            <Input
-              type="file"
-              id="file"
-              accept=".zip"
-              onChange={handleFileChange}
-              className="hidden"
-              disabled={uploading || !title.trim()}
-            />
           </div>
           {uploading && <p className="text-sm text-blue-500">Uploading file...</p>}
         </div>
