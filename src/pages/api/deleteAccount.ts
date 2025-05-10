@@ -21,7 +21,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       await usersIndex.deleteObject(userId);
 
       // Delete the user from Clerk
-      await clerkClient.users.deleteUser(userId);
+      const clerk = await clerkClient();
+      await clerk.users.deleteUser(userId);
 
       res.status(200).json({ message: 'Account deleted successfully.' });
     } catch (error: any) {

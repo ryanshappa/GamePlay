@@ -9,7 +9,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   
   try {
     // Fetch full user details from Clerk
-    const clerkUser = await clerkClient.users.getUser(userId);
+    const clerk = await clerkClient();
+    const clerkUser = await clerk.users.getUser(userId);
     
     // Map Clerk user to our application's user format
     const user = {

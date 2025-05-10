@@ -142,10 +142,11 @@ function validateGameFiles(files, engine) {
     requiredFiles = ['index.html', '.pck', '.wasm', '.js'];
   }
 
+  // Normalize file paths and required patterns to lowercase for case-insensitive matching
   const fileNames = files.map((file) => file.path.toLowerCase());
-
-  return requiredFiles.every((requiredFile) =>
-    fileNames.some((fileName) => fileName.includes(requiredFile))
+  const requiredPatterns = requiredFiles.map((req) => req.toLowerCase());
+  return requiredPatterns.every((pattern) =>
+    fileNames.some((fileName) => fileName.includes(pattern))
   );
 }
 

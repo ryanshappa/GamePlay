@@ -7,7 +7,7 @@ import '~/styles/globals.css';
 import { ReactElement, ReactNode } from 'react';
 import { NextPage } from 'next';
 import { AuthProvider } from '~/contexts/AuthContext';
-import dynamic from 'next/dynamic';
+import { ClerkProvider } from '@clerk/nextjs';
 import { LayoutDesktop } from '~/components/LayoutDesktop';
 import { LayoutMobile } from '~/components/LayoutMobile';
 
@@ -19,12 +19,6 @@ type NextPageWithLayout = NextPage & {
 type AppPropsWithLayout = AppProps & {
   Component: NextPageWithLayout;
 };
-
-// Dynamically import ClerkProvider with no SSR
-const ClerkProviderClient = dynamic(
-  () => import('@clerk/nextjs').then((mod) => mod.ClerkProvider),
-  { ssr: false }
-);
 
 const MyApp: AppType = ({ Component, pageProps }: AppPropsWithLayout) => {
   // Use the layout defined at the page level, if available
@@ -47,9 +41,8 @@ const MyApp: AppType = ({ Component, pageProps }: AppPropsWithLayout) => {
         {/* Add viewport meta tag with content-width=device-width */}
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
       </Head>
-      <AuthProvider>
-        {/* This provider only exists on the browser */}
-        <ClerkProviderClient {...pageProps}>
+      <ClerkProvider {...pageProps}>
+        <AuthProvider>
           <div className={GeistSans.className}>
             {Component.disableLayout ? (
               pageWithLayout
@@ -60,8 +53,8 @@ const MyApp: AppType = ({ Component, pageProps }: AppPropsWithLayout) => {
               </>
             )}
           </div>
-        </ClerkProviderClient>
-      </AuthProvider>
+        </AuthProvider>
+      </ClerkProvider>
     </>
   );
 };
