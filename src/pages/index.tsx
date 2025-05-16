@@ -7,6 +7,7 @@ import { CommentsDrawer } from '~/components/commentsSheet';
 import PostItem from '~/components/postItem';
 import { SignInModal } from '~/components/signInModal';
 import { MobilePostItem } from '~/components/MobilePostItem';
+import { LandscapeFeed } from '~/components/LandscapeFeed';
 
 interface HomePageProps {
   posts: PostWithAuthor[];
@@ -137,44 +138,11 @@ export default function HomePage({ posts }: HomePageProps) {
     <>
       {/* Mobile Feed */}
       <div className="md:hidden w-full h-screen">
-        <div
-          className="
-            flex flex-col h-screen w-screen
-            overflow-y-auto
-            snap-y snap-mandatory
-            scrollbar-hide
-          "
-        >
-          {postList.map((post, index) => {
-            const i0 = currentActiveIndex;
-            const inRange = (
-              index === i0 ||
-              index === i0 - 1 ||
-              index === i0 + 1
-            );
-
-            return (
-              <div
-                key={post.id}
-                ref={(el) => addToRefs(el, index)}
-                data-index={index}
-                className="snap-start flex-shrink-0 w-screen h-screen relative"
-              >
-                {inRange ? (
-                  <MobilePostItem 
-                    post={post}
-                    onCommentClick={() => handleCommentClick(post)}
-                    onShare={handleShare}
-                  />
-                ) : (
-                  <div className="w-full h-full bg-black flex items-center justify-center">
-                    <span className="text-white">Loading...</span>
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
+        <LandscapeFeed 
+          posts={postList} 
+          onCommentClick={handleCommentClick}
+          onShare={handleShare}
+        />
       </div>
 
       {/* Desktop Feed */}
