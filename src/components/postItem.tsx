@@ -1,5 +1,5 @@
 // src/components/postItem.tsx
-import React, { useRef, useEffect, useState } from 'react';
+import React from 'react';
 import { PostWithAuthor } from '~/types/types';
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
 import { Button } from '~/components/ui/button';
@@ -27,21 +27,17 @@ const PostItem: React.FC<PostItemProps> = ({
   layout = 'feed',
   isActive,
 }) => {
-  const iframeRef = useRef<HTMLIFrameElement>(null);
   const isFeedLayout = layout === 'feed';
-  const [iframeSrc, setIframeSrc] = useState(post.fileUrl || '');
-
-  useEffect(() => {
-    if (isActive) {
-      setIframeSrc((post.fileUrl || '') + '?t=' + new Date().getTime());
-    } else {
-      setIframeSrc('about:blank');
-    }
-  }, [isActive, post.fileUrl]);
 
   return (
     <div className="flex flex-col w-full">
-      {isFeedLayout && <h2 className="text-2xl font-bold mb-2">{post.title}</h2>}
+      {isFeedLayout && (
+        <h2 className="text-2xl font-bold mb-2">
+          <Link href={`/post/${post.id}`} className="hover:underline">
+            {post.title}
+          </Link>
+        </h2>
+      )}
 
       <div className={`relative ${isFeedLayout ? 'flex items-start' : 'flex flex-col items-center'}`}>
         <div
@@ -53,15 +49,20 @@ const PostItem: React.FC<PostItemProps> = ({
             rounded-md overflow-hidden
           `}
         >
-          <iframe
-            ref={iframeRef}
-            src={iframeSrc}
-            title={post.title}
-            className="w-full h-full"
-            frameBorder="0"
-            allow="fullscreen; pointer-lock; autoplay; gamepad"
-            allowFullScreen
-          ></iframe>
+          {isActive && post.fileUrl ? (
+            <iframe
+              key={post.id + String(isActive)}
+              src={post.fileUrl}
+              title={post.title}
+              className="w-full h-full"
+              loading="lazy"
+              frameBorder="0"
+              allow={`fullscreen; ${isActive ? 'autoplay' : `autoplay 'none'`}`}
+              allowFullScreen
+            />
+          ) : (
+            <div className="w-full h-full bg-black" />
+          )}
         </div>
 
         {isFeedLayout && (
@@ -91,7 +92,6 @@ const PostItem: React.FC<PostItemProps> = ({
             </Button>
             <span>{post.commentsCount}</span>
 
-            {/* Use the new SaveButton here */}
             <SaveButton
               postId={post.id}
               initialSaved={post.savedByCurrentUser || false}
@@ -120,15 +120,6 @@ const PostItem: React.FC<PostItemProps> = ({
         <p className="mt-1 whitespace-pre-wrap max-w-[50%]">
           {post.content}
         </p>
-      )}
-
-      {isFeedLayout && (
-        <Link
-          href={`/post/${post.id}`}
-          className="text-blue-500 hover:underline mt-1"
-        >
-          View Post
-        </Link>
       )}
 
       {!isFeedLayout && (

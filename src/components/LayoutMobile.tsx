@@ -1,20 +1,14 @@
-import React, { ReactNode } from 'react';
-import { BottomNav } from './BottomNav';
+import React from 'react';
 
 interface LayoutMobileProps {
-  children: ReactNode;
+  children: React.ReactNode;
 }
 
 export function LayoutMobile({ children }: LayoutMobileProps) {
+  // On mobile (md:hidden) we simply fill the screen with whatever children the page provides.
   return (
-    <div className="md:hidden flex flex-col h-screen bg-black text-white">
-      {/* Full-screen content area */}
-      <main className="flex-1 overflow-auto relative">
-        {children}
-      </main>
-      
-      {/* Bottom navigation is included in the mobile layout */}
-      <BottomNav />
+    <div className="md:hidden w-screen h-screen bg-black text-white">
+      {children}
     </div>
   );
 } 
