@@ -93,3 +93,10 @@
   border: none !important;
   box-shadow: none !important; /* In case the border is a shadow */
 }
+
+/* Prevent scrolling on root elements */
+html, body, #__next {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+}

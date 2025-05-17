@@ -1,12 +1,14 @@
 import React, { useState } from "react";
 import { PostWithAuthor } from "~/types/types";
 import { MobilePostItem } from "./MobilePostItem";
-import { Home, User, Search, ChevronUp, ChevronDown, Heart, MessageCircle, Bookmark, Share2 } from "lucide-react";
+import { Home, User, Search, ChevronUp, ChevronDown, MessageCircle, Share2 } from "lucide-react";
 import { useAuth } from "~/contexts/AuthContext";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { SignInModal } from "~/components/signInModal";
 import { CommentsDrawer } from "~/components/commentsSheet";
 import Link from "next/link";
+import { LikeButton } from "~/components/likeButton";
+import { SaveButton } from "~/components/saveButton";
 
 interface LandscapeFeedProps {
   posts: PostWithAuthor[];
@@ -36,25 +38,14 @@ export function LandscapeFeed({ posts, onCommentClick, onShare }: LandscapeFeedP
     }
   };
 
-  const handleLike = () => {
-    requireAuth(() => {
-      // TODO: Implement like functionality
-      console.log('Like post:', savePost?.id);
-    });
-  };
-
-  const handleSave = () => {
-    requireAuth(() => {
-      // TODO: Implement save functionality
-      console.log('Save post:', savePost?.id);
-    });
-  };
-
   return (
     <>
       <div className="flex h-full w-full">
         {/* Left Sidebar */}
-        <aside className="flex flex-col justify-between items-center w-16 bg-black py-4">
+        <aside 
+          className="flex flex-col justify-between items-center w-16 bg-black py-4"
+          style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+        >
           {/* Logo placeholder - replace with your actual logo */}
           <img src="/gp-logo-svg.svg" alt="GamePlay logo" className="w-14 h-14 mb-6" />
 
@@ -126,7 +117,10 @@ export function LandscapeFeed({ posts, onCommentClick, onShare }: LandscapeFeedP
         </main>
 
         {/* Right Sidebar */}
-        <aside className="flex flex-col items-center w-16 bg-black py-4">
+        <aside 
+          className="flex flex-col items-center w-16 bg-black py-4"
+          style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+        >
           {/* Author avatar */}
           <Link href={`/profile/${savePost?.author.id}`} className="p-1 hover:bg-black rounded-full mb-8">
             <Avatar className="h-8 w-8">
@@ -138,14 +132,12 @@ export function LandscapeFeed({ posts, onCommentClick, onShare }: LandscapeFeedP
             </Avatar>
           </Link>
 
-          {/* Like */}
-          <button
-            onClick={handleLike}
-            className="flex flex-col items-center space-y-1 hover:bg-black p-1 rounded mb-8"
-          >
-            <Heart className={`w-6 h-6 ${savePost?.likedByCurrentUser ? 'text-red-500 fill-red-500' : 'text-white'}`} />
-            <span className="text-xs text-white">{savePost?.likesCount}</span>
-          </button>
+          {/* Like - Replace with LikeButton component */}
+          <LikeButton
+            postId={savePost?.id || ""}
+            initialLiked={savePost?.likedByCurrentUser || false}
+            initialCount={savePost?.likesCount || 0}
+          />
 
           {/* Comment */}
           <button
@@ -162,13 +154,11 @@ export function LandscapeFeed({ posts, onCommentClick, onShare }: LandscapeFeedP
             <span className="text-xs text-white">{savePost?.commentsCount}</span>
           </button>
 
-          {/* Save */}
-          <button
-            onClick={handleSave}
-            className="p-1 hover:bg-black rounded mb-8"
-          >
-            <Bookmark className={`w-6 h-6 ${savePost?.savedByCurrentUser ? 'text-blue-500 fill-blue-500' : 'text-white'}`} />
-          </button>
+          {/* Save - Replace with SaveButton component */}
+          <SaveButton
+            postId={savePost?.id || ""}
+            initialSaved={savePost?.savedByCurrentUser || false}
+          />
 
           {/* Share */}
           <button
@@ -190,4 +180,4 @@ export function LandscapeFeed({ posts, onCommentClick, onShare }: LandscapeFeedP
       {showSignIn && <SignInModal open={showSignIn} onOpenChange={setShowSignIn} />}
     </>
   );
-} 
+}
