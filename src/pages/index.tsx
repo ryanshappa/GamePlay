@@ -24,25 +24,26 @@ export default function HomePage({ posts }: HomePageProps) {
   const [postList, setPostList] = useState<PostWithAuthor[]>(posts);
   const [isCopySuccess, setIsCopySuccess] = useState(false);
   const [activeIndex, setActiveIndex] = useState<number>(0);
-  const [isPortrait, setIsPortrait] = useState(true);
+  
+  // ❶ detect mobile/tablet by UA
+  const [isMobile, setIsMobile] = useState(false);
+  // ❷ detect orientation
+  const [isLandscape, setIsLandscape] = useState(false);
 
-  // Detect orientation
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-    
-    const checkOrientation = () => {
-      setIsPortrait(window.matchMedia("(orientation: portrait)").matches);
+    // simple UA check
+    setIsMobile(/Mobi|Android|iPhone|iPad|Tablet/i.test(navigator.userAgent));
+
+    const onResize = () => {
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      // mobile if either dimension is under 768px
+      setIsMobile(w < 768 || h < 768);
+      setIsLandscape(w > h);
     };
-    
-    // Set initial orientation
-    checkOrientation();
-    
-    // Listen for orientation changes
-    window.addEventListener('resize', checkOrientation);
-    
-    return () => {
-      window.removeEventListener('resize', checkOrientation);
-    };
+    window.addEventListener('resize', onResize);
+    onResize();
+    return () => window.removeEventListener('resize', onResize);
   }, []);
 
   const postRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -153,73 +154,70 @@ export default function HomePage({ posts }: HomePageProps) {
     setTimeout(() => setIsCopySuccess(false), 2000);
   };
 
-  const currentActiveIndex = activeIndex;
-  const currentPost = postList[currentActiveIndex];
-
   return (
     <>
-      {/* Mobile Feed */}
-      <div className="md:hidden w-full h-screen">
-        {isPortrait ? (
-          <PortraitFeed 
+      {isMobile ? (
+        // mobile always: portrait vs landscape
+        isLandscape ? (
+          <LandscapeFeed
+            posts={postList}
+            onCommentClick={handleCommentClick}
+            onShare={handleShare}
+          />
+        ) : (
+          <PortraitFeed
             posts={postList}
             currentIndex={activeIndex}
             setCurrentIndex={setActiveIndex}
             onCommentClick={handleCommentClick}
             onShare={handleShare}
           />
-        ) : (
-          <LandscapeFeed 
-            posts={postList} 
-            onCommentClick={handleCommentClick}
-            onShare={handleShare}
-          />
-        )}
-      </div>
+        )
+      ) : (
+        // desktop: existing SSR / virtualization feed
+        <div className="w-full h-screen overflow-auto">
+          <div>
+            {postList.map((post, index) => {
+              const inRange =
+                index >= activeIndex - VIRTUALIZATION_BUFFER &&
+                index <= activeIndex + VIRTUALIZATION_BUFFER;
 
-      {/* Desktop Feed */}
-      <div className="hidden md:block w-full h-screen overflow-auto">
-        <div>
-          {postList.map((post, index) => {
-            const inRange =
-              index >= currentActiveIndex - VIRTUALIZATION_BUFFER &&
-              index <= currentActiveIndex + VIRTUALIZATION_BUFFER;
-
-            return (
-              <div
-                key={post.id}
-                ref={(el) => addToRefs(el, index)}
-                className="post-item"
-                data-index={index}
-                style={{
-                  minHeight: '100vh',
-                  overflow: 'hidden',
-                  background: inRange ? 'transparent' : '#000',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                {inRange ? (
-                  <PostItem
-                    post={post}
-                    isActive={activeIndex === index}
-                    onCommentClick={handleCommentClick}
-                    onShare={handleShare}
-                    isCopySuccess={isCopySuccess}
-                    showSeparator={false}
-                    layout="feed"
-                  />
-                ) : (
-                  <div style={{ color: '#fff', textAlign: 'center' }}>
-                    Loading...
-                  </div>
-                )}
-              </div>
-            );
-          })}
+              return (
+                <div
+                  key={post.id}
+                  ref={(el) => addToRefs(el, index)}
+                  className="post-item"
+                  data-index={index}
+                  style={{
+                    minHeight: '100vh',
+                    overflow: 'hidden',
+                    background: inRange ? 'transparent' : '#000',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  {inRange ? (
+                    <PostItem
+                      post={post}
+                      isActive={activeIndex === index}
+                      onCommentClick={handleCommentClick}
+                      onShare={handleShare}
+                      isCopySuccess={isCopySuccess}
+                      showSeparator={false}
+                      layout="feed"
+                    />
+                  ) : (
+                    <div style={{ color: '#fff', textAlign: 'center' }}>
+                      Loading...
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         </div>
-      </div>
+      )}
       
       {/* Modals and notifications - keep these for both layouts */}
       {selectedPost && (

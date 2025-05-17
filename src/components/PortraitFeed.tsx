@@ -91,16 +91,7 @@ export function PortraitFeed({
   return (
     <div className="flex h-full w-full bg-black text-white">
       {/* ── Left Sidebar ── */}
-      <aside
-        className="
-          flex flex-col
-          items-center
-          w-16 bg-black
-          pt-[env(safe-area-inset-top,16px)]
-          pb-[env(safe-area-inset-bottom,16px)]
-        "
-      >
-        {/* push everything down a bit */}
+      <aside className="flex flex-col items-center w-16 bg-black pt-4 pb-4">
         <div className="mt-4 flex flex-col items-center space-y-4">
           {/* Larger Logo */}
           <img
@@ -149,7 +140,7 @@ export function PortraitFeed({
       </aside>
 
       {/* ── Center: Game ── */}
-      <main className="flex-1 relative">
+      <main className="flex-1 relative pb-[env(safe-area-inset-bottom,0px)]">
         {isEmpty ? (
           <div className="flex h-full w-full items-center justify-center">
             No posts available
@@ -169,75 +160,65 @@ export function PortraitFeed({
       </main>
 
       {/* ── Right Sidebar ── */}
-      <aside
-        className="
-          flex flex-col
-          items-center
-          w-16 bg-black
-          pt-[env(safe-area-inset-top,16px)]
-          pb-[env(safe-area-inset-bottom,16px)]
-        "
-      >
-        <div className="mt-10 flex flex-col items-center space-y-6">
-          {post && (
-            <>
-              {/* Avatar */}
-              <Link
-                href={`/profile/${post.author.id}`}
-                className="hover:opacity-80"
-              >
-                <Avatar className="h-8 w-8">
-                  {post.author.avatarUrl ? (
-                    <AvatarImage
-                      src={post.author.avatarUrl}
-                      alt={post.author.username}
-                    />
-                  ) : (
-                    <AvatarFallback>
-                      {post.author.username?.[0] ?? "U"}
-                    </AvatarFallback>
-                  )}
-                </Avatar>
-              </Link>
+      <aside className="flex flex-col items-center w-16 bg-black pt-10 space-y-6 pb-4">
+        {post && (
+          <>
+            {/* Avatar */}
+            <Link
+              href={`/profile/${post.author.id}`}
+              className="hover:opacity-80"
+            >
+              <Avatar className="h-8 w-8">
+                {post.author.avatarUrl ? (
+                  <AvatarImage
+                    src={post.author.avatarUrl}
+                    alt={post.author.username}
+                  />
+                ) : (
+                  <AvatarFallback>
+                    {post.author.username?.[0] ?? "U"}
+                  </AvatarFallback>
+                )}
+              </Avatar>
+            </Link>
 
-              {/* Like */}
-              <button onClick={handleLike} className="flex flex-col items-center">
-                <Heart
-                  className={`w-6 h-6 ${
-                    hasLiked ? "text-red-500 fill-red-500" : "text-white"
-                  }`}
-                />
-                <span className="text-xs">{likesCount}</span>
-              </button>
+            {/* Like */}
+            <button onClick={handleLike} className="flex flex-col items-center">
+              <Heart
+                className={`w-6 h-6 ${
+                  hasLiked ? "text-red-500 fill-red-500" : "text-white"
+                }`}
+              />
+              <span className="text-xs">{likesCount}</span>
+            </button>
 
-              {/* Comment */}
-              <button
-                onClick={() => post && onCommentClick(post)}
-                className="flex flex-col items-center"
-              >
-                <MessageCircle className="w-6 h-6 text-white" />
-                <span className="text-xs">{commentsCount}</span>
-              </button>
+            {/* Comment */}
+            <button
+              onClick={() => post && onCommentClick(post)}
+              className="flex flex-col items-center"
+            >
+              <MessageCircle className="w-6 h-6 text-white" />
+              <span className="text-xs">{commentsCount}</span>
+            </button>
 
-              {/* Save */}
-              <button onClick={handleSave} className="flex flex-col items-center">
-                <Bookmark
-                  className={`w-6 h-6 ${
-                    saved ? "text-yellow-400 fill-yellow-400" : "text-white"
-                  }`}
-                />
-              </button>
+            {/* Save */}
+            <button onClick={handleSave} className="flex flex-col items-center">
+              <Bookmark
+                className={`w-6 h-6 ${
+                  saved ? "text-yellow-400 fill-yellow-400" : "text-white"
+                }`}
+              />
+            </button>
 
-              {/* Share */}
-              <button
-                onClick={() => post && onShare(post.id)}
-                className="flex flex-col items-center"
-              >
-                <Share2 className="w-6 h-6 text-white" />
-              </button>
-            </>
-          )}
-        </div>
+            {/* Share */}
+            <button
+              onClick={() => post && onShare(post.id)}
+              className="flex flex-col items-center"
+            >
+              <Share2 className="w-6 h-6 text-white" />
+            </button>
+          </>
+        )}
       </aside>
     </div>
   );
