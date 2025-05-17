@@ -20,6 +20,11 @@ export function MobilePostItem({ post, onCommentClick, onShare }: MobilePostItem
         frameBorder="0"
         allow="fullscreen; autoplay; gamepad"
       />
+      
+      {/* Add this if you need action buttons in portrait mode */}
+      <div className="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col items-center space-y-6">
+        {/* Your action buttons would go here */}
+      </div>
     </div>
   );
 } 

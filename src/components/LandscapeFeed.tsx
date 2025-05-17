@@ -20,20 +20,16 @@ export function LandscapeFeed({ posts, onCommentClick, onShare }: LandscapeFeedP
   const [showSignIn, setShowSignIn] = useState(false);
   const [showComments, setShowComments] = useState(false);
   
-  // Move these hooks BEFORE any conditional returns
   const [likesCount, setLikesCount] = useState(0);
   const [hasLiked, setHasLiked] = useState(false);
   const [saved, setSaved] = useState(false);
   const [commentsCount, setCommentsCount] = useState(0);
   
-  // Add a guard clause that renders something but doesn't return early
   const isEmpty = posts.length === 0;
   
-  // Get the current post safely
   const post = !isEmpty ? posts[currentIndex] : null;
   const savePost = post;
 
-  // Update the useEffect to handle the empty case
   useEffect(() => {
     if (!savePost) return;
     
@@ -42,7 +38,6 @@ export function LandscapeFeed({ posts, onCommentClick, onShare }: LandscapeFeedP
     setSaved(savePost?.savedByCurrentUser ?? false);
     setCommentsCount(savePost?.commentsCount ?? 0);
 
-    // If user is signed in, re-fetch current like/save status
     if (user) {
       Promise.all([
         fetch(`/api/posts/${savePost?.id}/isLiked`),
@@ -51,14 +46,12 @@ export function LandscapeFeed({ posts, onCommentClick, onShare }: LandscapeFeedP
         .then(([likeRes, saveRes]) => Promise.all([likeRes.json(), saveRes.json()]))
         .then(([{ liked }, { saved }]) => {
           setHasLiked(liked);
-          // note: likesCount stays from local post unless your API returns new count
           setSaved(saved);
         })
         .catch(console.error);
     }
   }, [savePost?.id, user]);
 
-  // Auth-gate helper
   const requireAuth = (fn: () => void) => {
     if (!user) {
       setShowSignIn(true);
@@ -67,24 +60,20 @@ export function LandscapeFeed({ posts, onCommentClick, onShare }: LandscapeFeedP
     }
   };
 
-  // Like / Unlike
   const handleLike = () => {
     requireAuth(async () => {
       const method = hasLiked ? "DELETE" : "POST";
-      // Optimistically update UI
       setHasLiked(!hasLiked);
       setLikesCount((c) => (hasLiked ? c - 1 : c + 1));
       try {
         await fetch(`/api/posts/${savePost?.id}/like`, { method });
       } catch {
-        // rollback on failure
         setHasLiked(hasLiked);
         setLikesCount((c) => (hasLiked ? c + 1 : c - 1));
       }
     });
   };
 
-  // Save / Unsave
   const handleSave = () => {
     requireAuth(async () => {
       const method = saved ? "DELETE" : "POST";
@@ -97,7 +86,6 @@ export function LandscapeFeed({ posts, onCommentClick, onShare }: LandscapeFeedP
     });
   };
 
-  // Add comment
   const handleAddComment = async (content: string) => {
     if (!user) {
       setShowSignIn(true);
@@ -119,7 +107,6 @@ export function LandscapeFeed({ posts, onCommentClick, onShare }: LandscapeFeedP
     }
   };
 
-  // Delete comment
   const handleDeleteComment = async (commentId: number) => {
     try {
       const resp = await fetch(
@@ -137,9 +124,7 @@ export function LandscapeFeed({ posts, onCommentClick, onShare }: LandscapeFeedP
   return (
     <>
       <div className="flex h-full w-full">
-        {/* Left Sidebar */}
         <aside className="flex flex-col justify-between items-center w-16 bg-black py-4">
-          {/* Logo placeholder - replace with your actual logo */}
           <img src="/gp-logo-svg.svg" alt="GamePlay logo" className="w-14 h-14 mb-6" />
 
           <Link href="/" className="p-2 mb-4 hover:bg-black rounded">
@@ -183,7 +168,6 @@ export function LandscapeFeed({ posts, onCommentClick, onShare }: LandscapeFeedP
           </div>
         </aside>
 
-        {/* Center: Game iframe */}
         <main className="flex-1 relative bg-black"> 
           {isEmpty ? (
             <div className="flex h-full w-full justify-center items-center text-white">
@@ -205,7 +189,6 @@ export function LandscapeFeed({ posts, onCommentClick, onShare }: LandscapeFeedP
                 }} 
               />
 
-              {/* Game title overlay */}
               <div className="absolute bottom-2 left-2 bg-black/60 px-2 py-1 rounded text-sm text-white">
                 {savePost?.title}
               </div>
@@ -213,9 +196,7 @@ export function LandscapeFeed({ posts, onCommentClick, onShare }: LandscapeFeedP
           )}
         </main>
 
-        {/* Right Sidebar */}
         <aside className="flex flex-col items-center w-16 bg-black py-4">
-          {/* Author avatar */}
           <Link href={`/profile/${savePost?.author.id}`} className="p-1 hover:bg-black rounded-full mb-8">
             <Avatar className="h-8 w-8">
               {savePost?.author.avatarUrl ? (
@@ -226,7 +207,6 @@ export function LandscapeFeed({ posts, onCommentClick, onShare }: LandscapeFeedP
             </Avatar>
           </Link>
 
-          {/* Like */}
           <button
             onClick={handleLike}
             className="flex flex-col items-center space-y-1 hover:bg-black p-1 rounded mb-8"
@@ -235,7 +215,6 @@ export function LandscapeFeed({ posts, onCommentClick, onShare }: LandscapeFeedP
             <span className="text-xs text-white">{likesCount}</span>
           </button>
 
-          {/* Comment */}
           <button
             onClick={() => setShowComments(true)}
             className="flex flex-col items-center space-y-1 hover:bg-black p-1 rounded mb-8"
@@ -244,7 +223,6 @@ export function LandscapeFeed({ posts, onCommentClick, onShare }: LandscapeFeedP
             <span className="text-xs text-white">{commentsCount}</span>
           </button>
 
-          {/* Save */}
           <button
             onClick={handleSave}
             className="p-1 hover:bg-black rounded mb-8"
@@ -252,7 +230,6 @@ export function LandscapeFeed({ posts, onCommentClick, onShare }: LandscapeFeedP
             <Bookmark className={`w-6 h-6 ${saved ? 'text-yellow-400 fill-yellow-400' : 'text-white'}`} />
           </button>
 
-          {/* Share */}
           <button
             onClick={() => {
               if (savePost?.id) {
@@ -268,7 +245,6 @@ export function LandscapeFeed({ posts, onCommentClick, onShare }: LandscapeFeedP
         </aside>
       </div>
 
-      {/* Modals */}
       {showSignIn && <SignInModal open={showSignIn} onOpenChange={setShowSignIn} />}
       {showComments && savePost && (
         <CommentsDrawer
