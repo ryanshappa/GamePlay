@@ -8,6 +8,7 @@ import PostItem from '~/components/postItem';
 import { SignInModal } from '~/components/signInModal';
 import { MobilePostItem } from '~/components/MobilePostItem';
 import { LandscapeFeed } from '~/components/LandscapeFeed';
+import { PortraitFeed } from '~/components/PortraitFeed';
 
 interface HomePageProps {
   posts: PostWithAuthor[];
@@ -23,6 +24,26 @@ export default function HomePage({ posts }: HomePageProps) {
   const [postList, setPostList] = useState<PostWithAuthor[]>(posts);
   const [isCopySuccess, setIsCopySuccess] = useState(false);
   const [activeIndex, setActiveIndex] = useState<number>(0);
+  const [isPortrait, setIsPortrait] = useState(true);
+
+  // Detect orientation
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
+    const checkOrientation = () => {
+      setIsPortrait(window.matchMedia("(orientation: portrait)").matches);
+    };
+    
+    // Set initial orientation
+    checkOrientation();
+    
+    // Listen for orientation changes
+    window.addEventListener('resize', checkOrientation);
+    
+    return () => {
+      window.removeEventListener('resize', checkOrientation);
+    };
+  }, []);
 
   const postRefs = useRef<(HTMLDivElement | null)[]>([]);
   const addToRefs = (el: HTMLDivElement | null, index: number) => {
@@ -133,20 +154,31 @@ export default function HomePage({ posts }: HomePageProps) {
   };
 
   const currentActiveIndex = activeIndex;
+  const currentPost = postList[currentActiveIndex];
 
   return (
     <>
       {/* Mobile Feed */}
-      <div className="lg:hidden w-full h-screen">
-        <LandscapeFeed 
-          posts={postList} 
-          onCommentClick={handleCommentClick}
-          onShare={handleShare}
-        />
+      <div className="md:hidden w-full h-screen">
+        {isPortrait ? (
+          <PortraitFeed 
+            posts={postList}
+            currentIndex={activeIndex}
+            setCurrentIndex={setActiveIndex}
+            onCommentClick={handleCommentClick}
+            onShare={handleShare}
+          />
+        ) : (
+          <LandscapeFeed 
+            posts={postList} 
+            onCommentClick={handleCommentClick}
+            onShare={handleShare}
+          />
+        )}
       </div>
 
       {/* Desktop Feed */}
-      <div className="hidden lg:block w-full h-screen overflow-auto">
+      <div className="hidden md:block w-full h-screen overflow-auto">
         <div>
           {postList.map((post, index) => {
             const inRange =

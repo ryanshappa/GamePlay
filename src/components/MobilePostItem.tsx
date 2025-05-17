@@ -2,13 +2,13 @@ import React from 'react';
 import { PostWithAuthor } from '~/types/types';
 
 interface MobilePostItemProps {
-  post: PostWithAuthor | undefined;
-  onCommentClick: (post: PostWithAuthor) => void;
-  onShare: (postId: string) => void;
+  post: PostWithAuthor | null | undefined;
+  onCommentClick: () => void;
+  onShare: () => void;
 }
 
 export function MobilePostItem({ post, onCommentClick, onShare }: MobilePostItemProps) {
-  if (!post) return <div className="w-full h-full bg-black"></div>;
+  if (!post) return null;
 
   return (
     <div className="relative w-full h-full">

@@ -124,7 +124,7 @@ export function LandscapeFeed({ posts, onCommentClick, onShare }: LandscapeFeedP
   return (
     <>
       <div className="flex h-full w-full">
-        <aside className="flex flex-col justify-between items-center w-16 bg-black py-4">
+        <aside className="flex flex-col justify-between items-center w-16 bg-black py-4 pl-[env(safe-area-inset-left,0px)]">
           <img src="/gp-logo-svg.svg" alt="GamePlay logo" className="w-14 h-14 mb-6" />
 
           <Link href="/" className="p-2 mb-4 hover:bg-black rounded">
@@ -196,7 +196,7 @@ export function LandscapeFeed({ posts, onCommentClick, onShare }: LandscapeFeedP
           )}
         </main>
 
-        <aside className="flex flex-col items-center w-16 bg-black py-4">
+        <aside className="flex flex-col items-center w-16 bg-black py-4 pr-[env(safe-area-inset-right,0px)]">
           <Link href={`/profile/${savePost?.author.id}`} className="p-1 hover:bg-black rounded-full mb-8">
             <Avatar className="h-8 w-8">
               {savePost?.author.avatarUrl ? (
