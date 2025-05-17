@@ -18,10 +18,10 @@ export function LayoutMobile({ children }: LayoutMobileProps) {
     return () => window.removeEventListener("resize", setVh);
   }, []);
 
-  // On mobile (md:hidden) we simply fill the screen with whatever children the page provides.
+  // On mobile (lg:hidden) we simply fill the screen with whatever children the page provides.
   return (
     <div
-      className="md:hidden w-screen bg-black text-white overflow-hidden"
+      className="lg:hidden w-screen bg-black text-white overflow-hidden"
       style={{ height: "calc(var(--vh, 1vh) * 100)" }}
     >
       {children}

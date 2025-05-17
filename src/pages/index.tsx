@@ -137,7 +137,7 @@ export default function HomePage({ posts }: HomePageProps) {
   return (
     <>
       {/* Mobile Feed */}
-      <div className="md:hidden w-full h-screen">
+      <div className="lg:hidden w-full h-screen">
         <LandscapeFeed 
           posts={postList} 
           onCommentClick={handleCommentClick}
@@ -146,7 +146,7 @@ export default function HomePage({ posts }: HomePageProps) {
       </div>
 
       {/* Desktop Feed */}
-      <div className="hidden md:block w-full h-screen overflow-auto">
+      <div className="hidden lg:block w-full h-screen overflow-auto">
         <div>
           {postList.map((post, index) => {
             const inRange =

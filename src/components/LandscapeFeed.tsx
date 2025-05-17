@@ -1,14 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { PostWithAuthor } from "~/types/types";
 import { MobilePostItem } from "./MobilePostItem";
-import { Home, User, Search, ChevronUp, ChevronDown, MessageCircle, Share2 } from "lucide-react";
+import { Home, User, Search, ChevronUp, ChevronDown, Heart, MessageCircle, Bookmark, Share2 } from "lucide-react";
 import { useAuth } from "~/contexts/AuthContext";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { SignInModal } from "~/components/signInModal";
 import { CommentsDrawer } from "~/components/commentsSheet";
 import Link from "next/link";
-import { LikeButton } from "~/components/likeButton";
-import { SaveButton } from "~/components/saveButton";
 
 interface LandscapeFeedProps {
   posts: PostWithAuthor[];
@@ -20,6 +18,7 @@ export function LandscapeFeed({ posts, onCommentClick, onShare }: LandscapeFeedP
   const { user } = useAuth();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showSignIn, setShowSignIn] = useState(false);
+  const [showComments, setShowComments] = useState(false);
   
   // Add a guard clause at the beginning to handle empty posts array
   if (posts.length === 0) {
@@ -28,6 +27,35 @@ export function LandscapeFeed({ posts, onCommentClick, onShare }: LandscapeFeedP
   
   const post = posts[currentIndex];
   const savePost = post ?? posts[0]; 
+
+  // Local UI state for interactions
+  const [likesCount, setLikesCount] = useState(savePost?.likesCount ?? 0);
+  const [hasLiked, setHasLiked] = useState(savePost?.likedByCurrentUser ?? false);
+  const [saved, setSaved] = useState(savePost?.savedByCurrentUser ?? false);
+  const [commentsCount, setCommentsCount] = useState(savePost?.commentsCount ?? 0);
+
+  // Ensure we refresh local state whenever we switch posts
+  useEffect(() => {
+    setLikesCount(savePost?.likesCount ?? 0);
+    setHasLiked(savePost?.likedByCurrentUser ?? false);
+    setSaved(savePost?.savedByCurrentUser ?? false);
+    setCommentsCount(savePost?.commentsCount ?? 0);
+
+    // If user is signed in, re-fetch current like/save status
+    if (user) {
+      Promise.all([
+        fetch(`/api/posts/${savePost?.id}/isLiked`),
+        fetch(`/api/posts/${savePost?.id}/isSaved`),
+      ])
+        .then(([likeRes, saveRes]) => Promise.all([likeRes.json(), saveRes.json()]))
+        .then(([{ liked }, { saved }]) => {
+          setHasLiked(liked);
+          // note: likesCount stays from local post unless your API returns new count
+          setSaved(saved);
+        })
+        .catch(console.error);
+    }
+  }, [savePost?.id, user]);
 
   // Auth-gate helper
   const requireAuth = (fn: () => void) => {
@@ -38,14 +66,78 @@ export function LandscapeFeed({ posts, onCommentClick, onShare }: LandscapeFeedP
     }
   };
 
+  // Like / Unlike
+  const handleLike = () => {
+    requireAuth(async () => {
+      const method = hasLiked ? "DELETE" : "POST";
+      // Optimistically update UI
+      setHasLiked(!hasLiked);
+      setLikesCount((c) => (hasLiked ? c - 1 : c + 1));
+      try {
+        await fetch(`/api/posts/${savePost?.id}/like`, { method });
+      } catch {
+        // rollback on failure
+        setHasLiked(hasLiked);
+        setLikesCount((c) => (hasLiked ? c + 1 : c - 1));
+      }
+    });
+  };
+
+  // Save / Unsave
+  const handleSave = () => {
+    requireAuth(async () => {
+      const method = saved ? "DELETE" : "POST";
+      setSaved(!saved);
+      try {
+        await fetch(`/api/posts/${savePost?.id}/save`, { method });
+      } catch {
+        setSaved(saved);
+      }
+    });
+  };
+
+  // Add comment
+  const handleAddComment = async (content: string) => {
+    if (!user) {
+      setShowSignIn(true);
+      return;
+    }
+    if (!content.trim()) return;
+
+    try {
+      const resp = await fetch(`/api/posts/${savePost?.id}/comments`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content }),
+      });
+      if (resp.ok) {
+        setCommentsCount((c) => c + 1);
+      }
+    } catch (err) {
+      console.error("Add comment failed", err);
+    }
+  };
+
+  // Delete comment
+  const handleDeleteComment = async (commentId: number) => {
+    try {
+      const resp = await fetch(
+        `/api/posts/${savePost?.id}/comments?commentId=${commentId}`,
+        { method: "DELETE" }
+      );
+      if (resp.ok) {
+        setCommentsCount((c) => Math.max(0, c - 1));
+      }
+    } catch (err) {
+      console.error("Delete comment failed", err);
+    }
+  };
+
   return (
     <>
       <div className="flex h-full w-full">
         {/* Left Sidebar */}
-        <aside 
-          className="flex flex-col justify-between items-center w-16 bg-black py-4"
-          style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
-        >
+        <aside className="flex flex-col justify-between items-center w-16 bg-black py-4">
           {/* Logo placeholder - replace with your actual logo */}
           <img src="/gp-logo-svg.svg" alt="GamePlay logo" className="w-14 h-14 mb-6" />
 
@@ -93,13 +185,9 @@ export function LandscapeFeed({ posts, onCommentClick, onShare }: LandscapeFeedP
         {/* Center: Game iframe */}
         <main className="flex-1 relative bg-black"> 
           <MobilePostItem 
-            post={savePost} 
+            post={savePost ?? posts[0]} 
             onCommentClick={() => {
-              if (savePost) {
-                onCommentClick(savePost);
-              } else if (posts.length > 0) {
-                onCommentClick(posts[0] as PostWithAuthor);
-              }
+              setShowComments(true);
             }} 
             onShare={() => {
               if (savePost?.id) {
@@ -117,10 +205,7 @@ export function LandscapeFeed({ posts, onCommentClick, onShare }: LandscapeFeedP
         </main>
 
         {/* Right Sidebar */}
-        <aside 
-          className="flex flex-col items-center w-16 bg-black py-4"
-          style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
-        >
+        <aside className="flex flex-col items-center w-16 bg-black py-4">
           {/* Author avatar */}
           <Link href={`/profile/${savePost?.author.id}`} className="p-1 hover:bg-black rounded-full mb-8">
             <Avatar className="h-8 w-8">
@@ -132,33 +217,31 @@ export function LandscapeFeed({ posts, onCommentClick, onShare }: LandscapeFeedP
             </Avatar>
           </Link>
 
-          {/* Like - Replace with LikeButton component */}
-          <LikeButton
-            postId={savePost?.id || ""}
-            initialLiked={savePost?.likedByCurrentUser || false}
-            initialCount={savePost?.likesCount || 0}
-          />
+          {/* Like */}
+          <button
+            onClick={handleLike}
+            className="flex flex-col items-center space-y-1 hover:bg-black p-1 rounded mb-8"
+          >
+            <Heart className={`w-6 h-6 ${hasLiked ? 'text-red-500 fill-red-500' : 'text-white'}`} />
+            <span className="text-xs text-white">{likesCount}</span>
+          </button>
 
           {/* Comment */}
           <button
-            onClick={() => {
-              if (savePost) {
-                onCommentClick(savePost);
-              } else if (posts.length > 0) {
-                onCommentClick(posts[0] as PostWithAuthor);
-              }
-            }}
+            onClick={() => setShowComments(true)}
             className="flex flex-col items-center space-y-1 hover:bg-black p-1 rounded mb-8"
           >
             <MessageCircle className="w-6 h-6 text-white" />
-            <span className="text-xs text-white">{savePost?.commentsCount}</span>
+            <span className="text-xs text-white">{commentsCount}</span>
           </button>
 
-          {/* Save - Replace with SaveButton component */}
-          <SaveButton
-            postId={savePost?.id || ""}
-            initialSaved={savePost?.savedByCurrentUser || false}
-          />
+          {/* Save */}
+          <button
+            onClick={handleSave}
+            className="p-1 hover:bg-black rounded mb-8"
+          >
+            <Bookmark className={`w-6 h-6 ${saved ? 'text-yellow-400 fill-yellow-400' : 'text-white'}`} />
+          </button>
 
           {/* Share */}
           <button
@@ -178,6 +261,15 @@ export function LandscapeFeed({ posts, onCommentClick, onShare }: LandscapeFeedP
 
       {/* Modals */}
       {showSignIn && <SignInModal open={showSignIn} onOpenChange={setShowSignIn} />}
+      {showComments && savePost && (
+        <CommentsDrawer
+          open={showComments}
+          onClose={() => setShowComments(false)}
+          post={savePost}
+          onAddComment={handleAddComment}
+          onDeleteComment={handleDeleteComment}
+        />
+      )}
     </>
   );
-}
+} 

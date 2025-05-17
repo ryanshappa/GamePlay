@@ -258,14 +258,54 @@ export function CommentsDrawer({
     if (!newComment.trim()) {
       return;
     }
+    
+    // Create optimistic comment
+    if (user) {
+      const optimisticComment: NestedComment = {
+        id: Date.now(), // Temporary ID
+        content: newComment,
+        user: {
+          id: user.id,
+          username: user.username || '',
+          avatarUrl: (user as any).avatarUrl || '',
+        },
+        createdAt: new Date().toISOString(),
+        likeCount: 0,
+        likedByCurrentUser: false,
+        children: [],
+      };
+      
+      // Add optimistic comment to UI
+      setComments(prev => [optimisticComment, ...prev]);
+    }
+    
     if (onAddComment) {
-      // Call parent's "optimistic" approach
+      // Call parent's approach
       onAddComment(newComment);
       setNewComment('');
       // Re-fetch to keep local list in sync
-      await fetchComments();
+      setTimeout(fetchComments, 500);
     } else {
-      await handleAddCommentLocal();
+      const commentContent = newComment;
+      setNewComment('');
+      try {
+        const response = await fetch(`/api/posts/${post.id}/comments`, {
+          method: 'POST',
+          body: JSON.stringify({ content: commentContent }),
+          headers: { 'Content-Type': 'application/json' },
+        });
+        if (!response.ok) {
+          throw new Error('Failed to add comment');
+        }
+        // Re-fetch to get actual comment with real ID
+        setTimeout(fetchComments, 500);
+      } catch (error) {
+        console.error('Error adding comment:', error);
+        // Remove optimistic comment on failure
+        if (user) {
+          setComments(prev => prev.filter(c => typeof c.id === 'number'));
+        }
+      }
     }
   }
 
