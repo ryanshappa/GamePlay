@@ -20,22 +20,23 @@ export function LandscapeFeed({ posts, onCommentClick, onShare }: LandscapeFeedP
   const [showSignIn, setShowSignIn] = useState(false);
   const [showComments, setShowComments] = useState(false);
   
-  // Add a guard clause at the beginning to handle empty posts array
-  if (posts.length === 0) {
-    return <div className="flex h-full w-full justify-center items-center text-white">No posts available</div>;
-  }
+  // Move these hooks BEFORE any conditional returns
+  const [likesCount, setLikesCount] = useState(0);
+  const [hasLiked, setHasLiked] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [commentsCount, setCommentsCount] = useState(0);
   
-  const post = posts[currentIndex];
-  const savePost = post ?? posts[0]; 
+  // Add a guard clause that renders something but doesn't return early
+  const isEmpty = posts.length === 0;
+  
+  // Get the current post safely
+  const post = !isEmpty ? posts[currentIndex] : null;
+  const savePost = post;
 
-  // Local UI state for interactions
-  const [likesCount, setLikesCount] = useState(savePost?.likesCount ?? 0);
-  const [hasLiked, setHasLiked] = useState(savePost?.likedByCurrentUser ?? false);
-  const [saved, setSaved] = useState(savePost?.savedByCurrentUser ?? false);
-  const [commentsCount, setCommentsCount] = useState(savePost?.commentsCount ?? 0);
-
-  // Ensure we refresh local state whenever we switch posts
+  // Update the useEffect to handle the empty case
   useEffect(() => {
+    if (!savePost) return;
+    
     setLikesCount(savePost?.likesCount ?? 0);
     setHasLiked(savePost?.likedByCurrentUser ?? false);
     setSaved(savePost?.savedByCurrentUser ?? false);
@@ -184,24 +185,32 @@ export function LandscapeFeed({ posts, onCommentClick, onShare }: LandscapeFeedP
 
         {/* Center: Game iframe */}
         <main className="flex-1 relative bg-black"> 
-          <MobilePostItem 
-            post={savePost ?? posts[0]} 
-            onCommentClick={() => {
-              setShowComments(true);
-            }} 
-            onShare={() => {
-              if (savePost?.id) {
-                onShare(savePost.id);
-              } else if (posts.length > 0) {
-                onShare(posts[0]?.id ?? "");
-              }
-            }} 
-          />
+          {isEmpty ? (
+            <div className="flex h-full w-full justify-center items-center text-white">
+              No posts available
+            </div>
+          ) : (
+            <>
+              <MobilePostItem 
+                post={savePost ?? posts[0]} 
+                onCommentClick={() => {
+                  setShowComments(true);
+                }} 
+                onShare={() => {
+                  if (savePost?.id) {
+                    onShare(savePost.id);
+                  } else if (posts.length > 0) {
+                    onShare(posts[0]?.id ?? "");
+                  }
+                }} 
+              />
 
-          {/* Game title overlay */}
-          <div className="absolute bottom-2 left-2 bg-black/60 px-2 py-1 rounded text-sm text-white">
-            {savePost?.title}
-          </div>
+              {/* Game title overlay */}
+              <div className="absolute bottom-2 left-2 bg-black/60 px-2 py-1 rounded text-sm text-white">
+                {savePost?.title}
+              </div>
+            </>
+          )}
         </main>
 
         {/* Right Sidebar */}
