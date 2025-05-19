@@ -124,11 +124,14 @@ export function LandscapeFeed({ posts, onCommentClick, onShare }: LandscapeFeedP
   return (
     <>
       <div className="absolute inset-0 flex overflow-hidden">
-        <aside className="flex flex-col justify-between items-center w-14 bg-black py-2 flex-shrink-0 -ml-2"
-               style={{ paddingLeft: 'env(safe-area-inset-left, 0px)' }}>
+        <aside className="flex flex-col justify-between items-center w-14 bg-black py-2 flex-shrink-0 -ml-1 safe-bottom"
+               style={{ 
+                 paddingLeft: 'env(safe-area-inset-left, 0px)',
+                 paddingBottom: 'env(safe-area-inset-bottom, 16px)'
+               }}>
           <img src="/gp-logo-svg.svg" alt="GamePlay logo" className="w-8 h-8 mb-6" />
 
-          <div className="flex flex-col items-center space-y-6">
+          <div className="flex flex-col items-center space-y-4 mt-2">
             <Link href="/" className="p-2 hover:bg-black rounded">
               <Home className="w-5 h-5 text-white" />
             </Link>
@@ -205,8 +208,11 @@ export function LandscapeFeed({ posts, onCommentClick, onShare }: LandscapeFeedP
           )}
         </main>
 
-        <aside className="flex flex-col items-center w-14 bg-black py-2 flex-shrink-0 -mr-2"
-               style={{ paddingRight: 'env(safe-area-inset-right, 0px)' }}>
+        <aside className="flex flex-col items-center w-14 bg-black py-2 flex-shrink-0 -mr-1 safe-bottom"
+               style={{ 
+                 paddingRight: 'env(safe-area-inset-right, 0px)',
+                 paddingBottom: 'env(safe-area-inset-bottom, 16px)'
+               }}>
           <Link href={`/profile/${savePost?.author.id}`} className="p-1 hover:bg-black rounded-full mb-8">
             <Avatar className="h-7 w-7">
               {savePost?.author.avatarUrl ? (
@@ -217,7 +223,7 @@ export function LandscapeFeed({ posts, onCommentClick, onShare }: LandscapeFeedP
             </Avatar>
           </Link>
 
-          <div className="flex flex-col items-center space-y-8">
+          <div className="flex flex-col items-center space-y-6">
             <button
               onClick={handleLike}
               className="flex flex-col items-center space-y-1 hover:bg-black p-1 rounded"
