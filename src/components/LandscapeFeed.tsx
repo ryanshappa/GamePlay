@@ -123,20 +123,23 @@ export function LandscapeFeed({ posts, onCommentClick, onShare }: LandscapeFeedP
 
   return (
     <>
-      <div className="fixed inset-0 bg-black overflow-hidden">
+      <div
+        className="fixed inset-0 grid bg-black overflow-hidden"
+        style={{ gridTemplateColumns: '8vw 1fr 8vw' }}
+      >
         {/* LEFT SIDEBAR */}
-        <aside 
-          className="fixed inset-y-0 left-0 w-14 flex flex-col justify-between items-center bg-black py-4"
+        <aside
+          className="col-start-1 row-start-1 row-end-2 flex flex-col justify-between items-center bg-black py-4"
           style={{
+            paddingLeft: 'env(safe-area-inset-left, 0)',
             paddingTop: 'env(safe-area-inset-top, 0)',
-            paddingBottom: 'env(safe-area-inset-bottom, 24px)',
-            paddingLeft: 'env(safe-area-inset-left, 0)'
+            paddingBottom: 'env(safe-area-inset-bottom, 24px)'
           }}
         >
           <div className="flex flex-col items-center">
             <img src="/gp-logo-svg.svg" alt="GamePlay logo" className="w-8 h-8 mb-6" />
 
-            <div className="flex flex-col items-center space-y-8 mt-2">
+            <div className="flex flex-col items-center gap-6 mt-2">
               <Link href="/" className="p-2 hover:bg-gray-900 rounded">
                 <Home className="w-6 h-6 text-white" />
               </Link>
@@ -160,7 +163,7 @@ export function LandscapeFeed({ posts, onCommentClick, onShare }: LandscapeFeedP
             </div>
           </div>
 
-          <div className="flex flex-col items-center space-y-8 mb-2">
+          <div className="flex flex-col items-center gap-6 mb-2">
             <button
               onClick={() => setCurrentIndex(i => Math.max(0, i - 1))}
               disabled={currentIndex === 0}
@@ -179,13 +182,7 @@ export function LandscapeFeed({ posts, onCommentClick, onShare }: LandscapeFeedP
         </aside>
 
         {/* MAIN CONTENT */}
-        <main 
-          className="fixed inset-y-0 bg-black flex items-center justify-center"
-          style={{
-            left: '56px',
-            right: '56px'
-          }}
-        > 
+        <main className="col-start-2 row-start-1 row-end-2 flex items-center justify-center relative">
           {isEmpty ? (
             <div className="flex h-full w-full justify-center items-center text-white">
               No posts available
@@ -217,14 +214,14 @@ export function LandscapeFeed({ posts, onCommentClick, onShare }: LandscapeFeedP
 
         {/* RIGHT SIDEBAR */}
         <aside 
-          className="fixed inset-y-0 right-0 w-14 flex flex-col justify-center items-center bg-black py-4"
+          className="col-start-3 row-start-1 row-end-2 flex flex-col justify-center items-center bg-black py-4"
           style={{
+            paddingRight: 'env(safe-area-inset-right, 0)',
             paddingTop: 'env(safe-area-inset-top, 0)',
-            paddingBottom: 'env(safe-area-inset-bottom, 24px)',
-            paddingRight: 'env(safe-area-inset-right, 0)'
+            paddingBottom: 'env(safe-area-inset-bottom, 24px)'
           }}
         >
-          <div className="flex flex-col items-center space-y-8">
+          <div className="flex flex-col items-center gap-6">
             {savePost && (
               <Link href={`/profile/${savePost?.author.id}`} className="p-1 hover:bg-gray-900 rounded-full">
                 <Avatar className="h-8 w-8">
