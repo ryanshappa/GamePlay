@@ -31,30 +31,31 @@ export default function HomePage({ posts }: HomePageProps) {
   const [isLandscape, setIsLandscape] = useState(false);
 
   useEffect(() => {
-    // Use a more reliable approach for mobile detection
-    // First check if it's a touch device
+    // Simplified approach: all touch devices are considered mobile
     const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
     
     const checkLayout = () => {
-      // For touch devices, we'll consider them mobile regardless of screen size
-      if (isTouchDevice) {
-        setIsMobile(true);
-        // Then check orientation
-        setIsLandscape(window.matchMedia('(orientation: landscape)').matches);
-      } else {
-        // For non-touch devices, use width-based detection
-        setIsMobile(window.matchMedia('(max-width: 767px)').matches);
-        setIsLandscape(window.matchMedia('(orientation: landscape)').matches);
-      }
+      // Always set mobile to true for touch devices
+      setIsMobile(isTouchDevice);
+      
+      // Check orientation regardless of device type
+      setIsLandscape(window.matchMedia('(orientation: landscape)').matches);
+      
+      // Debug info - you can remove this after testing
+      console.log({
+        isTouchDevice,
+        isLandscape: window.matchMedia('(orientation: landscape)').matches,
+        windowWidth: window.innerWidth,
+        windowHeight: window.innerHeight
+      });
     };
 
-    // Check on orientation change
+    // Check on orientation change with a delay to ensure browser updates
     const handleOrientationChange = () => {
-      // Small delay to ensure the browser has updated its dimensions
       setTimeout(checkLayout, 100);
     };
 
-    // Listen for orientation changes
+    // Listen for both orientation changes and resizes
     window.addEventListener('orientationchange', handleOrientationChange);
     window.addEventListener('resize', checkLayout);
     
