@@ -31,40 +31,51 @@ export default function HomePage({ posts }: HomePageProps) {
   const [isLandscape, setIsLandscape] = useState(false);
 
   useEffect(() => {
-    // Simplified approach: all touch devices are considered mobile
-    const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    // Force mobile detection for iOS devices
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+                 (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
     
     const checkLayout = () => {
-      // Always set mobile to true for touch devices
-      setIsMobile(isTouchDevice);
-      
-      // Check orientation regardless of device type
-      setIsLandscape(window.matchMedia('(orientation: landscape)').matches);
-      
-      // Debug info - you can remove this after testing
-      console.log({
-        isTouchDevice,
-        isLandscape: window.matchMedia('(orientation: landscape)').matches,
-        windowWidth: window.innerWidth,
-        windowHeight: window.innerHeight
-      });
+      // Force mobile mode for iOS devices
+      if (isIOS) {
+        setIsMobile(true);
+        
+        // Check if width is greater than height for landscape
+        const isLandscapeOrientation = window.innerWidth > window.innerHeight;
+        setIsLandscape(isLandscapeOrientation);
+        
+        console.log({
+          isIOS,
+          innerWidth: window.innerWidth,
+          innerHeight: window.innerHeight,
+          isLandscapeByDimensions: isLandscapeOrientation,
+          isLandscapeByMediaQuery: window.matchMedia('(orientation: landscape)').matches,
+          orientation: window.orientation,
+          userAgent: navigator.userAgent
+        });
+      } else {
+        // For non-iOS devices, use touch detection
+        const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+        setIsMobile(isTouchDevice);
+        setIsLandscape(window.matchMedia('(orientation: landscape)').matches);
+      }
     };
 
-    // Check on orientation change with a delay to ensure browser updates
-    const handleOrientationChange = () => {
-      setTimeout(checkLayout, 100);
-    };
-
-    // Listen for both orientation changes and resizes
-    window.addEventListener('orientationchange', handleOrientationChange);
+    // Check immediately and on various events
     window.addEventListener('resize', checkLayout);
+    window.addEventListener('orientationchange', () => {
+      // Add a delay after orientation change
+      setTimeout(checkLayout, 300);
+    });
     
     // Initial check
     checkLayout();
 
     return () => {
-      window.removeEventListener('orientationchange', handleOrientationChange);
       window.removeEventListener('resize', checkLayout);
+      window.removeEventListener('orientationchange', () => {
+        setTimeout(checkLayout, 300);
+      });
     };
   }, []);
 
