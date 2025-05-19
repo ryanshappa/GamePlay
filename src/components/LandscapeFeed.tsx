@@ -123,38 +123,44 @@ export function LandscapeFeed({ posts, onCommentClick, onShare }: LandscapeFeedP
 
   return (
     <>
-      <div className="absolute inset-0 flex overflow-hidden">
-        <aside className="flex flex-col justify-between items-center w-14 bg-black py-2 flex-shrink-0 -ml-2 safe-bottom"
-               style={{ 
-                 paddingLeft: 'env(safe-area-inset-left, 0px)',
-                 paddingBottom: 'env(safe-area-inset-bottom, 24px)'
-               }}>
-          <img src="/gp-logo-svg.svg" alt="GamePlay logo" className="w-8 h-8 mb-6" />
+      <div className="relative w-screen h-screen overflow-hidden">
+        {/* LEFT SIDEBAR */}
+        <aside 
+          className="absolute top-0 bottom-0 left-0 flex flex-col justify-between items-center w-14 bg-black py-4 flex-shrink-0"
+          style={{
+            paddingTop: 'env(safe-area-inset-top, 0)',
+            paddingBottom: 'env(safe-area-inset-bottom, 24px)',
+            paddingLeft: 'env(safe-area-inset-left, 0px)'
+          }}
+        >
+          <div className="flex flex-col items-center">
+            <img src="/gp-logo-svg.svg" alt="GamePlay logo" className="w-8 h-8 mb-6" />
 
-          <div className="flex flex-col items-center space-y-2 mt-2">
-            <Link href="/" className="p-2 hover:bg-black rounded">
-              <Home className="w-5 h-5 text-white" />
-            </Link>
-
-            {user ? (
-              <Link href={`/profile/${user.id}`} className="p-2 hover:bg-black rounded">
-                <User className="w-5 h-5 text-white" />
+            <div className="flex flex-col items-center space-y-8 mt-2">
+              <Link href="/" className="p-2 hover:bg-black rounded">
+                <Home className="w-5 h-5 text-white" />
               </Link>
-            ) : (
-              <button 
-                onClick={() => setShowSignIn(true)} 
-                className="p-2 hover:bg-black rounded"
-              >
-                <User className="w-5 h-5 text-white" />
-              </button>
-            )}
 
-            <Link href="/search" className="p-2 hover:bg-black rounded">
-              <Search className="w-5 h-5 text-white" />
-            </Link>
+              {user ? (
+                <Link href={`/profile/${user.id}`} className="p-2 hover:bg-black rounded">
+                  <User className="w-5 h-5 text-white" />
+                </Link>
+              ) : (
+                <button 
+                  onClick={() => setShowSignIn(true)} 
+                  className="p-2 hover:bg-black rounded"
+                >
+                  <User className="w-5 h-5 text-white" />
+                </button>
+              )}
+
+              <Link href="/search" className="p-2 hover:bg-black rounded">
+                <Search className="w-5 h-5 text-white" />
+              </Link>
+            </div>
           </div>
 
-          <div className="mt-auto mb-2 flex flex-col space-y-2">
+          <div className="flex flex-col items-center space-y-8 mb-2">
             <button
               onClick={() => setCurrentIndex(i => Math.max(0, i - 1))}
               disabled={currentIndex === 0}
@@ -172,11 +178,12 @@ export function LandscapeFeed({ posts, onCommentClick, onShare }: LandscapeFeedP
           </div>
         </aside>
 
+        {/* MAIN CONTENT */}
         <main 
-          className="relative bg-black flex items-center justify-center flex-shrink-0" 
-          style={{ 
-            width: 'calc(100vw - 128px)', // Explicitly set width to account for both sidebars
-            height: '100%' 
+          className="absolute top-0 bottom-0 bg-black flex items-center justify-center"
+          style={{
+            left: '56px',
+            right: '56px'
           }}
         > 
           {isEmpty ? (
@@ -208,22 +215,26 @@ export function LandscapeFeed({ posts, onCommentClick, onShare }: LandscapeFeedP
           )}
         </main>
 
-        <aside className="flex flex-col items-center w-14 bg-black py-2 flex-shrink-0 -mr-2 safe-bottom"
-               style={{ 
-                 paddingRight: 'env(safe-area-inset-right, 0px)',
-                 paddingBottom: 'env(safe-area-inset-bottom, 24px)'
-               }}>
-          <Link href={`/profile/${savePost?.author.id}`} className="p-1 hover:bg-black rounded-full mb-8">
-            <Avatar className="h-7 w-7">
-              {savePost?.author.avatarUrl ? (
-                <AvatarImage src={savePost?.author.avatarUrl} alt={savePost?.author.username} />
-              ) : (
-                <AvatarFallback>{savePost?.author.username?.[0] ?? "U"}</AvatarFallback>
-              )}
-            </Avatar>
-          </Link>
+        {/* RIGHT SIDEBAR */}
+        <aside 
+          className="absolute top-0 bottom-0 right-0 flex flex-col justify-center items-center w-14 bg-black py-4 flex-shrink-0"
+          style={{
+            paddingTop: 'env(safe-area-inset-top, 0)',
+            paddingBottom: 'env(safe-area-inset-bottom, 24px)',
+            paddingRight: 'env(safe-area-inset-right, 0px)'
+          }}
+        >
+          <div className="flex flex-col items-center space-y-8">
+            <Link href={`/profile/${savePost?.author.id}`} className="p-1 hover:bg-black rounded-full">
+              <Avatar className="h-7 w-7">
+                {savePost?.author.avatarUrl ? (
+                  <AvatarImage src={savePost?.author.avatarUrl} alt={savePost?.author.username} />
+                ) : (
+                  <AvatarFallback>{savePost?.author.username?.[0] ?? "U"}</AvatarFallback>
+                )}
+              </Avatar>
+            </Link>
 
-          <div className="flex flex-col items-center space-4">
             <button
               onClick={handleLike}
               className="flex flex-col items-center space-y-1 hover:bg-black p-1 rounded"
