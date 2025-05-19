@@ -124,7 +124,7 @@ export function LandscapeFeed({ posts, onCommentClick, onShare }: LandscapeFeedP
   return (
     <>
       <div className="absolute inset-0 flex overflow-hidden">
-        <aside className="flex flex-col justify-between items-center w-14 bg-black py-2 flex-shrink-0 -ml-4"
+        <aside className="flex flex-col justify-between items-center w-14 bg-black py-2 flex-shrink-0 -ml-2"
                style={{ paddingLeft: 'env(safe-area-inset-left, 0px)' }}>
           <img src="/gp-logo-svg.svg" alt="GamePlay logo" className="w-8 h-8 mb-6" />
 
@@ -169,7 +169,13 @@ export function LandscapeFeed({ posts, onCommentClick, onShare }: LandscapeFeedP
           </div>
         </aside>
 
-        <main className="flex-1 relative bg-black"> 
+        <main 
+          className="relative bg-black flex items-center justify-center flex-shrink-0" 
+          style={{ 
+            width: 'calc(100vw - 128px)', // Explicitly set width to account for both sidebars
+            height: '100%' 
+          }}
+        > 
           {isEmpty ? (
             <div className="flex h-full w-full justify-center items-center text-white">
               No posts available
@@ -199,7 +205,7 @@ export function LandscapeFeed({ posts, onCommentClick, onShare }: LandscapeFeedP
           )}
         </main>
 
-        <aside className="flex flex-col items-center w-14 bg-black py-2 flex-shrink-0 -mr-4"
+        <aside className="flex flex-col items-center w-14 bg-black py-2 flex-shrink-0 -mr-2"
                style={{ paddingRight: 'env(safe-area-inset-right, 0px)' }}>
           <Link href={`/profile/${savePost?.author.id}`} className="p-1 hover:bg-black rounded-full mb-8">
             <Avatar className="h-7 w-7">
