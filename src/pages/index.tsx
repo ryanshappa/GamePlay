@@ -31,19 +31,27 @@ export default function HomePage({ posts }: HomePageProps) {
   const [isLandscape, setIsLandscape] = useState(false);
 
   useEffect(() => {
-    // simple UA check
-    setIsMobile(/Mobi|Android|iPhone|iPad|Tablet/i.test(navigator.userAgent));
+    // Replace the UA check and manual dimension checks with media queries
+    const mobileMql = window.matchMedia('(max-width: 767px)');
+    const landscapeMql = window.matchMedia('(orientation: landscape)');
 
-    const onResize = () => {
-      const w = window.innerWidth;
-      const h = window.innerHeight;
-      // mobile if either dimension is under 768px
-      setIsMobile(w < 768 || h < 768);
-      setIsLandscape(w > h);
+    const updateLayout = () => {
+      setIsMobile(mobileMql.matches);
+      setIsLandscape(landscapeMql.matches);
     };
-    window.addEventListener('resize', onResize);
-    onResize();
-    return () => window.removeEventListener('resize', onResize);
+
+    // Add event listeners for both queries
+    mobileMql.addEventListener('change', updateLayout);
+    landscapeMql.addEventListener('change', updateLayout);
+
+    // Initialize on mount
+    updateLayout();
+
+    // Clean up event listeners
+    return () => {
+      mobileMql.removeEventListener('change', updateLayout);
+      landscapeMql.removeEventListener('change', updateLayout);
+    };
   }, []);
 
   const postRefs = useRef<(HTMLDivElement | null)[]>([]);
