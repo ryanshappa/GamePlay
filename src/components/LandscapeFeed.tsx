@@ -123,32 +123,33 @@ export function LandscapeFeed({ posts, onCommentClick, onShare }: LandscapeFeedP
 
   return (
     <>
-      <div className="flex h-full w-full">
-        <aside className="flex flex-col justify-between items-center w-16 bg-black py-4 pl-[env(safe-area-inset-left,0px)]">
-          <img src="/gp-logo-svg.svg" alt="GamePlay logo" className="w-14 h-14 mb-6" />
+      <div className="flex h-[100dvh] w-full overflow-hidden">
+        <aside className="flex flex-col justify-between items-center w-16 bg-black py-4 flex-shrink-0"
+               style={{ paddingLeft: 'env(safe-area-inset-left, 0px)' }}>
+          <img src="/gp-logo-svg.svg" alt="GamePlay logo" className="w-10 h-10 mb-6" />
 
-          <Link href="/" className="p-2 mb-4 hover:bg-black rounded">
-            <Home className="w-6 h-6 text-white" />
-          </Link>
-
-          {user && (
-            <Link href={`/profile/${user.id}`} className="p-2 mb-4 hover:bg-black rounded">
-              <User className="w-6 h-6 text-white" />
+          <div className="flex flex-col items-center space-y-6">
+            <Link href="/" className="p-2 hover:bg-black rounded">
+              <Home className="w-6 h-6 text-white" />
             </Link>
-          )}
 
-          {!user && (
-            <button 
-              onClick={() => setShowSignIn(true)} 
-              className="p-2 mb-4 hover:bg-black rounded"
-            >
-              <User className="w-6 h-6 text-white" />
-            </button>
-          )}
+            {user ? (
+              <Link href={`/profile/${user.id}`} className="p-2 hover:bg-black rounded">
+                <User className="w-6 h-6 text-white" />
+              </Link>
+            ) : (
+              <button 
+                onClick={() => setShowSignIn(true)} 
+                className="p-2 hover:bg-black rounded"
+              >
+                <User className="w-6 h-6 text-white" />
+              </button>
+            )}
 
-          <Link href="/search" className="p-2 mb-4 hover:bg-black rounded">
-            <Search className="w-6 h-6 text-white" />
-          </Link>
+            <Link href="/search" className="p-2 hover:bg-black rounded">
+              <Search className="w-6 h-6 text-white" />
+            </Link>
+          </div>
 
           <div className="mt-auto mb-2 flex flex-col space-y-2">
             <button
@@ -175,19 +176,21 @@ export function LandscapeFeed({ posts, onCommentClick, onShare }: LandscapeFeedP
             </div>
           ) : (
             <>
-              <MobilePostItem 
-                post={savePost ?? posts[0]} 
-                onCommentClick={() => {
-                  setShowComments(true);
-                }} 
-                onShare={() => {
-                  if (savePost?.id) {
-                    onShare(savePost.id);
-                  } else if (posts.length > 0) {
-                    onShare(posts[0]?.id ?? "");
-                  }
-                }} 
-              />
+              <div className="h-full w-full flex items-center justify-center">
+                <MobilePostItem 
+                  post={savePost ?? posts[0]} 
+                  onCommentClick={() => {
+                    setShowComments(true);
+                  }} 
+                  onShare={() => {
+                    if (savePost?.id) {
+                      onShare(savePost.id);
+                    } else if (posts.length > 0) {
+                      onShare(posts[0]?.id ?? "");
+                    }
+                  }} 
+                />
+              </div>
 
               <div className="absolute bottom-2 left-2 bg-black/60 px-2 py-1 rounded text-sm text-white">
                 {savePost?.title}
@@ -196,7 +199,8 @@ export function LandscapeFeed({ posts, onCommentClick, onShare }: LandscapeFeedP
           )}
         </main>
 
-        <aside className="flex flex-col items-center w-16 bg-black py-4 pr-[env(safe-area-inset-right,0px)]">
+        <aside className="flex flex-col items-center w-16 bg-black py-4 flex-shrink-0"
+               style={{ paddingRight: 'env(safe-area-inset-right, 0px)' }}>
           <Link href={`/profile/${savePost?.author.id}`} className="p-1 hover:bg-black rounded-full mb-8">
             <Avatar className="h-8 w-8">
               {savePost?.author.avatarUrl ? (
@@ -207,41 +211,43 @@ export function LandscapeFeed({ posts, onCommentClick, onShare }: LandscapeFeedP
             </Avatar>
           </Link>
 
-          <button
-            onClick={handleLike}
-            className="flex flex-col items-center space-y-1 hover:bg-black p-1 rounded mb-8"
-          >
-            <Heart className={`w-6 h-6 ${hasLiked ? 'text-red-500 fill-red-500' : 'text-white'}`} />
-            <span className="text-xs text-white">{likesCount}</span>
-          </button>
+          <div className="flex flex-col items-center space-y-8">
+            <button
+              onClick={handleLike}
+              className="flex flex-col items-center space-y-1 hover:bg-black p-1 rounded"
+            >
+              <Heart className={`w-6 h-6 ${hasLiked ? 'text-red-500 fill-red-500' : 'text-white'}`} />
+              <span className="text-xs text-white">{likesCount}</span>
+            </button>
 
-          <button
-            onClick={() => setShowComments(true)}
-            className="flex flex-col items-center space-y-1 hover:bg-black p-1 rounded mb-8"
-          >
-            <MessageCircle className="w-6 h-6 text-white" />
-            <span className="text-xs text-white">{commentsCount}</span>
-          </button>
+            <button
+              onClick={() => setShowComments(true)}
+              className="flex flex-col items-center space-y-1 hover:bg-black p-1 rounded"
+            >
+              <MessageCircle className="w-6 h-6 text-white" />
+              <span className="text-xs text-white">{commentsCount}</span>
+            </button>
 
-          <button
-            onClick={handleSave}
-            className="p-1 hover:bg-black rounded mb-8"
-          >
-            <Bookmark className={`w-6 h-6 ${saved ? 'text-yellow-400 fill-yellow-400' : 'text-white'}`} />
-          </button>
+            <button
+              onClick={handleSave}
+              className="p-1 hover:bg-black rounded"
+            >
+              <Bookmark className={`w-6 h-6 ${saved ? 'text-yellow-400 fill-yellow-400' : 'text-white'}`} />
+            </button>
 
-          <button
-            onClick={() => {
-              if (savePost?.id) {
-                onShare(savePost.id);
-              } else if (posts.length > 0) {
-                onShare(posts[0]?.id ?? "");
-              }
-            }}
-            className="p-1 hover:bg-black rounded"
-          >
-            <Share2 className="w-6 h-6 text-white" />
-          </button>
+            <button
+              onClick={() => {
+                if (savePost?.id) {
+                  onShare(savePost.id);
+                } else if (posts.length > 0) {
+                  onShare(posts[0]?.id ?? "");
+                }
+              }}
+              className="p-1 hover:bg-black rounded"
+            >
+              <Share2 className="w-6 h-6 text-white" />
+            </button>
+          </div>
         </aside>
       </div>
 

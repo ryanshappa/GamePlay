@@ -31,51 +31,24 @@ export default function HomePage({ posts }: HomePageProps) {
   const [isLandscape, setIsLandscape] = useState(false);
 
   useEffect(() => {
-    // Force mobile detection for iOS devices
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
-                 (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-    
     const checkLayout = () => {
-      // Force mobile mode for iOS devices
-      if (isIOS) {
-        setIsMobile(true);
-        
-        // Check if width is greater than height for landscape
-        const isLandscapeOrientation = window.innerWidth > window.innerHeight;
-        setIsLandscape(isLandscapeOrientation);
-        
-        console.log({
-          isIOS,
-          innerWidth: window.innerWidth,
-          innerHeight: window.innerHeight,
-          isLandscapeByDimensions: isLandscapeOrientation,
-          isLandscapeByMediaQuery: window.matchMedia('(orientation: landscape)').matches,
-          orientation: window.orientation,
-          userAgent: navigator.userAgent
-        });
-      } else {
-        // For non-iOS devices, use touch detection
-        const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-        setIsMobile(isTouchDevice);
-        setIsLandscape(window.matchMedia('(orientation: landscape)').matches);
-      }
+      const ua = navigator.userAgent;
+      const isIOS =
+        /iPad|iPhone|iPod/.test(ua) ||
+        (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      const isTouchDevice =
+        'ontouchstart' in window || navigator.maxTouchPoints > 0;
+      setIsMobile(isIOS || isTouchDevice);
+      setIsLandscape(window.innerWidth > window.innerHeight);
     };
 
-    // Check immediately and on various events
     window.addEventListener('resize', checkLayout);
-    window.addEventListener('orientationchange', () => {
-      // Add a delay after orientation change
-      setTimeout(checkLayout, 300);
-    });
-    
-    // Initial check
+    window.addEventListener('orientationchange', checkLayout);
     checkLayout();
 
     return () => {
       window.removeEventListener('resize', checkLayout);
-      window.removeEventListener('orientationchange', () => {
-        setTimeout(checkLayout, 300);
-      });
+      window.removeEventListener('orientationchange', checkLayout);
     };
   }, []);
 

@@ -7,7 +7,7 @@ interface LayoutDesktopProps {
 
 export function LayoutDesktop({ children }: LayoutDesktopProps) {
   return (
-    <div className="hidden md:block">
+    <div className="hidden lg:block">
       <Layout>{children}</Layout>
     </div>
   );
