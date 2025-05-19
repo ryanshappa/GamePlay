@@ -31,26 +31,39 @@ export default function HomePage({ posts }: HomePageProps) {
   const [isLandscape, setIsLandscape] = useState(false);
 
   useEffect(() => {
-    // Replace the UA check and manual dimension checks with media queries
-    const mobileMql = window.matchMedia('(max-width: 767px)');
-    const landscapeMql = window.matchMedia('(orientation: landscape)');
-
-    const updateLayout = () => {
-      setIsMobile(mobileMql.matches);
-      setIsLandscape(landscapeMql.matches);
+    // Use a more reliable approach for mobile detection
+    // First check if it's a touch device
+    const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    
+    const checkLayout = () => {
+      // For touch devices, we'll consider them mobile regardless of screen size
+      if (isTouchDevice) {
+        setIsMobile(true);
+        // Then check orientation
+        setIsLandscape(window.matchMedia('(orientation: landscape)').matches);
+      } else {
+        // For non-touch devices, use width-based detection
+        setIsMobile(window.matchMedia('(max-width: 767px)').matches);
+        setIsLandscape(window.matchMedia('(orientation: landscape)').matches);
+      }
     };
 
-    // Add event listeners for both queries
-    mobileMql.addEventListener('change', updateLayout);
-    landscapeMql.addEventListener('change', updateLayout);
+    // Check on orientation change
+    const handleOrientationChange = () => {
+      // Small delay to ensure the browser has updated its dimensions
+      setTimeout(checkLayout, 100);
+    };
 
-    // Initialize on mount
-    updateLayout();
+    // Listen for orientation changes
+    window.addEventListener('orientationchange', handleOrientationChange);
+    window.addEventListener('resize', checkLayout);
+    
+    // Initial check
+    checkLayout();
 
-    // Clean up event listeners
     return () => {
-      mobileMql.removeEventListener('change', updateLayout);
-      landscapeMql.removeEventListener('change', updateLayout);
+      window.removeEventListener('orientationchange', handleOrientationChange);
+      window.removeEventListener('resize', checkLayout);
     };
   }, []);
 
