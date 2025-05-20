@@ -142,9 +142,9 @@ export function LandscapeFeed({ posts, onCommentClick, onShare }: LandscapeFeedP
             }}
           >
             <div className="flex flex-col items-center">
-              <img src="/gp-logo-svg.svg" alt="GamePlay logo" className="w-12 h-12 mb-6" />
+              <img src="/gp-logo-svg.svg" alt="GamePlay logo" className="w-14 h-14 mb-6" />
 
-              <div className="flex flex-col items-center gap-8 mt-2">
+              <div className="flex flex-col items-center gap-4 mt-2">
                 <Link href="/" className="p-2 hover:bg-gray-900 rounded">
                   <Home className="w-6 h-6 text-white" />
                 </Link>
@@ -168,7 +168,7 @@ export function LandscapeFeed({ posts, onCommentClick, onShare }: LandscapeFeedP
               </div>
             </div>
 
-            <div className="flex flex-col items-center gap-8 mb-2">
+            <div className="flex flex-col items-center gap-4 mb-2">
               <button
                 onClick={() => setCurrentIndex(i => Math.max(0, i - 1))}
                 disabled={currentIndex === 0}
@@ -223,7 +223,7 @@ export function LandscapeFeed({ posts, onCommentClick, onShare }: LandscapeFeedP
               paddingLeft: '4px'
             }}
           >
-            <div className="flex flex-col items-center gap-8">
+            <div className="flex flex-col items-center gap-4">
               {savePost && (
                 <Link href={`/profile/${savePost?.author.id}`} className="p-1 hover:bg-gray-900 rounded-full">
                   <Avatar className="h-8 w-8">
