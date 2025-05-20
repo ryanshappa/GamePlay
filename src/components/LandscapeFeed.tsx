@@ -125,7 +125,7 @@ export function LandscapeFeed({ posts, onCommentClick, onShare }: LandscapeFeedP
     <>
       <div
         className="fixed inset-0 grid bg-black overflow-hidden"
-        style={{ gridTemplateColumns: '8vw 1fr 8vw' }}
+        style={{ gridTemplateColumns: '10vw 1fr 10vw' }}
       >
         {/* LEFT SIDEBAR */}
         <aside
@@ -137,7 +137,7 @@ export function LandscapeFeed({ posts, onCommentClick, onShare }: LandscapeFeedP
           }}
         >
           <div className="flex flex-col items-center">
-            <img src="/gp-logo-svg.svg" alt="GamePlay logo" className="w-8 h-8 mb-6" />
+            <img src="/gp-logo-svg.svg" alt="GamePlay logo" className="w-12 h-12 mb-6" />
 
             <div className="flex flex-col items-center gap-6 mt-2">
               <Link href="/" className="p-2 hover:bg-gray-900 rounded">
