@@ -135,14 +135,16 @@ export function LandscapeFeed({ posts, onCommentClick, onShare }: LandscapeFeedP
           style={{ gridTemplateColumns: '12vw 1fr 12vw' }}
         >
           <aside
-            className="col-start-1 flex flex-col justify-between items-center bg-black py-4"
+            className="col-start-1 flex flex-col justify-between items-center bg-black pt-6 pb-2"
             style={{ 
               paddingLeft: 'env(safe-area-inset-left, 0)',
-              paddingRight: '4px'
-            }}
+              paddingRight: '4px',
+              paddingTop: 'env(safe-area-inset-top, 0)',
+              paddingBottom: 'env(safe-area-inset-bottom, 24px)'
+            }} 
           >
-            <div className="flex flex-col items-center">
-              <img src="/gp-logo-svg.svg" alt="GamePlay logo" className="w-14 h-14 mb-6" />
+            <div className="flex flex-col items-center -translate-y-2">
+              <img src="/gp-logo-svg.svg" alt="GamePlay logo" className="w-16 h-16 mb-6" />
 
               <div className="flex flex-col items-center gap-4 mt-2">
                 <Link href="/" className="p-2 hover:bg-gray-900 rounded">
@@ -168,7 +170,7 @@ export function LandscapeFeed({ posts, onCommentClick, onShare }: LandscapeFeedP
               </div>
             </div>
 
-            <div className="flex flex-col items-center gap-4 mb-2">
+            <div className="flex flex-col items-center gap-4 -translate-y-2 mb-2">
               <button
                 onClick={() => setCurrentIndex(i => Math.max(0, i - 1))}
                 disabled={currentIndex === 0}
@@ -217,13 +219,15 @@ export function LandscapeFeed({ posts, onCommentClick, onShare }: LandscapeFeedP
           </main>
 
           <aside 
-            className="col-start-3 flex flex-col justify-center items-center bg-black py-4"
+            className="col-start-3 flex flex-col justify-center items-center bg-black pt-6 pb-2"
             style={{ 
               paddingRight: 'env(safe-area-inset-right, 0)',
-              paddingLeft: '4px'
+              paddingLeft: '4px',
+              paddingTop: 'env(safe-area-inset-top, 0)',
+              paddingBottom: 'env(safe-area-inset-bottom, 24px)'
             }}
           >
-            <div className="flex flex-col items-center gap-4">
+            <div className="flex flex-col items-center gap-4 -translate-y-2">
               {savePost && (
                 <Link href={`/profile/${savePost?.author.id}`} className="p-1 hover:bg-gray-900 rounded-full">
                   <Avatar className="h-8 w-8">
