@@ -124,153 +124,156 @@ export function LandscapeFeed({ posts, onCommentClick, onShare }: LandscapeFeedP
   return (
     <>
       <div
-        className="fixed inset-0 grid bg-black overflow-hidden"
-        style={{ gridTemplateColumns: '10vw 1fr 10vw' }}
+        className="fixed inset-0 overflow-hidden bg-black"
+        style={{
+          paddingTop: 'env(safe-area-inset-top, 16px)',
+          paddingBottom: 'env(safe-area-inset-bottom, 16px)'
+        }}
       >
-        {/* LEFT SIDEBAR */}
-        <aside
-          className="col-start-1 row-start-1 row-end-2 flex flex-col justify-between items-center bg-black py-4"
-          style={{
-            paddingLeft: 'env(safe-area-inset-left, 0)',
-            paddingTop: 'env(safe-area-inset-top, 0)',
-            paddingBottom: 'env(safe-area-inset-bottom, 24px)'
-          }}
+        <div
+          className="h-full w-full grid"
+          style={{ gridTemplateColumns: '12vw 1fr 12vw' }}
         >
-          <div className="flex flex-col items-center">
-            <img src="/gp-logo-svg.svg" alt="GamePlay logo" className="w-12 h-12 mb-6" />
+          <aside
+            className="col-start-1 flex flex-col justify-between items-center bg-black py-4"
+            style={{ 
+              paddingLeft: 'env(safe-area-inset-left, 0)',
+              paddingRight: '4px'
+            }}
+          >
+            <div className="flex flex-col items-center">
+              <img src="/gp-logo-svg.svg" alt="GamePlay logo" className="w-12 h-12 mb-6" />
 
-            <div className="flex flex-col items-center gap-6 mt-2">
-              <Link href="/" className="p-2 hover:bg-gray-900 rounded">
-                <Home className="w-6 h-6 text-white" />
-              </Link>
-
-              {user ? (
-                <Link href={`/profile/${user.id}`} className="p-2 hover:bg-gray-900 rounded">
-                  <User className="w-6 h-6 text-white" />
+              <div className="flex flex-col items-center gap-8 mt-2">
+                <Link href="/" className="p-2 hover:bg-gray-900 rounded">
+                  <Home className="w-6 h-6 text-white" />
                 </Link>
-              ) : (
-                <button 
-                  onClick={() => setShowSignIn(true)} 
-                  className="p-2 hover:bg-gray-900 rounded"
-                >
-                  <User className="w-6 h-6 text-white" />
-                </button>
+
+                {user ? (
+                  <Link href={`/profile/${user.id}`} className="p-2 hover:bg-gray-900 rounded">
+                    <User className="w-6 h-6 text-white" />
+                  </Link>
+                ) : (
+                  <button 
+                    onClick={() => setShowSignIn(true)} 
+                    className="p-2 hover:bg-gray-900 rounded"
+                  >
+                    <User className="w-6 h-6 text-white" />
+                  </button>
+                )}
+
+                <Link href="/search" className="p-2 hover:bg-gray-900 rounded">
+                  <Search className="w-6 h-6 text-white" />
+                </Link>
+              </div>
+            </div>
+
+            <div className="flex flex-col items-center gap-8 mb-2">
+              <button
+                onClick={() => setCurrentIndex(i => Math.max(0, i - 1))}
+                disabled={currentIndex === 0}
+                className="p-2 hover:bg-gray-900 rounded disabled:opacity-50"
+              >
+                <ChevronUp className="w-6 h-6 text-white" />
+              </button>
+              <button
+                onClick={() => setCurrentIndex(i => Math.min(posts.length - 1, i + 1))}
+                disabled={currentIndex === posts.length - 1}
+                className="p-2 hover:bg-gray-900 rounded disabled:opacity-50"
+              >
+                <ChevronDown className="w-6 h-6 text-white" />
+              </button>
+            </div>
+          </aside>
+
+          <main className="col-start-2 flex items-center justify-center relative">
+            {isEmpty ? (
+              <div className="flex h-full w-full justify-center items-center text-white">
+                No posts available
+              </div>
+            ) : (
+              <>
+                <div className="h-full w-full flex items-center justify-center">
+                  <MobilePostItem 
+                    post={savePost ?? posts[0]} 
+                    onCommentClick={() => {
+                      setShowComments(true);
+                    }} 
+                    onShare={() => {
+                      if (savePost?.id) {
+                        onShare(savePost.id);
+                      } else if (posts.length > 0) {
+                        onShare(posts[0]?.id ?? "");
+                      }
+                    }} 
+                  />
+                </div>
+
+                <div className="absolute bottom-4 left-4 bg-black/60 px-3 py-1.5 rounded text-sm text-white">
+                  {savePost?.title}
+                </div>
+              </>
+            )}
+          </main>
+
+          <aside 
+            className="col-start-3 flex flex-col justify-center items-center bg-black py-4"
+            style={{ 
+              paddingRight: 'env(safe-area-inset-right, 0)',
+              paddingLeft: '4px'
+            }}
+          >
+            <div className="flex flex-col items-center gap-8">
+              {savePost && (
+                <Link href={`/profile/${savePost?.author.id}`} className="p-1 hover:bg-gray-900 rounded-full">
+                  <Avatar className="h-8 w-8">
+                    {savePost?.author.avatarUrl ? (
+                      <AvatarImage src={savePost?.author.avatarUrl} alt={savePost?.author.username} />
+                    ) : (
+                      <AvatarFallback>{savePost?.author.username?.[0] ?? "U"}</AvatarFallback>
+                    )}
+                  </Avatar>
+                </Link>
               )}
 
-              <Link href="/search" className="p-2 hover:bg-gray-900 rounded">
-                <Search className="w-6 h-6 text-white" />
-              </Link>
+              <button
+                onClick={handleLike}
+                className="flex flex-col items-center space-y-1 hover:bg-gray-900 p-2 rounded"
+              >
+                <Heart className={`w-6 h-6 ${hasLiked ? 'text-red-500 fill-red-500' : 'text-white'}`} />
+                <span className="text-xs text-white">{likesCount}</span>
+              </button>
+
+              <button
+                onClick={() => setShowComments(true)}
+                className="flex flex-col items-center space-y-1 hover:bg-gray-900 p-2 rounded"
+              >
+                <MessageCircle className="w-6 h-6 text-white" />
+                <span className="text-xs text-white">{commentsCount}</span>
+              </button>
+
+              <button
+                onClick={handleSave}
+                className="p-2 hover:bg-gray-900 rounded"
+              >
+                <Bookmark className={`w-6 h-6 ${saved ? 'text-yellow-400 fill-yellow-400' : 'text-white'}`} />
+              </button>
+
+              <button
+                onClick={() => {
+                  if (savePost?.id) {
+                    onShare(savePost.id);
+                  } else if (posts.length > 0) {
+                    onShare(posts[0]?.id ?? "");
+                  }
+                }}
+                className="p-2 hover:bg-gray-900 rounded"
+              >
+                <Share2 className="w-6 h-6 text-white" />
+              </button>
             </div>
-          </div>
-
-          <div className="flex flex-col items-center gap-6 mb-2">
-            <button
-              onClick={() => setCurrentIndex(i => Math.max(0, i - 1))}
-              disabled={currentIndex === 0}
-              className="p-2 hover:bg-gray-900 rounded disabled:opacity-50"
-            >
-              <ChevronUp className="w-6 h-6 text-white" />
-            </button>
-            <button
-              onClick={() => setCurrentIndex(i => Math.min(posts.length - 1, i + 1))}
-              disabled={currentIndex === posts.length - 1}
-              className="p-2 hover:bg-gray-900 rounded disabled:opacity-50"
-            >
-              <ChevronDown className="w-6 h-6 text-white" />
-            </button>
-          </div>
-        </aside>
-
-        {/* MAIN CONTENT */}
-        <main className="col-start-2 row-start-1 row-end-2 flex items-center justify-center relative">
-          {isEmpty ? (
-            <div className="flex h-full w-full justify-center items-center text-white">
-              No posts available
-            </div>
-          ) : (
-            <>
-              <div className="h-full w-full flex items-center justify-center">
-                <MobilePostItem 
-                  post={savePost ?? posts[0]} 
-                  onCommentClick={() => {
-                    setShowComments(true);
-                  }} 
-                  onShare={() => {
-                    if (savePost?.id) {
-                      onShare(savePost.id);
-                    } else if (posts.length > 0) {
-                      onShare(posts[0]?.id ?? "");
-                    }
-                  }} 
-                />
-              </div>
-
-              <div className="absolute bottom-4 left-4 bg-black/60 px-3 py-1.5 rounded text-sm text-white">
-                {savePost?.title}
-              </div>
-            </>
-          )}
-        </main>
-
-        {/* RIGHT SIDEBAR */}
-        <aside 
-          className="col-start-3 row-start-1 row-end-2 flex flex-col justify-center items-center bg-black py-4"
-          style={{
-            paddingRight: 'env(safe-area-inset-right, 0)',
-            paddingTop: 'env(safe-area-inset-top, 0)',
-            paddingBottom: 'env(safe-area-inset-bottom, 24px)'
-          }}
-        >
-          <div className="flex flex-col items-center gap-6">
-            {savePost && (
-              <Link href={`/profile/${savePost?.author.id}`} className="p-1 hover:bg-gray-900 rounded-full">
-                <Avatar className="h-8 w-8">
-                  {savePost?.author.avatarUrl ? (
-                    <AvatarImage src={savePost?.author.avatarUrl} alt={savePost?.author.username} />
-                  ) : (
-                    <AvatarFallback>{savePost?.author.username?.[0] ?? "U"}</AvatarFallback>
-                  )}
-                </Avatar>
-              </Link>
-            )}
-
-            <button
-              onClick={handleLike}
-              className="flex flex-col items-center space-y-1 hover:bg-gray-900 p-2 rounded"
-            >
-              <Heart className={`w-6 h-6 ${hasLiked ? 'text-red-500 fill-red-500' : 'text-white'}`} />
-              <span className="text-xs text-white">{likesCount}</span>
-            </button>
-
-            <button
-              onClick={() => setShowComments(true)}
-              className="flex flex-col items-center space-y-1 hover:bg-gray-900 p-2 rounded"
-            >
-              <MessageCircle className="w-6 h-6 text-white" />
-              <span className="text-xs text-white">{commentsCount}</span>
-            </button>
-
-            <button
-              onClick={handleSave}
-              className="p-2 hover:bg-gray-900 rounded"
-            >
-              <Bookmark className={`w-6 h-6 ${saved ? 'text-yellow-400 fill-yellow-400' : 'text-white'}`} />
-            </button>
-
-            <button
-              onClick={() => {
-                if (savePost?.id) {
-                  onShare(savePost.id);
-                } else if (posts.length > 0) {
-                  onShare(posts[0]?.id ?? "");
-                }
-              }}
-              className="p-2 hover:bg-gray-900 rounded"
-            >
-              <Share2 className="w-6 h-6 text-white" />
-            </button>
-          </div>
-        </aside>
+          </aside>
+        </div>
       </div>
 
       {showSignIn && <SignInModal open={showSignIn} onOpenChange={setShowSignIn} />}
