@@ -20,7 +20,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
 
     if (status === 'valid') {
-      // Algolia indexing logic
       await postsIndex.saveObject({
         objectID: post.id,
         title: post.title,

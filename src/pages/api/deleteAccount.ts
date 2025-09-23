@@ -27,8 +27,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     } catch (error: any) {
       console.error('Error deleting account:', error);
       
-      // Enhanced error handling based on error types
-      if (error.code === 'P2025') { // Example: Prisma's "Record to delete does not exist."
+      if (error.code === 'P2025') { 
         return res.status(404).json({ error: 'User not found.' });
       }
 

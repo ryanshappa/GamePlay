@@ -9,17 +9,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
   
   try {
-    // Fetch full user details from Clerk
-    // clerkClient is already a configured client, no need to await
     const clerkUser = await clerkClient.users.getUser(userId);
     
-    // Map Clerk user to our application's user format
     const user = {
       id: clerkUser.id,
       username: clerkUser.username,
       imageUrl: clerkUser.imageUrl,
       publicMetadata: clerkUser.publicMetadata,
-      // Add any other properties you need
     };
     
     return res.status(200).json({ user });

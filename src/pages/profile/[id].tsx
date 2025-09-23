@@ -180,10 +180,8 @@ export default function ProfilePage() {
         </div>
       </section>
 
-      {/* Edit Profile Dialog */}
       <EditProfileDialog open={editProfileOpen} onOpenChange={setEditProfileOpen} />
 
-      {/* Tab Row */}
       <div className="flex justify-center space-x-8 border-b border-gray-700 mb-2">
         <button
           className={`py-2 ${activeTab === 'posts'

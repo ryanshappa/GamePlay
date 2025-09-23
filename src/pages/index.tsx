@@ -25,9 +25,9 @@ export default function HomePage({ posts }: HomePageProps) {
   const [isCopySuccess, setIsCopySuccess] = useState(false);
   const [activeIndex, setActiveIndex] = useState<number>(0);
   
-  // ❶ detect mobile/tablet by UA
+  // detect mobile/tablet by UA
   const [isMobile, setIsMobile] = useState(false);
-  // ❷ detect orientation
+  //  detect orientation
   const [isLandscape, setIsLandscape] = useState(false);
 
   useEffect(() => {
@@ -90,10 +90,6 @@ export default function HomePage({ posts }: HomePageProps) {
     };
   }, []);
 
-  /**
-   * Optimistic comment addition:
-   * We'll add to the post's commentsCount in state if the user is signed in.
-   */
   const handleAddCommentOptimistic = async (postId: string, content: string) => {
     if (!user) {
       setSignInOpen(true);
@@ -111,7 +107,6 @@ export default function HomePage({ posts }: HomePageProps) {
         alert('Failed to add comment');
         return;
       }
-      // Update commentsCount in local state
       setPostList((prev) =>
         prev.map((p) =>
           p.id === postId ? { ...p, commentsCount: p.commentsCount + 1 } : p
@@ -122,10 +117,7 @@ export default function HomePage({ posts }: HomePageProps) {
     }
   };
 
-  /**
-   * Optimistic comment deletion:
-   * We'll decrement the post's commentsCount in state.
-   */
+
   const handleDeleteCommentOptimistic = async (postId: string, commentId: number) => {
     try {
       const resp = await fetch(`/api/posts/${postId}/comments?commentId=${commentId}`, {
@@ -135,7 +127,6 @@ export default function HomePage({ posts }: HomePageProps) {
         alert('Failed to delete comment');
         return;
       }
-      // Decrement the feed's comment count
       setPostList((prev) =>
         prev.map((p) =>
           p.id === postId
@@ -180,7 +171,6 @@ export default function HomePage({ posts }: HomePageProps) {
           />
         )
       ) : (
-        // desktop: existing SSR / virtualization feed
         <div className="w-full h-screen overflow-auto">
           <div>
             {postList.map((post, index) => {
@@ -252,7 +242,7 @@ export default function HomePage({ posts }: HomePageProps) {
 }
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  // (Your existing SSR code for posts)
+
   const posts = await db.post.findMany({
     include: {
       author: true,

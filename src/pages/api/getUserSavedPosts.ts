@@ -13,7 +13,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const saved = await db.savedPost.findMany({
       where: { userId },
-      include: { post: true }, // to get post details
+      include: { post: true }, 
     });
     res.status(200).json(saved);
   } catch (err) {

@@ -9,7 +9,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    // Update the post's status in the database
     await db.post.update({
       where: { id: gameId },
       data: {

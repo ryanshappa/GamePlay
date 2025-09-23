@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 
 interface User {
   id: string;
-  // Add other user properties as needed
 }
 
 export function useCurrentUser() {

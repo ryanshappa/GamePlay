@@ -15,7 +15,6 @@ import DeleteCommentButton from '~/components/deleteComment';
 import { SignInModal } from '~/components/signInModal';
 import { getAuth } from '@clerk/nextjs/server';
 
-// We define a separate NestedCommentItem at the bottom
 
 interface PostPageProps {
   post: PostWithAuthor;
@@ -35,17 +34,14 @@ export default function PostPage({ post, status }: PostPageProps) {
 
   useEffect(() => {
     if (user) {
-      // Check if the post is liked and saved by the current user
       const checkPostStatus = async () => {
         try {
-          // Fetch both like and save status in parallel
           const [likeResponse, saveResponse] = await Promise.all([
             fetch(`/api/posts/${post.id}/isLiked`),
             fetch(`/api/posts/${post.id}/isSaved`)
           ]);
           
           if (likeResponse.ok) {
-            // ensure correct typing
             const { liked } = (await likeResponse.json()) as { liked: boolean };
             setHasLiked(liked);
           }

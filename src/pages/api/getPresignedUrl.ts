@@ -51,7 +51,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     };
 
     const command = new PutObjectCommand(params);
-    const presignedUrl = await getSignedUrl(s3Client, command, { expiresIn: 3600 }); // URL valid for 1 hour
+    const presignedUrl = await getSignedUrl(s3Client, command, { expiresIn: 3600 }); 
 
     return res.status(200).json({ presignedUrl, fileKey, postId });
   } catch (error) {

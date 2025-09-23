@@ -20,7 +20,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       await transporter.sendMail({
         from: process.env.EMAIL_USER,
-        to: process.env.EMAIL_USER, // Send to your own email
+        to: process.env.EMAIL_USER, 
         subject: `Report Form Submission: ${subject}`,
         text: details,
       });

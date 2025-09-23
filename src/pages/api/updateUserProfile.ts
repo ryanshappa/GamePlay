@@ -31,7 +31,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         },
       });
 
-      // Update the user in Algolia index
       await usersIndex.saveObject({
         objectID: userId,
         username: user.username,

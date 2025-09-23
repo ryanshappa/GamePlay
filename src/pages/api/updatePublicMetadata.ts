@@ -21,7 +21,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    await clerkClient.users.updateUserMetadata(userId, {
+    const clerk = await clerkClient();
+    await clerk.users.updateUserMetadata(userId, {
       publicMetadata: {
         bio,
       },
