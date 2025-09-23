@@ -80,11 +80,13 @@ export default function HomePage({ posts }: HomePageProps) {
     };
     const observer = new IntersectionObserver(observerCallback, observerOptions);
 
-    postRefs.current.forEach((el) => {
+    const currentPostRefs = postRefs.current;
+    
+    currentPostRefs.forEach((el) => {
       if (el) observer.observe(el);
     });
     return () => {
-      postRefs.current.forEach((el) => {
+      currentPostRefs.forEach((el) => {
         if (el) observer.unobserve(el);
       });
     };

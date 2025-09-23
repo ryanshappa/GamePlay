@@ -98,7 +98,7 @@ export default function PostPage({ post, status }: PostPageProps) {
         alert('Failed to add comment');
         return;
       }
-      const comment = await resp.json();
+      const comment = await resp.json() as NestedComment;
       setComments((prev) => [...prev, comment]);
       setNewComment('');
     } catch (error) {
@@ -422,7 +422,7 @@ function NestedCommentItem({
         try {
           const response = await fetch(`/api/comments/${comment.id}/isLiked`);
           if (response.ok) {
-            const data = await response.json();
+            const data = await response.json() as { liked: boolean; likeCount: number };
             setLiked(data.liked);
             setLikeCount(data.likeCount);
           }

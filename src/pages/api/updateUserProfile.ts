@@ -25,9 +25,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const user = await db.user.update({
         where: { id: userId },
         data: {
-          ...(username && { username }),
-          ...(bio && { bio }),
-          ...(avatarUrl && { avatarUrl }),
+          ...(username && { username: username as string }),
+          ...(bio && { bio: bio as string }),
+          ...(avatarUrl && { avatarUrl: avatarUrl as string }),
         },
       });
 
@@ -39,8 +39,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
 
       res.status(200).json({ message: 'Profile updated successfully', user });
-    } catch (error: any) {
-      console.error('Error updating user profile:', error.message || error);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error('Error updating user profile:', errorMessage);
       res.status(500).json({ error: 'Internal server error' });
     }
   } else {

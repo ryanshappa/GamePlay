@@ -56,7 +56,12 @@ const CreatePost = () => {
           }),
         });
 
-        const data = await res.json();
+        const data = await res.json() as { 
+          message?: string; 
+          presignedUrl?: string; 
+          fileKey?: string; 
+          gameId?: string; 
+        };
 
         if (!res.ok) {
           throw new Error(data.message || "Failed to get presigned URL");
@@ -64,13 +69,21 @@ const CreatePost = () => {
 
         const { presignedUrl, fileKey, gameId } = data;
 
+        if (!presignedUrl) {
+          throw new Error("No presigned URL received");
+        }
+
         await fetch(presignedUrl, {
           method: "PUT",
           body: selectedFile,
         });
 
-        setFileKey(fileKey);
-        setGameId(gameId);
+        if (fileKey) {
+          setFileKey(fileKey);
+        }
+        if (gameId) {
+          setGameId(gameId);
+        }
         alert("File uploaded successfully.");
       } catch (error) {
         console.error("Error uploading file:", error);
