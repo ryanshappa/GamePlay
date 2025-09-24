@@ -44,10 +44,45 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         },
       });
 
-      function serializeComment(comment: any): any {
+      interface CommentLike {
+        userId: string;
+      }
+
+      interface CommentWithLikes {
+        id: number;
+        content: string;
+        createdAt: Date;
+        postId: string;
+        parentId: number | null;
+        userId: string;
+        user?: {
+          username?: string | null;
+          avatarUrl?: string | null;
+        };
+        commentLikes?: CommentLike[];
+        children?: CommentWithLikes[];
+      }
+
+      interface SerializedComment {
+        id: number;
+        content: string;
+        createdAt: string;
+        postId: string;
+        parentId: number | null;
+        user: {
+          id: string;
+          username: string | null;
+          avatarUrl: string | null;
+        };
+        likeCount: number;
+        likedByCurrentUser: boolean;
+        children: SerializedComment[];
+      }
+
+      function serializeComment(comment: CommentWithLikes): SerializedComment {
         const likeCount = comment.commentLikes?.length || 0;
         const likedByCurrentUser = userId
-          ? comment.commentLikes.some((like: any) => like.userId === userId)
+          ? comment.commentLikes?.some((like: CommentLike) => like.userId === userId) ?? false
           : false;
 
         return {

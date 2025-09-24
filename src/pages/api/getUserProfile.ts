@@ -41,6 +41,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           (clerkUser.emailAddresses[0]?.emailAddress
             ? clerkUser.emailAddresses[0].emailAddress.split('@')[0]
             : '');
+            
 
         // Create user in database
         user = await db.user.create({
