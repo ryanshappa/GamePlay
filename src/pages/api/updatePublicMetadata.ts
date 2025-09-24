@@ -1,4 +1,4 @@
-import { clerkClient } from '@clerk/nextjs/server'
+import { clerkClient } from '@clerk/clerk-sdk-node'
 import { NextApiRequest, NextApiResponse } from 'next'
 import { getAuth } from '@clerk/nextjs/server'
 
@@ -21,8 +21,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const clerk = await clerkClient();
-    await clerk.users.updateUserMetadata(userId as string, {
+    await clerkClient.users.updateUserMetadata(userId as string, {
       publicMetadata: {
         bio,
       },

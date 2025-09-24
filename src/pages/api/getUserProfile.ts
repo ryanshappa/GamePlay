@@ -1,4 +1,4 @@
-import { clerkClient } from '@clerk/nextjs/server';
+import { clerkClient } from '@clerk/clerk-sdk-node';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { db } from '~/server/db';
 import { usersIndex } from '~/server/algoliaClient';
@@ -33,8 +33,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       // User not found in database, create user
       try {
         // Fetch user data from Clerk
-        const clerk = await clerkClient();
-        const clerkUser = await clerk.users.getUser(userId);
+        const clerkUser = await clerkClient.users.getUser(userId);
 
         const defaultUsername =
           clerkUser.username ||
