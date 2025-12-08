@@ -106,7 +106,7 @@ const CreatePost = () => {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Enter the title of your game"
-            className="w-full bg-gray-800 text-white"
+            className="w-full bg-muted text-foreground"
           />
         </div>
 
@@ -116,7 +116,7 @@ const CreatePost = () => {
             value={content}
             onChange={(e) => setContent(e.target.value)}
             placeholder="Enter a description for your game (optional)"
-            className="w-full h-24 p-2 border rounded bg-gray-800 text-white"
+            className="w-full h-24 p-2 border rounded bg-muted text-foreground"
           />
         </div>
 
@@ -125,7 +125,7 @@ const CreatePost = () => {
           <select
             value={engine}
             onChange={(e) => setEngine(e.target.value)}
-            className="bg-gray-800 text-white p-2 rounded w-auto"
+            className="bg-muted text-foreground p-2 rounded w-auto"
           >
             <option value="unity">Unity</option>
             <option value="godot">Godot</option>
@@ -137,7 +137,7 @@ const CreatePost = () => {
           <p className="text-sm text-gray-500">Please upload your game packaged as a .zip file.</p>
           <p className="text-sm text-gray-500 mb-2">Ensure your HTML file in the web build export is named "index.html".</p>
           <div className="mt-2 inline-block relative">
-            <label className="bg-blue-600 text-white py-2 px-4 rounded cursor-pointer hover:bg-blue-700 inline-block relative overflow-hidden">
+            <label className="bg-blue-600 text-foreground py-2 px-4 rounded cursor-pointer hover:bg-blue-700 inline-block relative overflow-hidden">
               {file ? "Change File" : "Choose File"}
               <input
                 type="file"
@@ -148,7 +148,7 @@ const CreatePost = () => {
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
               />
             </label>
-            <span className="ml-2 text-white">
+            <span className="ml-2 text-foreground">
               {file ? file.name : "No file chosen"}
             </span>
           </div>

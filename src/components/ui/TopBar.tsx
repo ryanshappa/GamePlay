@@ -40,7 +40,7 @@ export default function TopBar() {
   };
 
   return (
-    <div className="flex items-center justify-between px-4 py-2 border-b border-gray-700 bg-black text-white">
+    <div className="flex items-center justify-between px-4 py-2 border-b border-border bg-background text-foreground">
       <div className="text-xl font-bold">GamePlay</div>
       <div className="flex items-center">
         {user ? (

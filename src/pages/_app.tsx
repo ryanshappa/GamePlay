@@ -10,6 +10,7 @@ import { AuthProvider } from '~/contexts/AuthContext';
 import { ClerkProvider } from '@clerk/nextjs';
 import { LayoutDesktop } from '~/components/LayoutDesktop';
 import { LayoutMobile } from '~/components/LayoutMobile';
+import { ThemeProvider } from '~/components/theme-provider';
 
 type NextPageWithLayout = NextPage & {
   getLayout?: (page: ReactElement) => ReactNode;
@@ -40,16 +41,23 @@ const MyApp: AppType = ({ Component, pageProps }: AppPropsWithLayout) => {
       </Head>
       <ClerkProvider {...pageProps}>
         <AuthProvider>
-          <div className={GeistSans.className}>
-            {Component.disableLayout ? (
-              pageWithLayout
-            ) : (
-              <>
-                <LayoutMobile>{pageWithLayout}</LayoutMobile>
-                <LayoutDesktop>{pageWithLayout}</LayoutDesktop>
-              </>
-            )}
-          </div>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <div className={GeistSans.className}>
+              {Component.disableLayout ? (
+                pageWithLayout
+              ) : (
+                <>
+                  <LayoutMobile>{pageWithLayout}</LayoutMobile>
+                  <LayoutDesktop>{pageWithLayout}</LayoutDesktop>
+                </>
+              )}
+            </div>
+          </ThemeProvider>
         </AuthProvider>
       </ClerkProvider>
     </>

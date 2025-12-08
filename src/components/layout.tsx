@@ -1,26 +1,34 @@
 // layout.tsx
-import React, { useState } from 'react';
-import { useAuth } from '~/contexts/AuthContext';
-import { useClerk } from '@clerk/nextjs';
-import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
-import { Button } from '~/components/ui/button';
-import { User as UserIcon, Settings, LogOut, Home, Plus, HelpCircle } from 'lucide-react'
-import Link from 'next/link';
-import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
-import { SearchBar } from '~/components/searchBar';
-import { FaInstagram } from 'react-icons/fa';
-import { SiTiktok } from 'react-icons/si';
-import { FaXTwitter } from 'react-icons/fa6';
-import { SignInModal } from '~/components/signInModal';
-import { SignUpModal } from '~/components/signUpModal';
-import { useRouter } from 'next/router';
+import React, { useState } from "react";
+import { useAuth } from "~/contexts/AuthContext";
+import { useClerk } from "@clerk/nextjs";
+import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import { Button } from "~/components/ui/button";
+import {
+  User as UserIcon,
+  Settings,
+  LogOut,
+  Home,
+  Plus,
+  HelpCircle,
+} from "lucide-react";
+import Link from "next/link";
+import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
+import { SearchBar } from "~/components/searchBar";
+import { SignInModal } from "~/components/signInModal";
+import { SignUpModal } from "~/components/signUpModal";
+import { useRouter } from "next/router";
+import { ThemeToggle } from "~/components/ThemeToggle";
 
 interface LayoutProps {
   children: React.ReactNode;
   showSearchBar?: boolean;
 }
 
-export default function Layout({ children, showSearchBar = true }: LayoutProps) {
+export default function Layout({
+  children,
+  showSearchBar = true,
+}: LayoutProps) {
   const { user } = useAuth();
   const { signOut } = useClerk();
   const router = useRouter();
@@ -33,65 +41,66 @@ export default function Layout({ children, showSearchBar = true }: LayoutProps) 
     try {
       await signOut();
     } catch (error) {
-      console.error('Error signing out:', error);
+      console.error("Error signing out:", error);
     }
   };
 
   return (
-    <div className="bg-black text-white w-screen min-h-screen">
+    <div className="min-h-screen w-screen bg-background text-foreground">
       {/* --- FIXED TOP BAR --- */}
-      <header className="
-        fixed top-0 left-0 right-0 z-50
-        flex items-center justify-between
-        h-16 px-4
-        border-b border-gray-800
-        bg-black
-      ">
-        <div className="text-2xl font-bold font-press-start">GamePlay</div>
+      <header className="fixed left-0 right-0 top-0 z-50 flex h-16 items-center justify-between border-b border-input bg-background px-4">
+        <div className="font-press-start text-2xl font-bold">GamePlay</div>
 
         {showSearchBar && (
-          <div className="flex-grow flex justify-center mr-12">
+          <div className="mr-12 flex flex-grow justify-center">
             <SearchBar />
           </div>
         )}
 
         <div className="flex items-center">
           {user ? (
-            <DropdownMenu.Root>
-              <DropdownMenu.Trigger asChild>
-                <Button variant="ghost" className="p-0">
-                  <Avatar>
-                    <AvatarImage
-                      src={user.imageUrl || undefined}
-                      alt="User avatar"
-                    />
-                    <AvatarFallback>
-                      {user.username?.charAt(0) || 'U'}
-                    </AvatarFallback>
-                  </Avatar>
-                </Button>
-              </DropdownMenu.Trigger>
-              <DropdownMenu.Content className="bg-gray-800 text-white rounded shadow-md p-2">
-                <DropdownMenu.Item className="flex items-center space-x-3 p-3 hover:bg-gray-700 cursor-pointer">
-                  <UserIcon className="h-5 w-5" />
-                  <Link href={`/profile/${user.id}`}>Profile</Link>
-                </DropdownMenu.Item>
-                <DropdownMenu.Item className="flex items-center space-x-3 p-3 hover:bg-gray-700 cursor-pointer">
-                  <Settings className="h-5 w-5" />
-                  <Link href="/settings">Settings</Link>
-                </DropdownMenu.Item>
-                <DropdownMenu.Item className="flex items-center space-x-3 p-3 hover:bg-gray-700 cursor-pointer" onClick={handleSignOut}>
-                  <LogOut className="h-5 w-5" />
-                  <span>Logout</span>
-                </DropdownMenu.Item>
-                <DropdownMenu.Item className="flex items-center space-x-3 p-3 hover:bg-gray-700 cursor-pointer">
-                  <HelpCircle className="h-5 w-5" />
-                  <Link href="/help">Help</Link>
-                </DropdownMenu.Item>
-              </DropdownMenu.Content>
-            </DropdownMenu.Root>
+            <>
+              <ThemeToggle />
+              <DropdownMenu.Root>
+                <DropdownMenu.Trigger asChild>
+                  <Button variant="ghost" className="p-0">
+                    <Avatar>
+                      <AvatarImage
+                        src={user.imageUrl || undefined}
+                        alt="User avatar"
+                      />
+                      <AvatarFallback>
+                        {user.username?.charAt(0) || "U"}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenu.Trigger>
+                <DropdownMenu.Content className="rounded bg-muted p-2 text-foreground shadow-md">
+                  <DropdownMenu.Item className="flex cursor-pointer items-center space-x-3 p-3 hover:bg-muted">
+                    <UserIcon className="h-5 w-5" />
+                    <Link href={`/profile/${user.id}`}>Profile</Link>
+                  </DropdownMenu.Item>
+                  <DropdownMenu.Item className="flex cursor-pointer items-center space-x-3 p-3 hover:bg-muted">
+                    <Settings className="h-5 w-5" />
+                    <Link href="/settings">Settings</Link>
+                  </DropdownMenu.Item>
+                  <DropdownMenu.Item
+                    className="flex cursor-pointer items-center space-x-3 p-3 hover:bg-muted"
+                    onClick={handleSignOut}
+                  >
+                    <LogOut className="h-5 w-5" />
+                    <span>Logout</span>
+                  </DropdownMenu.Item>
+                  <DropdownMenu.Item className="flex cursor-pointer items-center space-x-3 p-3 hover:bg-muted">
+                    <HelpCircle className="h-5 w-5" />
+                    <Link href="/help">Help</Link>
+                  </DropdownMenu.Item>
+                </DropdownMenu.Content>
+              </DropdownMenu.Root>
+            </>
           ) : (
             <>
+              <ThemeToggle />
               <Button variant="ghost" onClick={() => setSignInOpen(true)}>
                 Sign In
               </Button>
@@ -102,26 +111,21 @@ export default function Layout({ children, showSearchBar = true }: LayoutProps) 
 
       {/* --- FIXED SIDEBAR --- */}
       {showSearchBar ? (
-        <aside className="
-          fixed top-16 bottom-0 left-0
-          w-52 p-4
-          bg-black
-          flex flex-col
-        ">
+        <aside className="fixed bottom-0 left-0 top-16 flex w-52 flex-col bg-background p-4">
           <nav className="mt-6">
             <Link href="/">
-              <div className="flex items-center space-x-4 cursor-pointer hover:text-gray-400 mb-6">
+              <div className="mb-6 flex cursor-pointer items-center space-x-4 hover:text-gray-400">
                 <Home className="h-8 w-8" />
                 <span className="text-lg">Home</span>
               </div>
             </Link>
 
             <div
-              className="flex items-center space-x-4 cursor-pointer hover:text-gray-400 mb-6"
+              className="mb-6 flex cursor-pointer items-center space-x-4 hover:text-gray-400"
               onClick={() => {
                 // Use Next.js router for navigation
                 if (user) {
-                  router.push('/create-post');
+                  router.push("/create-post");
                 } else {
                   setSignInOpen(true);
                 }
@@ -133,58 +137,26 @@ export default function Layout({ children, showSearchBar = true }: LayoutProps) 
 
             {user ? (
               <Link href={`/profile/${user.id}`}>
-                <div className="flex items-center space-x-4 cursor-pointer hover:text-gray-400 mb-6">
+                <div className="mb-6 flex cursor-pointer items-center space-x-4 hover:text-gray-400">
                   <UserIcon className="h-8 w-8" />
                   <span className="text-lg">Profile</span>
                 </div>
               </Link>
             ) : null}
           </nav>
-
-          {/* Social icons pinned at the bottom of the sidebar */}
-          {/* <div className="mt-auto flex space-x-4">
-            <Link
-              href="https://x.com/TryGamePlay_"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Twitter"
-            >
-              <FaXTwitter className="h-8 w-8 hover:text-blue-400" />
-            </Link>
-            <Link
-              href="https://www.tiktok.com/@trygameplay?lang=en"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="TikTok"
-            >
-              <SiTiktok className="h-8 w-8 hover:text-red-500" />
-            </Link>
-            <Link
-              href="https://www.instagram.com/trygameplay/"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Instagram"
-            >
-              <FaInstagram className="h-8 w-8 hover:text-pink-400" />
-            </Link>
-          </div> */}
         </aside>
       ) : null}
 
       {/* MAIN CONTENT AREA */}
-      <main className={`${showSearchBar ? 'ml-52' : 'ml-4'} pt-16 h-screen overflow-y-auto`}>
+      <main
+        className={`${showSearchBar ? "ml-52" : "ml-4"} h-screen overflow-y-auto pt-16`}
+      >
         {children}
       </main>
 
       {/* Sign In & Sign Up modals */}
-      <SignInModal
-        open={signInOpen}
-        onOpenChange={setSignInOpen}
-      />
-      <SignUpModal
-        open={signUpOpen}
-        onOpenChange={setSignUpOpen}
-      />
+      <SignInModal open={signInOpen} onOpenChange={setSignInOpen} />
+      <SignUpModal open={signUpOpen} onOpenChange={setSignUpOpen} />
     </div>
   );
 }

@@ -44,7 +44,7 @@ const PostItem: React.FC<PostItemProps> = ({
           className={`
             ${isFeedLayout
               ? 'ml-6 w-[880px] h-[490px]'
-              : 'w-[120vh] h-[80vh] bg-black'
+              : 'w-[120vh] h-[80vh] bg-background'
             }
             rounded-md overflow-hidden
           `}
@@ -61,7 +61,7 @@ const PostItem: React.FC<PostItemProps> = ({
               allowFullScreen
             />
           ) : (
-            <div className="w-full h-full bg-black" />
+            <div className="w-full h-full bg-background" />
           )}
         </div>
 
@@ -85,7 +85,7 @@ const PostItem: React.FC<PostItemProps> = ({
             <Button
               variant="ghost"
               size="icon"
-              className="rounded-full bg-gray-800 hover:bg-gray-700"
+              className="rounded-full bg-muted hover:bg-foreground/20"
               onClick={() => onCommentClick(post)}
             >
               <MessageCircleIcon className="h-6 w-6" />
@@ -101,13 +101,13 @@ const PostItem: React.FC<PostItemProps> = ({
               <Button
                 variant="ghost"
                 size="icon"
-                className="rounded-full bg-gray-800 hover:bg-gray-700"
+                className="rounded-full bg-muted hover:bg-foreground/20"
                 onClick={() => onShare(post.id.toString())}
               >
                 <ShareIcon className="h-6 w-6" />
               </Button>
               {isCopySuccess && (
-                <span className="absolute text-sm text-white mt-1 left-full ml-2">
+                <span className="absolute text-sm text-foreground mt-1 left-full ml-2">
                   Link copied!
                 </span>
               )}

@@ -73,15 +73,6 @@
   }
 }
 
-@layer base {
-  * {
-    @apply border-border;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
-}
-
 /* Define the font-press-start class */
 .font-press-start {
   font-family: 'Press Start 2P', cursive;

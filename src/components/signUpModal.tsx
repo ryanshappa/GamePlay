@@ -13,13 +13,13 @@ export function SignUpModal({ open, onOpenChange }: SignUpModalProps) {
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
         {/* Overlay */}
-        <Dialog.Overlay className="fixed inset-0 bg-black/40" />
+        <Dialog.Overlay className="fixed inset-0 bg-background/40" />
         {/* Content */}
         <Dialog.Content
           className="
             fixed top-1/2 left-1/2
             -translate-x-1/2 -translate-y-1/2
-            bg-gray-900 p-6 rounded-md shadow-lg
+            bg-muted p-6 rounded-md shadow-lg
             w-full max-w-md
           "
         >
@@ -33,7 +33,7 @@ export function SignUpModal({ open, onOpenChange }: SignUpModalProps) {
                 colorPrimary: "#9b59b6",
               },
               elements: {
-                card: "bg-gray-900 text-white border-none",
+                card: "bg-muted text-foreground border-none",
                 formButtonPrimary: "bg-purple-600 hover:bg-purple-700",
               }
             }}

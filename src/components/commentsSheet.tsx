@@ -154,7 +154,7 @@ function NestedCommentItemDrawer({
             <div className="mt-2">
               <textarea
                 rows={2}
-                className="w-full bg-gray-700 text-white p-2 rounded mb-1"
+                className="w-full bg-muted text-foreground p-2 rounded mb-1"
                 value={replyText}
                 onChange={(e) => setReplyText(e.target.value)}
               />
@@ -345,11 +345,11 @@ export function CommentsDrawer({
     <Sheet open={open} onOpenChange={onClose}>
       <SheetContent
         side="right"
-        className="p-4 bg-gray-800 text-white w-[320px]"
+        className="p-4 bg-muted text-foreground w-[320px]"
         style={{ opacity: 0.95 }}
       >
         <SheetHeader>
-          <SheetTitle className="text-xl font-bold mb-4 text-white">
+          <SheetTitle className="text-xl font-bold mb-4 text-foreground">
             Comments
           </SheetTitle>
         </SheetHeader>
@@ -373,7 +373,7 @@ export function CommentsDrawer({
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
               placeholder="Add a comment..."
-              className="w-full mb-2 bg-gray-700 text-white"
+              className="w-full mb-2 bg-muted text-foreground"
             />
             <Button onClick={handleAddCommentFinal} disabled={!newComment.trim()}>
               Post Comment

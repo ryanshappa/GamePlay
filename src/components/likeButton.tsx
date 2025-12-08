@@ -69,21 +69,21 @@ export function LikeButton({ postId, initialLiked, initialCount, orientation = '
   return (
     <div className={containerClasses}>
       <button
-        className="rounded-full bg-gray-800 hover:bg-gray-700 p-2"
+        className="rounded-full bg-muted hover:bg-foreground/20 p-2"
         onClick={handleClick}
         disabled={loading}
       >
         <HeartIcon
-          className={`h-6 w-6 ${liked ? 'text-red-500' : 'text-white'}`}
+          className={`h-6 w-6 ${liked ? 'text-red-500' : 'text-foreground'}`}
           fill={liked ? 'currentColor' : 'none'}
         />
       </button>
       {/* When in row mode, show the count right next to the icon */}
       {orientation === 'row' ? (
-        <span className="text-white">{count}</span>
+        <span className="text-foreground">{count}</span>
       ) : (
         // In column mode, the count appears below.
-        <span className="text-white mt-1">{count}</span>
+        <span className="text-foreground mt-1">{count}</span>
       )}
     </div>
   );

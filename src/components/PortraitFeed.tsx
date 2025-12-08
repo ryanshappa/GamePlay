@@ -89,9 +89,9 @@ export function PortraitFeed({
   };
 
   return (
-    <div className="flex h-full w-full bg-black text-white">
+    <div className="flex h-full w-full bg-background text-foreground">
       {/* ── Left Sidebar ── */}
-      <aside className="flex flex-col items-center w-16 bg-black pt-4 pb-4">
+      <aside className="flex flex-col items-center w-16 bg-background pt-4 pb-4">
         <div className="mt-4 flex flex-col items-center space-y-4">
           {/* Larger Logo */}
           <img
@@ -100,22 +100,22 @@ export function PortraitFeed({
             className="w-14 h-14"
           />
           {/* Nav Buttons */}
-          <Link href="/" className="p-1 hover:bg-gray-800 rounded">
+          <Link href="/" className="p-1 hover:bg-muted rounded">
             <Home className="w-6 h-6" />
           </Link>
           {user ? (
             <Link
               href={`/profile/${user.id}`}
-              className="p-1 hover:bg-gray-800 rounded"
+              className="p-1 hover:bg-muted rounded"
             >
               <User className="w-6 h-6" />
             </Link>
           ) : (
-            <Link href="/sign-in" className="p-1 hover:bg-gray-800 rounded">
+            <Link href="/sign-in" className="p-1 hover:bg-muted rounded">
               <User className="w-6 h-6" />
             </Link>
           )}
-          <Link href="/search" className="p-1 hover:bg-gray-800 rounded">
+          <Link href="/search" className="p-1 hover:bg-muted rounded">
             <Search className="w-6 h-6" />
           </Link>
         </div>
@@ -125,14 +125,14 @@ export function PortraitFeed({
           <button
             onClick={() => setCurrentIndex(Math.max(0, currentIndex - 1))}
             disabled={currentIndex === 0}
-            className="p-1 hover:bg-gray-800 rounded disabled:opacity-50"
+            className="p-1 hover:bg-muted rounded disabled:opacity-50"
           >
             <ChevronUp className="w-6 h-6" />
           </button>
           <button
             onClick={() => setCurrentIndex(Math.min(posts.length - 1, currentIndex + 1))}
             disabled={currentIndex === posts.length - 1}
-            className="p-1 hover:bg-gray-800 rounded disabled:opacity-50"
+            className="p-1 hover:bg-muted rounded disabled:opacity-50"
           >
             <ChevronDown className="w-6 h-6" />
           </button>
@@ -152,7 +152,7 @@ export function PortraitFeed({
               onCommentClick={() => onCommentClick(post!)}
               onShare={() => onShare(post!.id)}
             />
-            <div className="absolute bottom-2 left-2 bg-black/60 px-2 py-1 rounded text-sm">
+            <div className="absolute bottom-2 left-2 bg-background/60 px-2 py-1 rounded text-sm">
               {post!.title}
             </div>
           </>
@@ -160,7 +160,7 @@ export function PortraitFeed({
       </main>
 
       {/* ── Right Sidebar ── */}
-      <aside className="flex flex-col items-center w-16 bg-black pt-10 space-y-6 pb-4">
+      <aside className="flex flex-col items-center w-16 bg-background pt-10 space-y-6 pb-4">
         {post && (
           <>
             {/* Avatar */}
@@ -186,7 +186,7 @@ export function PortraitFeed({
             <button onClick={handleLike} className="flex flex-col items-center">
               <Heart
                 className={`w-6 h-6 ${
-                  hasLiked ? "text-red-500 fill-red-500" : "text-white"
+                  hasLiked ? "text-red-500 fill-red-500" : "text-foreground"
                 }`}
               />
               <span className="text-xs">{likesCount}</span>
@@ -197,7 +197,7 @@ export function PortraitFeed({
               onClick={() => post && onCommentClick(post)}
               className="flex flex-col items-center"
             >
-              <MessageCircle className="w-6 h-6 text-white" />
+              <MessageCircle className="w-6 h-6 text-foreground" />
               <span className="text-xs">{commentsCount}</span>
             </button>
 
@@ -205,7 +205,7 @@ export function PortraitFeed({
             <button onClick={handleSave} className="flex flex-col items-center">
               <Bookmark
                 className={`w-6 h-6 ${
-                  saved ? "text-yellow-400 fill-yellow-400" : "text-white"
+                  saved ? "text-yellow-400 fill-yellow-400" : "text-foreground"
                 }`}
               />
             </button>
@@ -215,7 +215,7 @@ export function PortraitFeed({
               onClick={() => post && onShare(post.id)}
               className="flex flex-col items-center"
             >
-              <Share2 className="w-6 h-6 text-white" />
+              <Share2 className="w-6 h-6 text-foreground" />
             </button>
           </>
         )}

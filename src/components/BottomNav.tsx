@@ -25,20 +25,20 @@ export const BottomNav = () => {
       className="
         fixed bottom-0 left-0 right-0
         h-14 pb-safe     /* shrink height and add safe-area bottom padding */
-        bg-black border-t border-gray-800
+        bg-background border-t border-input
         flex justify-around items-center
         z-40
       "
     >
       <Link href="/" passHref>
         <div className="flex flex-col items-center">
-          <Home className={`h-6 w-6 ${router.pathname === '/' ? 'text-white' : 'text-gray-500'}`} />
+          <Home className={`h-6 w-6 ${router.pathname === '/' ? 'text-foreground' : 'text-gray-500'}`} />
         </div>
       </Link>
       
       <Link href="/search" passHref>
         <div className="flex flex-col items-center">
-          <Search className={`h-6 w-6 ${router.pathname === '/search' ? 'text-white' : 'text-gray-500'}`} />
+          <Search className={`h-6 w-6 ${router.pathname === '/search' ? 'text-foreground' : 'text-gray-500'}`} />
         </div>
       </Link>
       
@@ -48,7 +48,7 @@ export const BottomNav = () => {
       
       <Link href={user ? `/profile/${user.id}` : '/signin'} passHref>
         <div className="flex flex-col items-center">
-          <User className={`h-6 w-6 ${router.pathname.startsWith('/profile') ? 'text-white' : 'text-gray-500'}`} />
+          <User className={`h-6 w-6 ${router.pathname.startsWith('/profile') ? 'text-foreground' : 'text-gray-500'}`} />
         </div>
       </Link>
     </div>

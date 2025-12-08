@@ -125,7 +125,7 @@ export default function ProfilePage() {
   if (!userProfile) return <div>Loading profile...</div>;
 
   return (
-    <div className="bg-black text-white min-h-screen">
+    <div className="bg-background text-foreground min-h-screen">
       {/* Profile Info */}
       <section className="p-8">
         <div className="flex items-center space-x-6">
@@ -171,7 +171,7 @@ export default function ProfilePage() {
           )}
           {user?.id === profileId && (
             <Button
-              className="bg-green-600 text-white px-4 py-2 rounded-full"
+              className="bg-green-600 text-foreground px-4 py-2 rounded-full"
               onClick={() => setEditProfileOpen(true)}
             >
               Edit Profile
@@ -182,7 +182,7 @@ export default function ProfilePage() {
 
       <EditProfileDialog open={editProfileOpen} onOpenChange={setEditProfileOpen} />
 
-      <div className="flex justify-center space-x-8 border-b border-gray-700 mb-2">
+      <div className="flex justify-center space-x-8 border-b border-border mb-2">
         <button
           className={`py-2 ${activeTab === 'posts'
             ? 'font-bold border-b-2 border-white'
@@ -214,7 +214,7 @@ export default function ProfilePage() {
                   {userProfile.posts.map((post) => (
                     <div key={post.id} className="relative">
                       <Link href={`/post/${post.id}`}>
-                        <div className="aspect-video bg-gray-800 rounded-lg overflow-hidden relative cursor-pointer">
+                        <div className="aspect-video bg-muted rounded-lg overflow-hidden relative cursor-pointer">
                           <iframe
                             src={post.fileUrl || '/default-file-url'}
                             title={post.title}
@@ -222,7 +222,7 @@ export default function ProfilePage() {
                             frameBorder="0"
                             allowFullScreen
                           ></iframe>
-                          <div className="absolute bottom-0 left-0 p-2 bg-black bg-opacity-50 w-full">
+                          <div className="absolute bottom-0 left-0 p-2 bg-background bg-opacity-50 w-full">
                             <p className="text-sm">{post.title}</p>
                           </div>
                         </div>
@@ -234,15 +234,15 @@ export default function ProfilePage() {
                               as={Button}
                               variant="ghost"
                               size="sm"
-                              className="p-1 rounded-full hover:bg-gray-700"
+                              className="p-1 rounded-full hover:bg-muted"
                             >
                               <MoreHorizontal className="h-6 w-6" />
                             </MenuButton>
                             <Portal>
-                              <MenuList className="bg-gray-800 text-white z-50">
+                              <MenuList className="bg-muted text-foreground z-50">
                                 <MenuItem
                                   onClick={() => handleDeletePost(post.id)}
-                                  className="px-4 py-2 hover:bg-gray-700 cursor-pointer"
+                                  className="px-4 py-2 hover:bg-muted cursor-pointer"
                                   disabled={isDeleting}
                                 >
                                   {isDeleting ? 'Deleting...' : 'Delete Post'}
@@ -269,7 +269,7 @@ export default function ProfilePage() {
                   {savedPosts.map((post) => (
                     <div key={post.id} className="relative">
                       <Link href={`/post/${post.id}`}>
-                        <div className="aspect-video bg-gray-800 rounded-lg overflow-hidden relative cursor-pointer">
+                        <div className="aspect-video bg-muted rounded-lg overflow-hidden relative cursor-pointer">
                           <iframe
                             src={post.fileUrl || '/default-file-url'}
                             title={post.title}
@@ -277,7 +277,7 @@ export default function ProfilePage() {
                             frameBorder="0"
                             allowFullScreen
                           ></iframe>
-                          <div className="absolute bottom-0 left-0 p-2 bg-black bg-opacity-50 w-full">
+                          <div className="absolute bottom-0 left-0 p-2 bg-background bg-opacity-50 w-full">
                             <p className="text-sm">{post.title}</p>
                           </div>
                         </div>

@@ -90,10 +90,10 @@ export function EditProfileDialog({ open, onOpenChange }: { open: boolean; onOpe
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 bg-black opacity-50 z-50" />
-        <Dialog.Content className="fixed top-1/2 left-1/2 max-w-lg w-full bg-gray-800 p-6 rounded-md transform -translate-x-1/2 -translate-y-1/2 z-50 text-white">
+        <Dialog.Overlay className="fixed inset-0 bg-background opacity-50 z-50" />
+        <Dialog.Content className="fixed top-1/2 left-1/2 max-w-lg w-full bg-muted p-6 rounded-md transform -translate-x-1/2 -translate-y-1/2 z-50 text-foreground">
           <Dialog.Title className="text-2xl font-bold mb-4">Edit Profile</Dialog.Title>
-          <Dialog.Close className="absolute top-2 right-2 text-white hover:text-gray-400">
+          <Dialog.Close className="absolute top-2 right-2 text-foreground hover:text-gray-400">
             <Cross2Icon />
           </Dialog.Close>
           <div className="space-y-4">
@@ -111,7 +111,7 @@ export function EditProfileDialog({ open, onOpenChange }: { open: boolean; onOpe
                 placeholder="Username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className="w-full bg-gray-700 text-white"
+                className="w-full bg-muted text-foreground"
               />
             </div>
             <div>
@@ -119,11 +119,11 @@ export function EditProfileDialog({ open, onOpenChange }: { open: boolean; onOpe
                 placeholder="Bio"
                 value={bio}
                 onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setBio(e.target.value)}
-                className="w-full h-32 bg-gray-700 text-white"
+                className="w-full h-32 bg-muted text-foreground"
               />
             </div>
             <Button 
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white" 
+              className="w-full bg-primary hover:bg-primary/90 text-foreground" 
               onClick={handleSaveChanges}
               disabled={isSubmitting}
             >

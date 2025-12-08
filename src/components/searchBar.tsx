@@ -31,7 +31,7 @@ const CustomSearchBox: React.FC<CustomSearchBoxProps> = ({ currentRefinement, re
       onChange={(event) => refine(event.currentTarget.value)}
       onFocus={onFocus}
       onBlur={onBlur}
-      className="bg-gray-700 text-white rounded-full px-4 py-2 w-96"
+      className="bg-muted text-foreground rounded-full px-4 py-2 w-96"
       placeholder="Search..."
     />
   </div>
@@ -45,8 +45,8 @@ const PostsHits = ({ hits }: { hits: any[] }) => (
     <h3 className="text-lg font-bold px-4">Posts</h3>
     {hits.length > 0 ? (
       hits.map((hit) => (
-        <div key={hit.objectID} className="px-4 py-2 hover:bg-gray-700">
-          <Link href={`/post/${hit.objectID}`} className="text-white">
+        <div key={hit.objectID} className="px-4 py-2 hover:bg-muted">
+          <Link href={`/post/${hit.objectID}`} className="text-foreground">
             {hit.title}
           </Link>
         </div>
@@ -65,8 +65,8 @@ const UsersHits = ({ hits }: { hits: any[] }) => (
     <h3 className="text-lg font-bold px-4">Users</h3>
     {hits.length > 0 ? (
       hits.map((hit) => (
-        <div key={hit.objectID} className="px-4 py-2 hover:bg-gray-700">
-          <Link href={`/profile/${hit.objectID}`} className="text-white">
+        <div key={hit.objectID} className="px-4 py-2 hover:bg-muted">
+          <Link href={`/profile/${hit.objectID}`} className="text-foreground">
             {hit.username}
           </Link>
         </div>
@@ -101,7 +101,7 @@ export function SearchBar() {
         {isFocused && (
           <StateResults>
             <div
-              className="absolute mt-1 w-full bg-gray-800 rounded-md z-10"
+              className="absolute mt-1 w-full bg-muted rounded-md z-10"
               onMouseDown={(e) => e.preventDefault()} // Prevent input from losing focus when clicking on hits
             >
               <Index indexName="posts">
