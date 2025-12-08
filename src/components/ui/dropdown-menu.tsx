@@ -8,7 +8,7 @@ export const DropdownMenuContent = forwardRef<HTMLDivElement, DropdownMenuPrimit
     <DropdownMenuPrimitive.Content
       ref={ref}
       {...props}
-      className="bg-white text-black rounded shadow-md p-2"
+      className="bg-background text-foreground rounded shadow-md p-2"
     >
       {children}
     </DropdownMenuPrimitive.Content>
