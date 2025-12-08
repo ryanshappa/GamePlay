@@ -21,7 +21,7 @@ export const DropdownMenuItem = forwardRef<HTMLDivElement, DropdownMenuPrimitive
     <DropdownMenuPrimitive.Item
       ref={ref}
       {...props}
-      className="p-2 hover:bg-gray-200 cursor-pointer"
+      className="p-2 hover:bg-muted cursor-pointer"
     >
       {children}
     </DropdownMenuPrimitive.Item>

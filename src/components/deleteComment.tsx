@@ -52,7 +52,7 @@ const DeleteCommentButton: React.FC<DeleteCommentButtonProps> = ({
       aria-label="Delete comment"
       variant="ghost"
       size="icon"
-      className="text-white hover:bg-transparent hover:text-white p-1"
+      className="text-foreground hover:bg-transparent hover:text-foreground p-1"
     >
       <MoreHorizontal className="h-4 w-4" />
     </Button>

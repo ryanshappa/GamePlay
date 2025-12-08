@@ -21,7 +21,7 @@ export function LayoutMobile({ children }: LayoutMobileProps) {
   // On mobile (lg:hidden) we simply fill the screen with whatever children the page provides.
   return (
     <div
-      className="lg:hidden w-screen bg-black text-white overflow-hidden"
+      className="lg:hidden w-screen bg-background text-foreground overflow-hidden"
       style={{ height: "calc(var(--vh, 1vh) * 100)" }}
     >
       {children}

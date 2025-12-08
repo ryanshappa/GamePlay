@@ -23,7 +23,7 @@ export default function SettingsPage() {
   }, [user, loading, router]);
 
   if (loading || !user) {
-    return <div className="min-h-screen bg-black text-gray-100 p-6 flex items-center justify-center">
+    return <div className="min-h-screen bg-background text-gray-100 p-6 flex items-center justify-center">
       <p>Loading...</p>
     </div>; 
   }
@@ -104,8 +104,8 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-gray-100 p-6 flex items-center justify-center">
-      <div className="w-full max-w-2xl bg-gray-800 rounded-lg shadow-lg p-8" style={{ marginRight: 'calc(25% - 10rem)' }}>
+    <div className="min-h-screen bg-background text-gray-100 p-6 flex items-center justify-center">
+      <div className="w-full max-w-2xl bg-muted rounded-lg shadow-lg p-8" style={{ marginRight: 'calc(25% - 10rem)' }}>
         <section className="mb-8">
           <h2 className="text-3xl font-bold mb-4">Manage account</h2>
           <div className="space-y-4">
@@ -119,7 +119,7 @@ export default function SettingsPage() {
           </div>
         </section>
 
-        <div className="border-t border-gray-700 my-8"></div>
+        <div className="border-t border-border my-8"></div>
 
         <section className="mb-8">
           <h2 className="text-3xl font-bold mb-4">Contact</h2>
@@ -131,7 +131,7 @@ export default function SettingsPage() {
               placeholder="Enter subject"
               value={contactSubject}
               onChange={(e) => setContactSubject(e.target.value)}
-              className="bg-gray-700 text-gray-100 border-gray-600"
+              className="bg-muted text-foreground border-input"
             />
             <Label htmlFor="contact-message">Message</Label>
             <Textarea
@@ -139,7 +139,7 @@ export default function SettingsPage() {
               placeholder="Type your message here..."
               value={contactMessage}
               onChange={(e) => setContactMessage(e.target.value)}
-              className="h-32 bg-gray-700 text-gray-100 border-gray-600"
+              className="h-32 bg-muted text-foreground border-input"
             />
             <Button className="mt-2" onClick={handleContactSubmit}>
               Send Message
@@ -147,7 +147,7 @@ export default function SettingsPage() {
           </div>
         </section>
 
-        <div className="border-t border-gray-700 my-8"></div>
+        <div className="border-t border-border my-8"></div>
 
         <section>
           <h2 className="text-3xl font-bold mb-4">Report</h2>
@@ -159,7 +159,7 @@ export default function SettingsPage() {
               placeholder="Enter subject"
               value={reportSubject}
               onChange={(e) => setReportSubject(e.target.value)}
-              className="bg-gray-700 text-gray-100 border-gray-600"
+              className="bg-muted text-foreground border-input"
             />
             <Label htmlFor="report-details">Details</Label>
             <Textarea
@@ -167,7 +167,7 @@ export default function SettingsPage() {
               placeholder="Describe the issue here..."
               value={reportDetails}
               onChange={(e) => setReportDetails(e.target.value)}
-              className="h-32 bg-gray-700 text-gray-100 border-gray-600"
+              className="h-32 bg-muted text-foreground border-input"
             />
             <Button className="mt-2" onClick={handleReportSubmit}>
               Submit Report

@@ -173,7 +173,7 @@ export default function PostPage({ post, status }: PostPageProps) {
       <ScrollArea className="w-full h-full">
         <div className="flex flex-col w-full max-w-[1080px] mx-auto pl-4 ml-6">
           {/* Game iframe */}
-          <div className="aspect-video w-full bg-gray-900 rounded-lg overflow-hidden mb-4">
+          <div className="aspect-video w-full bg-muted rounded-lg overflow-hidden mb-4">
             <iframe
               src={post.fileUrl || ''}
               title={post.title}
@@ -271,7 +271,7 @@ export default function PostPage({ post, status }: PostPageProps) {
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
                   placeholder="Add a comment..."
-                  className="bg-gray-800 text-white w-full mb-2"
+                  className="bg-muted text-foreground w-full mb-2"
                 />
                 <Button onClick={handleAddComment}>Post Comment</Button>
               </div>
@@ -543,7 +543,7 @@ function NestedCommentItem({
           <div className="mt-2">
             <Textarea
               rows={2}
-              className="w-full bg-gray-700 text-white p-2 rounded mb-1"
+              className="w-full bg-muted text-foreground p-2 rounded mb-1"
               value={replyText}
               onChange={(e) => setReplyText(e.target.value)}
             />

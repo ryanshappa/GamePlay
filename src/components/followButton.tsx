@@ -45,7 +45,7 @@ export function FollowButton({ profileId, initialIsFollowing, onFollowChange }: 
     <Button
       onClick={handleToggleFollow}
       disabled={loading || !user}
-      className={`${isFollowing ? 'bg-green-600' : 'bg-blue-600'} text-white px-4 py-2 rounded-full`}
+      className={`${isFollowing ? 'bg-green-600' : 'bg-blue-600'} text-foreground px-4 py-2 rounded-full`}
     >
       {isFollowing ? 'Following' : 'Follow'}
     </Button>

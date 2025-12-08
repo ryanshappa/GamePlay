@@ -124,7 +124,7 @@ export function LandscapeFeed({ posts, onCommentClick, onShare }: LandscapeFeedP
   return (
     <>
       <div
-        className="fixed inset-0 overflow-hidden bg-black"
+        className="fixed inset-0 overflow-hidden bg-background"
         style={{
           paddingTop: 'env(safe-area-inset-top, 16px)',
           paddingBottom: 'env(safe-area-inset-bottom, 16px)'
@@ -135,7 +135,7 @@ export function LandscapeFeed({ posts, onCommentClick, onShare }: LandscapeFeedP
           style={{ gridTemplateColumns: '12vw 1fr 12vw' }}
         >
           <aside
-            className="col-start-1 flex flex-col justify-between items-center bg-black pt-6 pb-2"
+            className="col-start-1 flex flex-col justify-between items-center bg-background pt-6 pb-2"
             style={{ 
               paddingLeft: 'env(safe-area-inset-left, 0)',
               paddingRight: '4px',
@@ -147,25 +147,25 @@ export function LandscapeFeed({ posts, onCommentClick, onShare }: LandscapeFeedP
               <img src="/gp-logo-svg.svg" alt="GamePlay logo" className="w-16 h-16 mb-6" />
 
               <div className="flex flex-col items-center gap-4 mt-2">
-                <Link href="/" className="p-2 hover:bg-gray-900 rounded">
-                  <Home className="w-6 h-6 text-white" />
+                <Link href="/" className="p-2 hover:bg-muted rounded">
+                  <Home className="w-6 h-6 text-foreground" />
                 </Link>
 
                 {user ? (
-                  <Link href={`/profile/${user.id}`} className="p-2 hover:bg-gray-900 rounded">
-                    <User className="w-6 h-6 text-white" />
+                  <Link href={`/profile/${user.id}`} className="p-2 hover:bg-muted rounded">
+                    <User className="w-6 h-6 text-foreground" />
                   </Link>
                 ) : (
                   <button 
                     onClick={() => setShowSignIn(true)} 
-                    className="p-2 hover:bg-gray-900 rounded"
+                    className="p-2 hover:bg-muted rounded"
                   >
-                    <User className="w-6 h-6 text-white" />
+                    <User className="w-6 h-6 text-foreground" />
                   </button>
                 )}
 
-                <Link href="/search" className="p-2 hover:bg-gray-900 rounded">
-                  <Search className="w-6 h-6 text-white" />
+                <Link href="/search" className="p-2 hover:bg-muted rounded">
+                  <Search className="w-6 h-6 text-foreground" />
                 </Link>
               </div>
             </div>
@@ -174,23 +174,23 @@ export function LandscapeFeed({ posts, onCommentClick, onShare }: LandscapeFeedP
               <button
                 onClick={() => setCurrentIndex(i => Math.max(0, i - 1))}
                 disabled={currentIndex === 0}
-                className="p-2 hover:bg-gray-900 rounded disabled:opacity-50"
+                className="p-2 hover:bg-muted rounded disabled:opacity-50"
               >
-                <ChevronUp className="w-6 h-6 text-white" />
+                <ChevronUp className="w-6 h-6 text-foreground" />
               </button>
               <button
                 onClick={() => setCurrentIndex(i => Math.min(posts.length - 1, i + 1))}
                 disabled={currentIndex === posts.length - 1}
-                className="p-2 hover:bg-gray-900 rounded disabled:opacity-50"
+                className="p-2 hover:bg-muted rounded disabled:opacity-50"
               >
-                <ChevronDown className="w-6 h-6 text-white" />
+                <ChevronDown className="w-6 h-6 text-foreground" />
               </button>
             </div>
           </aside>
 
           <main className="col-start-2 flex items-center justify-center relative">
             {isEmpty ? (
-              <div className="flex h-full w-full justify-center items-center text-white">
+              <div className="flex h-full w-full justify-center items-center text-foreground">
                 No posts available
               </div>
             ) : (
@@ -211,7 +211,7 @@ export function LandscapeFeed({ posts, onCommentClick, onShare }: LandscapeFeedP
                   />
                 </div>
 
-                <div className="absolute bottom-4 left-4 bg-black/60 px-3 py-1.5 rounded text-sm text-white">
+                <div className="absolute bottom-4 left-4 bg-background/60 px-3 py-1.5 rounded text-sm text-foreground">
                   {savePost?.title}
                 </div>
               </>
@@ -219,7 +219,7 @@ export function LandscapeFeed({ posts, onCommentClick, onShare }: LandscapeFeedP
           </main>
 
           <aside 
-            className="col-start-3 flex flex-col justify-center items-center bg-black pt-6 pb-2"
+            className="col-start-3 flex flex-col justify-center items-center bg-background pt-6 pb-2"
             style={{ 
               paddingRight: 'env(safe-area-inset-right, 0)',
               paddingLeft: '4px',
@@ -229,7 +229,7 @@ export function LandscapeFeed({ posts, onCommentClick, onShare }: LandscapeFeedP
           >
             <div className="flex flex-col items-center gap-4 -translate-y-2">
               {savePost && (
-                <Link href={`/profile/${savePost?.author.id}`} className="p-1 hover:bg-gray-900 rounded-full">
+                <Link href={`/profile/${savePost?.author.id}`} className="p-1 hover:bg-muted rounded-full">
                   <Avatar className="h-8 w-8">
                     {savePost?.author.avatarUrl ? (
                       <AvatarImage src={savePost?.author.avatarUrl} alt={savePost?.author.username} />
@@ -242,25 +242,25 @@ export function LandscapeFeed({ posts, onCommentClick, onShare }: LandscapeFeedP
 
               <button
                 onClick={handleLike}
-                className="flex flex-col items-center space-y-1 hover:bg-gray-900 p-2 rounded"
+                className="flex flex-col items-center space-y-1 hover:bg-muted p-2 rounded"
               >
-                <Heart className={`w-6 h-6 ${hasLiked ? 'text-red-500 fill-red-500' : 'text-white'}`} />
-                <span className="text-xs text-white">{likesCount}</span>
+                <Heart className={`w-6 h-6 ${hasLiked ? 'text-red-500 fill-red-500' : 'text-foreground'}`} />
+                <span className="text-xs text-foreground">{likesCount}</span>
               </button>
 
               <button
                 onClick={() => setShowComments(true)}
-                className="flex flex-col items-center space-y-1 hover:bg-gray-900 p-2 rounded"
+                className="flex flex-col items-center space-y-1 hover:bg-muted p-2 rounded"
               >
-                <MessageCircle className="w-6 h-6 text-white" />
-                <span className="text-xs text-white">{commentsCount}</span>
+                <MessageCircle className="w-6 h-6 text-foreground" />
+                <span className="text-xs text-foreground">{commentsCount}</span>
               </button>
 
               <button
                 onClick={handleSave}
-                className="p-2 hover:bg-gray-900 rounded"
+                className="p-2 hover:bg-muted rounded"
               >
-                <Bookmark className={`w-6 h-6 ${saved ? 'text-yellow-400 fill-yellow-400' : 'text-white'}`} />
+                <Bookmark className={`w-6 h-6 ${saved ? 'text-yellow-400 fill-yellow-400' : 'text-foreground'}`} />
               </button>
 
               <button
@@ -271,9 +271,9 @@ export function LandscapeFeed({ posts, onCommentClick, onShare }: LandscapeFeedP
                     onShare(posts[0]?.id ?? "");
                   }
                 }}
-                className="p-2 hover:bg-gray-900 rounded"
+                className="p-2 hover:bg-muted rounded"
               >
-                <Share2 className="w-6 h-6 text-white" />
+                <Share2 className="w-6 h-6 text-foreground" />
               </button>
             </div>
           </aside>

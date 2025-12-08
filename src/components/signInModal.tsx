@@ -13,13 +13,13 @@ export function SignInModal({ open, onOpenChange }: SignInModalProps) {
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
         {/* Overlay */}
-        <Dialog.Overlay className="fixed inset-0 bg-black/40" />
+        <Dialog.Overlay className="fixed inset-0 bg-background/40" />
         {/* Content */}
         <Dialog.Content
           className="
             fixed top-1/2 left-1/2
             -translate-x-1/2 -translate-y-1/2
-            bg-gray-900 p-6 rounded-md shadow-lg
+            bg-muted p-6 rounded-md shadow-lg
             w-full max-w-md
             outline-none
             border-none
