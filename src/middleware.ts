@@ -6,7 +6,7 @@ export default async function middleware(req: NextRequest, ev: NextFetchEvent) {
   // 1) Let Clerk do its thing (populates getAuth, handles redirects, etc.)
   const res = await clerkMiddleware()(req, ev);
   
-  // 2) On _every_ response—pages, API, AND static assets—inject isolation headers:
+  // 2) Set cross-origin isolation headers
   if (res && typeof res === 'object' && 'headers' in res) {
     res.headers.set("Cross-Origin-Opener-Policy", "same-origin");
     res.headers.set("Cross-Origin-Embedder-Policy", "require-corp");
