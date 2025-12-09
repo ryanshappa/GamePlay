@@ -58,8 +58,10 @@ const PostItem: React.FC<PostItemProps> = React.memo(({
               className="w-full h-full"
               loading="lazy"
               frameBorder="0"
-              allow="fullscreen"
+              allow="fullscreen; cross-origin-isolated"
               allowFullScreen
+              // @ts-expect-error - credentialless is a valid attribute but not in React types yet
+              credentialless="true"
             />
           ) : (
             <div className="w-full h-full bg-background" />

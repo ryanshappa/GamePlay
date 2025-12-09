@@ -23,7 +23,9 @@ export const MobilePostItem = React.memo(function MobilePostItem({
         title={post.title}
         className="w-full h-full"
         frameBorder="0"
-        allow="fullscreen; gamepad"
+        allow="fullscreen; gamepad; cross-origin-isolated"
+        // @ts-expect-error - credentialless is a valid attribute but not in React types yet
+        credentialless="true"
       />
       
       {/* Add this if you need action buttons in portrait mode */}

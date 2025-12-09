@@ -47,7 +47,9 @@ function LazyIframe({ src, title }: { src: string; title: string }) {
           title={title}
           className="w-full h-full"
           frameBorder="0"
-          allow="fullscreen"
+          allow="fullscreen; cross-origin-isolated"
+          // @ts-expect-error - credentialless is a valid attribute but not in React types yet
+          credentialless="true"
         />
       ) : (
         <div className="w-full h-full bg-muted animate-pulse flex items-center justify-center">

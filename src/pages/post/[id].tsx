@@ -179,7 +179,10 @@ export default function PostPage({ post, status }: PostPageProps) {
               title={post.title}
               className="w-full h-full"
               frameBorder="0"
+              allow="fullscreen; cross-origin-isolated"
               allowFullScreen
+              // @ts-expect-error - credentialless is a valid attribute but not in React types yet
+              credentialless="true"
             ></iframe>
           </div>
 

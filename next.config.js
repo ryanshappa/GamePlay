@@ -39,7 +39,7 @@ const config = {
               worker-src 'self' blob:;
               style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
               font-src 'self' https://fonts.gstatic.com;
-              frame-src 'self' https://gameplay-uploads.s3.amazonaws.com https://gameplay-posts.s3.amazonaws.com;
+              frame-src 'self' https://gameplay-uploads.s3.amazonaws.com https://gameplay-posts.s3.amazonaws.com https://*.cloudfront.net;
               img-src 'self' data: https://gameplay-uploads.s3.amazonaws.com https://img.clerk.com;
               object-src 'none';
             `.replace(/\s{2,}/g, " ").trim(),
