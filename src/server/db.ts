@@ -1,5 +1,13 @@
 import { PrismaClient } from "@prisma/client";
 
-export const db = new PrismaClient({
-  log: ['query', 'info', 'warn', 'error'],  // You can adjust these for your logging needs
-});
+const globalForPrisma = globalThis as unknown as {
+  prisma: PrismaClient | undefined;
+};
+
+export const db =
+  globalForPrisma.prisma ??
+  new PrismaClient({
+    log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
+  });
+
+if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = db;

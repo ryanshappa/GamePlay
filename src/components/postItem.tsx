@@ -18,7 +18,7 @@ interface PostItemProps {
   isActive: boolean;
 }
 
-const PostItem: React.FC<PostItemProps> = ({
+const PostItem: React.FC<PostItemProps> = React.memo(({
   post,
   onCommentClick,
   onShare,
@@ -49,15 +49,16 @@ const PostItem: React.FC<PostItemProps> = ({
             rounded-md overflow-hidden
           `}
         >
+          {/* Iframe only renders when active - fully unmounts when inactive to stop audio/video */}
           {isActive && post.fileUrl ? (
             <iframe
-              key={post.id + String(isActive)}
+              key={`iframe-${post.id}`}
               src={post.fileUrl}
               title={post.title}
               className="w-full h-full"
               loading="lazy"
               frameBorder="0"
-              allow={`fullscreen; ${isActive ? 'autoplay' : `autoplay 'none'`}`}
+              allow="fullscreen"
               allowFullScreen
             />
           ) : (
@@ -129,6 +130,8 @@ const PostItem: React.FC<PostItemProps> = ({
       {showSeparator && <hr className="w-full border-t border-gray-300 mt-8 mb-6" />}
     </div>
   );
-};
+});
+
+PostItem.displayName = 'PostItem';
 
 export default PostItem;

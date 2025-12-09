@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '~/contexts/AuthContext';
 import { Post } from '@prisma/client';
@@ -15,6 +15,48 @@ import {
 } from '@chakra-ui/react';
 import UserProfile from '../../components/UserProfile';
 import { FollowButton } from '~/components/followButton';
+
+// Lazy loading iframe component - only loads when visible in viewport
+function LazyIframe({ src, title }: { src: string; title: string }) {
+  const [isVisible, setIsVisible] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting) {
+          setIsVisible(true);
+          observer.disconnect(); // Only load once
+        }
+      },
+      { rootMargin: '100px' } // Start loading slightly before visible
+    );
+    
+    if (ref.current) {
+      observer.observe(ref.current);
+    }
+    
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div ref={ref} className="w-full h-full">
+      {isVisible ? (
+        <iframe
+          src={src}
+          title={title}
+          className="w-full h-full"
+          frameBorder="0"
+          allow="fullscreen"
+        />
+      ) : (
+        <div className="w-full h-full bg-muted animate-pulse flex items-center justify-center">
+          <span className="text-muted-foreground text-sm">Loading...</span>
+        </div>
+      )}
+    </div>
+  );
+}
 
 interface UserProfile {
   id: string;
@@ -215,13 +257,10 @@ export default function ProfilePage() {
                     <div key={post.id} className="relative">
                       <Link href={`/post/${post.id}`}>
                         <div className="aspect-video bg-muted rounded-lg overflow-hidden relative cursor-pointer">
-                          <iframe
+                          <LazyIframe
                             src={post.fileUrl || '/default-file-url'}
                             title={post.title}
-                            className="w-full h-full"
-                            frameBorder="0"
-                            allowFullScreen
-                          ></iframe>
+                          />
                           <div className="absolute bottom-0 left-0 p-2 bg-background bg-opacity-50 w-full">
                             <p className="text-sm">{post.title}</p>
                           </div>
@@ -270,13 +309,10 @@ export default function ProfilePage() {
                     <div key={post.id} className="relative">
                       <Link href={`/post/${post.id}`}>
                         <div className="aspect-video bg-muted rounded-lg overflow-hidden relative cursor-pointer">
-                          <iframe
+                          <LazyIframe
                             src={post.fileUrl || '/default-file-url'}
                             title={post.title}
-                            className="w-full h-full"
-                            frameBorder="0"
-                            allowFullScreen
-                          ></iframe>
+                          />
                           <div className="absolute bottom-0 left-0 p-2 bg-background bg-opacity-50 w-full">
                             <p className="text-sm">{post.title}</p>
                           </div>

@@ -32,6 +32,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         imageUrl: clerkUser.imageUrl || undefined,
         publicMetadata: clerkUser.publicMetadata || {}
       } : null);
+      setLoading(false);
     }
   }, [clerkUser, isLoaded]);
 

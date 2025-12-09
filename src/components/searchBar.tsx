@@ -7,7 +7,8 @@ import {
   connectHits,
   connectStateResults,
 } from 'react-instantsearch-dom';
-import Link from 'next/link'; // Import Link
+import Link from 'next/link';
+import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
 
 const searchClient = algoliasearch(
   process.env.NEXT_PUBLIC_ALGOLIA_APP_ID || '',
@@ -65,11 +66,15 @@ const UsersHits = ({ hits }: { hits: any[] }) => (
     <h3 className="text-lg font-bold px-4">Users</h3>
     {hits.length > 0 ? (
       hits.map((hit) => (
-        <div key={hit.objectID} className="px-4 py-2 hover:bg-muted">
-          <Link href={`/profile/${hit.objectID}`} className="text-foreground">
-            {hit.username}
-          </Link>
-        </div>
+        <Link href={`/profile/${hit.objectID}`} key={hit.objectID}>
+          <div className="flex items-center gap-3 px-4 py-2 hover:bg-muted/50 cursor-pointer">
+            <Avatar className="h-10 w-10">
+              <AvatarImage src={hit.avatarUrl} alt={hit.username} />
+              <AvatarFallback>{hit.username?.[0]?.toUpperCase() || 'U'}</AvatarFallback>
+            </Avatar>
+            <span className="text-foreground">{hit.username}</span>
+          </div>
+        </Link>
       ))
     ) : (
       <p className="px-4 text-gray-400">No users found.</p>

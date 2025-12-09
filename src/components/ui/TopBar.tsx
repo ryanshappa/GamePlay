@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '~/contexts/AuthContext';
 import { useClerk } from '@clerk/nextjs';
 import { useRouter } from 'next/router';
+import { useTheme } from 'next-themes';
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
 import {
   DropdownMenu,
@@ -13,11 +14,22 @@ import {
 } from '~/components/ui/dropdown-menu';
 import Link from 'next/link';
 import { Button } from '~/components/ui/button';
+import { Sun, Moon } from 'lucide-react';
 
 export default function TopBar() {
   const { user } = useAuth();
   const { signOut } = useClerk();
   const router = useRouter();
+  const { resolvedTheme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const toggleTheme = () => {
+    setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
+  };
 
   const handleSignOut = async () => {
     try {
@@ -61,6 +73,19 @@ export default function TopBar() {
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <Link href="/settings">Settings</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={toggleTheme} className="flex items-center gap-2">
+                {mounted && resolvedTheme === 'dark' ? (
+                  <>
+                    <Sun className="h-4 w-4" />
+                    Light Mode
+                  </>
+                ) : (
+                  <>
+                    <Moon className="h-4 w-4" />
+                    Dark Mode
+                  </>
+                )}
               </DropdownMenuItem>
               {/* this now revokes the session immediately */}
               <DropdownMenuItem onSelect={handleSignOut}>

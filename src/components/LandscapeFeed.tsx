@@ -12,9 +12,11 @@ interface LandscapeFeedProps {
   posts: PostWithAuthor[];
   onCommentClick: (post: PostWithAuthor) => void;
   onShare: (postId: string) => void;
+  onLoadMore?: () => void;
+  hasMore?: boolean;
 }
 
-export function LandscapeFeed({ posts, onCommentClick, onShare }: LandscapeFeedProps) {
+export function LandscapeFeed({ posts, onCommentClick, onShare, onLoadMore, hasMore = false }: LandscapeFeedProps) {
   const { user } = useAuth();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showSignIn, setShowSignIn] = useState(false);
@@ -51,6 +53,13 @@ export function LandscapeFeed({ posts, onCommentClick, onShare }: LandscapeFeedP
         .catch(console.error);
     }
   }, [savePost?.id, user]);
+
+  // Trigger load more when approaching the end of the list
+  useEffect(() => {
+    if (posts.length > 0 && currentIndex >= posts.length - 2 && hasMore && onLoadMore) {
+      onLoadMore();
+    }
+  }, [currentIndex, posts.length, hasMore, onLoadMore]);
 
   const requireAuth = (fn: () => void) => {
     if (!user) {
@@ -144,7 +153,7 @@ export function LandscapeFeed({ posts, onCommentClick, onShare }: LandscapeFeedP
             }} 
           >
             <div className="flex flex-col items-center -translate-y-2">
-              <img src="/gp-logo-svg.svg" alt="GamePlay logo" className="w-16 h-16 mb-6" />
+              <img src="/gameplay-dark.PNG" alt="GamePlay logo" className="w-12 h-12 mb-6 object-contain" />
 
               <div className="flex flex-col items-center gap-4 mt-2">
                 <Link href="/" className="p-2 hover:bg-muted rounded">
