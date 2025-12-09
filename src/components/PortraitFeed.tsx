@@ -23,6 +23,8 @@ interface PortraitFeedProps {
   setCurrentIndex: (index: number) => void;
   onCommentClick: (post: PostWithAuthor) => void;
   onShare: (postId: string) => void;
+  onLoadMore?: () => void;
+  hasMore?: boolean;
 }
 
 export function PortraitFeed({
@@ -31,6 +33,8 @@ export function PortraitFeed({
   setCurrentIndex,
   onCommentClick,
   onShare,
+  onLoadMore,
+  hasMore = false,
 }: PortraitFeedProps) {
   const { user } = useAuth();
 
@@ -63,6 +67,13 @@ export function PortraitFeed({
     }
   }, [post?.id, user]);
 
+  // Trigger load more when approaching the end of the list
+  useEffect(() => {
+    if (posts.length > 0 && currentIndex >= posts.length - 2 && hasMore && onLoadMore) {
+      onLoadMore();
+    }
+  }, [currentIndex, posts.length, hasMore, onLoadMore]);
+
   const handleLike = async () => {
     if (!user || !post) return;
     const method = hasLiked ? "DELETE" : "POST";
@@ -93,11 +104,11 @@ export function PortraitFeed({
       {/* ── Left Sidebar ── */}
       <aside className="flex flex-col items-center w-16 bg-background pt-4 pb-4">
         <div className="mt-4 flex flex-col items-center space-y-4">
-          {/* Larger Logo */}
+          {/* Logo */}
           <img
-            src="/gp-logo-svg.svg"
+            src="/gameplay-dark.PNG"
             alt="GamePlay logo"
-            className="w-14 h-14"
+            className="w-12 h-12 object-contain"
           />
           {/* Nav Buttons */}
           <Link href="/" className="p-1 hover:bg-muted rounded">
@@ -130,8 +141,12 @@ export function PortraitFeed({
             <ChevronUp className="w-6 h-6" />
           </button>
           <button
-            onClick={() => setCurrentIndex(Math.min(posts.length - 1, currentIndex + 1))}
-            disabled={currentIndex === posts.length - 1}
+            onClick={() => {
+              if (currentIndex < posts.length - 1) {
+                setCurrentIndex(currentIndex + 1);
+              }
+            }}
+            disabled={currentIndex === posts.length - 1 && !hasMore}
             className="p-1 hover:bg-muted rounded disabled:opacity-50"
           >
             <ChevronDown className="w-6 h-6" />

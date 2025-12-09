@@ -7,18 +7,23 @@ interface MobilePostItemProps {
   onShare: () => void;
 }
 
-export function MobilePostItem({ post, onCommentClick, onShare }: MobilePostItemProps) {
+export const MobilePostItem = React.memo(function MobilePostItem({ 
+  post, 
+  onCommentClick, 
+  onShare 
+}: MobilePostItemProps) {
   if (!post) return null;
 
   return (
     <div className="relative w-full h-full">
-      {/* only the game iframe */}
+      {/* only the game iframe - key forces remount when post changes */}
       <iframe
+        key={post.id}
         src={post.fileUrl || ""}
         title={post.title}
         className="w-full h-full"
         frameBorder="0"
-        allow="fullscreen; autoplay; gamepad"
+        allow="fullscreen; gamepad"
       />
       
       {/* Add this if you need action buttons in portrait mode */}
@@ -27,4 +32,4 @@ export function MobilePostItem({ post, onCommentClick, onShare }: MobilePostItem
       </div>
     </div>
   );
-} 
+}); 

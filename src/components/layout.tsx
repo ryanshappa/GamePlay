@@ -1,5 +1,5 @@
 // layout.tsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "~/contexts/AuthContext";
 import { useClerk } from "@clerk/nextjs";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
@@ -11,6 +11,8 @@ import {
   Home,
   Plus,
   HelpCircle,
+  Sun,
+  Moon,
 } from "lucide-react";
 import Link from "next/link";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
@@ -18,7 +20,7 @@ import { SearchBar } from "~/components/searchBar";
 import { SignInModal } from "~/components/signInModal";
 import { SignUpModal } from "~/components/signUpModal";
 import { useRouter } from "next/router";
-import { ThemeToggle } from "~/components/ThemeToggle";
+import { useTheme } from "next-themes";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -32,6 +34,18 @@ export default function Layout({
   const { user } = useAuth();
   const { signOut } = useClerk();
   const router = useRouter();
+  const { resolvedTheme, setTheme } = useTheme();
+  
+  // Track if component is mounted to avoid hydration mismatch with theme
+  const [mounted, setMounted] = useState(false);
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const toggleTheme = () => {
+    setTheme(resolvedTheme === "dark" ? "light" : "dark");
+  };
 
   // Two local states for controlling the modals
   const [signInOpen, setSignInOpen] = useState(false);
@@ -48,19 +62,29 @@ export default function Layout({
   return (
     <div className="min-h-screen w-screen bg-background text-foreground">
       {/* --- FIXED TOP BAR --- */}
-      <header className="fixed left-0 right-0 top-0 z-50 flex h-16 items-center justify-between border-b border-input bg-background px-4">
-        <div className="font-press-start text-2xl font-bold">GamePlay</div>
+      <header className="fixed left-0 right-0 top-0 z-50 flex h-16 items-center border-b border-input bg-background px-4">
+        {/* Logo - left side */}
+        <div className="flex-shrink-0">
+          <Link href="/">
+            <img
+              src="/gameplay-dark.PNG"
+              alt="GamePlay"
+              className="h-10 w-10 object-contain"
+            />
+          </Link>
+        </div>
 
+        {/* Search bar - absolutely centered */}
         {showSearchBar && (
-          <div className="mr-12 flex flex-grow justify-center">
+          <div className="absolute left-1/2 -translate-x-1/2">
             <SearchBar />
           </div>
         )}
 
-        <div className="flex items-center">
+        {/* Right side - user menu */}
+        <div className="ml-auto flex items-center">
           {user ? (
             <>
-              <ThemeToggle />
               <DropdownMenu.Root>
                 <DropdownMenu.Trigger asChild>
                   <Button variant="ghost" className="p-0">
@@ -95,12 +119,39 @@ export default function Layout({
                     <HelpCircle className="h-5 w-5" />
                     <Link href="/help">Help</Link>
                   </DropdownMenu.Item>
+                  <DropdownMenu.Item
+                    className="flex cursor-pointer items-center space-x-3 p-3 hover:bg-muted"
+                    onClick={toggleTheme}
+                  >
+                    {mounted && resolvedTheme === "dark" ? (
+                      <>
+                        <Sun className="h-5 w-5" />
+                        <span>Light Mode</span>
+                      </>
+                    ) : (
+                      <>
+                        <Moon className="h-5 w-5" />
+                        <span>Dark Mode</span>
+                      </>
+                    )}
+                  </DropdownMenu.Item>
                 </DropdownMenu.Content>
               </DropdownMenu.Root>
             </>
           ) : (
             <>
-              <ThemeToggle />
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={toggleTheme}
+                className="mr-2"
+              >
+                {mounted && resolvedTheme === "dark" ? (
+                  <Sun className="h-5 w-5" />
+                ) : (
+                  <Moon className="h-5 w-5" />
+                )}
+              </Button>
               <Button variant="ghost" onClick={() => setSignInOpen(true)}>
                 Sign In
               </Button>
