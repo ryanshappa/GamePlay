@@ -227,7 +227,8 @@ export default function HomePage() {
                   className="post-item"
                   data-index={index}
                   style={{
-                    minHeight: '100vh',
+                    minHeight: 'calc(100vh - 64px)',
+                    paddingTop: '32px',
                     overflow: 'hidden',
                     background: inRange ? 'transparent' : '#000',
                     display: 'flex',

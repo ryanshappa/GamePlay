@@ -133,10 +133,10 @@ export function LandscapeFeed({ posts, onCommentClick, onShare, onLoadMore, hasM
   return (
     <>
       <div
-        className="fixed inset-0 overflow-hidden bg-background"
+        className="fixed inset-0 overflow-hidden bg-background h-dvh"
         style={{
           paddingTop: 'env(safe-area-inset-top, 16px)',
-          paddingBottom: 'env(safe-area-inset-bottom, 16px)'
+          paddingBottom: 'max(env(safe-area-inset-bottom, 16px), 16px)'
         }}
       >
         <div
@@ -153,7 +153,7 @@ export function LandscapeFeed({ posts, onCommentClick, onShare, onLoadMore, hasM
             }} 
           >
             <div className="flex flex-col items-center -translate-y-2">
-              <img src="/gameplay-dark.PNG" alt="GamePlay logo" className="w-12 h-12 mb-6 object-contain" />
+              <img src="/gp-logo-no-bg.png" alt="GamePlay logo" className="w-14 h-14 mb-6 object-contain" />
 
               <div className="flex flex-col items-center gap-4 mt-2">
                 <Link href="/" className="p-2 hover:bg-muted rounded">
@@ -251,18 +251,18 @@ export function LandscapeFeed({ posts, onCommentClick, onShare, onLoadMore, hasM
 
               <button
                 onClick={handleLike}
-                className="flex flex-col items-center space-y-1 hover:bg-muted p-2 rounded"
+                className="flex flex-col items-center hover:bg-muted p-2 rounded"
               >
                 <Heart className={`w-6 h-6 ${hasLiked ? 'text-red-500 fill-red-500' : 'text-foreground'}`} />
-                <span className="text-xs text-foreground">{likesCount}</span>
+                <span className="text-xs text-foreground mt-1">{likesCount}</span>
               </button>
 
               <button
                 onClick={() => setShowComments(true)}
-                className="flex flex-col items-center space-y-1 hover:bg-muted p-2 rounded"
+                className="flex flex-col items-center hover:bg-muted p-2 rounded"
               >
                 <MessageCircle className="w-6 h-6 text-foreground" />
-                <span className="text-xs text-foreground">{commentsCount}</span>
+                <span className="text-xs text-foreground mt-1">{commentsCount}</span>
               </button>
 
               <button

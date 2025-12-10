@@ -15,6 +15,7 @@ import {
 } from '@chakra-ui/react';
 import UserProfile from '../../components/UserProfile';
 import { FollowButton } from '~/components/followButton';
+import { FaLink, FaDiscord, FaSteam, FaItchIo, FaYoutube } from 'react-icons/fa';
 
 // Lazy loading iframe component - only loads when visible in viewport
 function LazyIframe({ src, title }: { src: string; title: string }) {
@@ -63,8 +64,14 @@ function LazyIframe({ src, title }: { src: string; title: string }) {
 interface UserProfile {
   id: string;
   username: string;
+  displayName?: string | null;
   bio: string;
   avatarUrl?: string;
+  websiteUrl?: string | null;
+  discordUrl?: string | null;
+  steamUrl?: string | null;
+  itchioUrl?: string | null;
+  youtubeUrl?: string | null;
   followersCount: number;
   followingCount: number;
   likesCount: number;
@@ -178,10 +185,28 @@ export default function ProfilePage() {
             <AvatarFallback>{userProfile.username?.charAt(0)}</AvatarFallback>
           </Avatar>
           <div>
-            <h1 className="text-2xl font-bold">@{userProfile.username}</h1>
+            {userProfile.displayName && (
+              <h1 className="text-2xl font-bold">{userProfile.displayName}</h1>
+            )}
+            <div className="flex items-center space-x-3 text-muted-foreground">
+              <p className={`${userProfile.displayName ? 'text-base' : 'text-2xl font-bold text-foreground'}`}>
+                @{userProfile.username}
+              </p>
+              {userProfile.websiteUrl && (
+                <a
+                  href={userProfile.websiteUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center space-x-1 text-[#1d9bf0] hover:text-[#1a8cd8] transition-colors"
+                >
+                  <FaLink className="w-4 h-4" />
+                  <span className="text-sm break-all">{userProfile.websiteUrl.replace(/^https?:\/\//, '')}</span>
+                </a>
+              )}
+            </div>
             <div className="mt-2 flex space-x-4">
               <div>
-                <span className="font-bold">{userProfile.posts.length}</span>{' '}
+                <span className="font-bold">{userProfile.posts?.length ?? 0}</span>{' '}
                 <span className="text-gray-400">posts</span>
               </div>
               <div>
@@ -194,6 +219,56 @@ export default function ProfilePage() {
               </div>
             </div>
             <p className="mt-2 text-gray-300">{userProfile.bio}</p>
+
+            {/* Social Links (excluding website, which is shown inline with username) */}
+            {(userProfile.discordUrl || userProfile.steamUrl || userProfile.itchioUrl || userProfile.youtubeUrl) && (
+              <div className="mt-3 flex items-center space-x-3">
+                {userProfile.discordUrl && (
+                  <a
+                    href={userProfile.discordUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:opacity-70 transition-opacity"
+                    title="Discord"
+                  >
+                    <FaDiscord className="w-7 h-7 text-[#5865F2]" />
+                  </a>
+                )}
+                {userProfile.steamUrl && (
+                  <a
+                    href={userProfile.steamUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:opacity-70 transition-opacity"
+                    title="Steam"
+                  >
+                    <FaSteam className="w-7 h-7 text-foreground" />
+                  </a>
+                )}
+                {userProfile.itchioUrl && (
+                  <a
+                    href={userProfile.itchioUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:opacity-70 transition-opacity"
+                    title="itch.io"
+                  >
+                    <FaItchIo className="w-7 h-7 text-[#FA5C5C]" />
+                  </a>
+                )}
+                {userProfile.youtubeUrl && (
+                  <a
+                    href={userProfile.youtubeUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:opacity-70 transition-opacity"
+                    title="YouTube"
+                  >
+                    <FaYoutube className="w-7 h-7 text-[#FF0000]" />
+                  </a>
+                )}
+              </div>
+            )}
           </div>
         </div>
         <div className="mt-6">
@@ -224,7 +299,18 @@ export default function ProfilePage() {
         </div>
       </section>
 
-      <EditProfileDialog open={editProfileOpen} onOpenChange={setEditProfileOpen} />
+      <EditProfileDialog
+        open={editProfileOpen}
+        onOpenChange={setEditProfileOpen}
+        initialData={{
+          displayName: userProfile.displayName,
+          websiteUrl: userProfile.websiteUrl,
+          discordUrl: userProfile.discordUrl,
+          steamUrl: userProfile.steamUrl,
+          itchioUrl: userProfile.itchioUrl,
+          youtubeUrl: userProfile.youtubeUrl,
+        }}
+      />
 
       <div className="flex justify-center space-x-8 border-b border-border mb-2">
         <button
@@ -253,9 +339,9 @@ export default function ProfilePage() {
           <>
             <h2 className="text-xl font-bold mb-4">Posts</h2>
             <div className="overflow-y-auto max-h-[calc(100vh-200px)]">
-              {userProfile.posts.length > 0 ? (
+              {(userProfile.posts?.length ?? 0) > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {userProfile.posts.map((post) => (
+                  {userProfile.posts?.map((post) => (
                     <div key={post.id} className="relative">
                       <Link href={`/post/${post.id}`}>
                         <div className="aspect-video bg-muted rounded-lg overflow-hidden relative cursor-pointer">

@@ -108,3 +108,19 @@ html, body, #__next {
 .safe-right {
   padding-right: env(safe-area-inset-right, 0px);
 }
+
+/* Dynamic viewport height for Safari mobile (handles address bar) */
+.h-dvh {
+  height: 100vh; /* fallback for older browsers */
+  height: 100dvh;
+}
+
+.min-h-dvh {
+  min-height: 100vh; /* fallback for older browsers */
+  min-height: 100dvh;
+}
+
+.max-h-dvh {
+  max-height: 100vh; /* fallback for older browsers */
+  max-height: 100dvh;
+}
