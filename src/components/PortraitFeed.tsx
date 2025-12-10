@@ -106,9 +106,9 @@ export function PortraitFeed({
         <div className="mt-4 flex flex-col items-center space-y-4">
           {/* Logo */}
           <img
-            src="/gameplay-dark.PNG"
+            src="/gp-logo-no-bg.png"
             alt="GamePlay logo"
-            className="w-12 h-12 object-contain"
+            className="w-14 h-14 object-contain"
           />
           {/* Nav Buttons */}
           <Link href="/" className="p-1 hover:bg-muted rounded">
@@ -204,7 +204,7 @@ export function PortraitFeed({
                   hasLiked ? "text-red-500 fill-red-500" : "text-foreground"
                 }`}
               />
-              <span className="text-xs">{likesCount}</span>
+              <span className="text-xs mt-1">{likesCount}</span>
             </button>
 
             {/* Comment */}
@@ -213,7 +213,7 @@ export function PortraitFeed({
               className="flex flex-col items-center"
             >
               <MessageCircle className="w-6 h-6 text-foreground" />
-              <span className="text-xs">{commentsCount}</span>
+              <span className="text-xs mt-1">{commentsCount}</span>
             </button>
 
             {/* Save */}

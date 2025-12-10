@@ -11,14 +11,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   if (req.method === 'POST') {
-    const { username, bio, avatarUrl } = req.body;
+    const { username, displayName, bio, avatarUrl, websiteUrl, discordUrl, steamUrl, itchioUrl, youtubeUrl } = req.body;
 
-    if (
-      (username && typeof username !== 'string') ||
-      (bio && typeof bio !== 'string') ||
-      (avatarUrl && typeof avatarUrl !== 'string')
-    ) {
-      return res.status(400).json({ error: 'Invalid input data' });
+    // Validate string fields
+    const stringFields = { username, displayName, bio, avatarUrl, websiteUrl, discordUrl, steamUrl, itchioUrl, youtubeUrl };
+    for (const [key, value] of Object.entries(stringFields)) {
+      if (value !== undefined && value !== null && value !== '' && typeof value !== 'string') {
+        return res.status(400).json({ error: `Invalid input data for ${key}` });
+      }
     }
 
     try {
@@ -26,14 +26,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         where: { id: userId },
         data: {
           ...(username && { username: username as string }),
-          ...(bio && { bio: bio as string }),
+          ...(displayName !== undefined && { displayName: displayName || null }),
+          ...(bio !== undefined && { bio: bio as string }),
           ...(avatarUrl && { avatarUrl: avatarUrl as string }),
+          ...(websiteUrl !== undefined && { websiteUrl: websiteUrl || null }),
+          ...(discordUrl !== undefined && { discordUrl: discordUrl || null }),
+          ...(steamUrl !== undefined && { steamUrl: steamUrl || null }),
+          ...(itchioUrl !== undefined && { itchioUrl: itchioUrl || null }),
+          ...(youtubeUrl !== undefined && { youtubeUrl: youtubeUrl || null }),
         },
       });
 
       await usersIndex.saveObject({
         objectID: userId,
         username: user.username,
+        displayName: user.displayName,
         bio: user.bio,
         avatarUrl: user.avatarUrl,
       });

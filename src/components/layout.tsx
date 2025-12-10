@@ -67,9 +67,9 @@ export default function Layout({
         <div className="flex-shrink-0">
           <Link href="/">
             <img
-              src="/gameplay-dark.PNG"
+              src="/gp-logo-no-bg.png"
               alt="GamePlay"
-              className="h-10 w-10 object-contain"
+              className="h-16 w-16 object-contain transform translate-y-[2px]"
             />
           </Link>
         </div>
@@ -162,12 +162,12 @@ export default function Layout({
 
       {/* --- FIXED SIDEBAR --- */}
       {showSearchBar ? (
-        <aside className="fixed bottom-0 left-0 top-16 flex w-52 flex-col bg-background p-4">
-          <nav className="mt-6">
+        <aside className="fixed bottom-0 left-0 top-16 flex w-16 xl:w-52 flex-col bg-background p-4">
+          <nav className="mt-6 flex flex-col items-center xl:items-start">
             <Link href="/">
               <div className="mb-6 flex cursor-pointer items-center space-x-4 hover:text-gray-400">
-                <Home className="h-8 w-8" />
-                <span className="text-lg">Home</span>
+                <Home className="h-8 w-8 flex-shrink-0" />
+                <span className="hidden xl:inline text-lg">Home</span>
               </div>
             </Link>
 
@@ -182,15 +182,15 @@ export default function Layout({
                 }
               }}
             >
-              <Plus className="h-8 w-8" />
-              <span className="text-lg">Create</span>
+              <Plus className="h-8 w-8 flex-shrink-0" />
+              <span className="hidden xl:inline text-lg">Create</span>
             </div>
 
             {user ? (
               <Link href={`/profile/${user.id}`}>
                 <div className="mb-6 flex cursor-pointer items-center space-x-4 hover:text-gray-400">
-                  <UserIcon className="h-8 w-8" />
-                  <span className="text-lg">Profile</span>
+                  <UserIcon className="h-8 w-8 flex-shrink-0" />
+                  <span className="hidden xl:inline text-lg">Profile</span>
                 </div>
               </Link>
             ) : null}
@@ -200,7 +200,7 @@ export default function Layout({
 
       {/* MAIN CONTENT AREA */}
       <main
-        className={`${showSearchBar ? "ml-52" : "ml-4"} h-screen overflow-y-auto pt-16`}
+        className={`${showSearchBar ? "ml-16 xl:ml-52" : "ml-4"} h-screen overflow-y-auto pt-16`}
       >
         {children}
       </main>

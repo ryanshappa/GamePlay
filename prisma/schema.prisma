@@ -11,8 +11,14 @@ model User {
   id          String    @id @default(cuid())
   email       String    @unique
   username    String?   @unique
+  displayName String?
   bio         String?
   avatarUrl   String?
+  websiteUrl  String?
+  discordUrl  String?
+  steamUrl    String?
+  itchioUrl   String?
+  youtubeUrl  String?
   posts       Post[]
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
