@@ -214,7 +214,7 @@ export default function HomePage() {
         )
       ) : (
         <div className="w-full h-screen overflow-auto">
-          <div>
+          <div className="px-4">
             {postList.map((post, index) => {
               const inRange =
                 index >= activeIndex - VIRTUALIZATION_BUFFER &&
@@ -227,10 +227,10 @@ export default function HomePage() {
                   className="post-item"
                   data-index={index}
                   style={{
-                    minHeight: 'calc(100vh - 64px)',
+                    minHeight: 'calc(100vh - 32px)',
                     paddingTop: '32px',
                     overflow: 'hidden',
-                    background: inRange ? 'transparent' : '#000',
+                    background: inRange ? 'transparent' : 'var(--background)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',

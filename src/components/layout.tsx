@@ -1,180 +1,101 @@
 // layout.tsx
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useAuth } from "~/contexts/AuthContext";
-import { useClerk } from "@clerk/nextjs";
-import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
-import { Button } from "~/components/ui/button";
 import {
   User as UserIcon,
-  Settings,
-  LogOut,
   Home,
   Plus,
-  HelpCircle,
-  Sun,
-  Moon,
+  Search,
+  MoreHorizontal,
 } from "lucide-react";
 import Link from "next/link";
-import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
-import { SearchBar } from "~/components/searchBar";
 import { SignInModal } from "~/components/signInModal";
 import { SignUpModal } from "~/components/signUpModal";
+import { SearchSheet } from "~/components/SearchSheet";
+import { UserMenuSheet } from "~/components/UserMenuSheet";
 import { useRouter } from "next/router";
-import { useTheme } from "next-themes";
 
 interface LayoutProps {
   children: React.ReactNode;
-  showSearchBar?: boolean;
+  showSideBar?: boolean;
 }
 
 export default function Layout({
   children,
-  showSearchBar = true,
+  showSideBar = true,
 }: LayoutProps) {
   const { user } = useAuth();
-  const { signOut } = useClerk();
   const router = useRouter();
-  const { resolvedTheme, setTheme } = useTheme();
-  
-  // Track if component is mounted to avoid hydration mismatch with theme
-  const [mounted, setMounted] = useState(false);
-  
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
-  const toggleTheme = () => {
-    setTheme(resolvedTheme === "dark" ? "light" : "dark");
-  };
-
-  // Two local states for controlling the modals
+  // Modal states
   const [signInOpen, setSignInOpen] = useState(false);
   const [signUpOpen, setSignUpOpen] = useState(false);
+  
+  // Sheet states
+  const [searchSheetOpen, setSearchSheetOpen] = useState(false);
+  const [userMenuSheetOpen, setUserMenuSheetOpen] = useState(false);
 
-  const handleSignOut = async () => {
-    try {
-      await signOut();
-    } catch (error) {
-      console.error("Error signing out:", error);
+  // Handle home/logo click - refresh if already on feed, otherwise navigate
+  const handleHomeClick = () => {
+    if (router.pathname === "/") {
+      router.reload();
+    } else {
+      router.push("/");
     }
   };
 
   return (
     <div className="min-h-screen w-screen bg-background text-foreground">
-      {/* --- FIXED TOP BAR --- */}
-      <header className="fixed left-0 right-0 top-0 z-50 flex h-16 items-center border-b border-input bg-background px-4">
-        {/* Logo - left side */}
-        <div className="flex-shrink-0">
-          <Link href="/">
+      {/* --- FIXED SIDEBAR --- */}
+      {showSideBar && (
+        <aside className="fixed bottom-0 left-0 top-0 z-40 flex w-16 xl:w-52 flex-col bg-background border-r border-input">
+          {/* Logo at the top */}
+          <div
+            className="flex items-center justify-center xl:justify-start p-4 cursor-pointer"
+            onClick={handleHomeClick}
+          >
             <img
               src="/gp-logo-no-bg.png"
               alt="GamePlay"
-              className="h-16 w-16 object-contain transform translate-y-[2px]"
+              className="h-12 w-12 object-contain"
             />
-          </Link>
-        </div>
-
-        {/* Search bar - absolutely centered */}
-        {showSearchBar && (
-          <div className="absolute left-1/2 -translate-x-1/2">
-            <SearchBar />
+            <span className="hidden xl:inline ml-2 text-xl font-bold">GamePlay</span>
           </div>
-        )}
 
-        {/* Right side - user menu */}
-        <div className="ml-auto flex items-center">
-          {user ? (
-            <>
-              <DropdownMenu.Root>
-                <DropdownMenu.Trigger asChild>
-                  <Button variant="ghost" className="p-0">
-                    <Avatar>
-                      <AvatarImage
-                        src={user.imageUrl || undefined}
-                        alt="User avatar"
-                      />
-                      <AvatarFallback>
-                        {user.username?.charAt(0) || "U"}
-                      </AvatarFallback>
-                    </Avatar>
-                  </Button>
-                </DropdownMenu.Trigger>
-                <DropdownMenu.Content className="rounded bg-muted p-2 text-foreground shadow-md">
-                  <DropdownMenu.Item className="flex cursor-pointer items-center space-x-3 p-3 hover:bg-muted">
-                    <UserIcon className="h-5 w-5" />
-                    <Link href={`/profile/${user.id}`}>Profile</Link>
-                  </DropdownMenu.Item>
-                  <DropdownMenu.Item className="flex cursor-pointer items-center space-x-3 p-3 hover:bg-muted">
-                    <Settings className="h-5 w-5" />
-                    <Link href="/settings">Settings</Link>
-                  </DropdownMenu.Item>
-                  <DropdownMenu.Item
-                    className="flex cursor-pointer items-center space-x-3 p-3 hover:bg-muted"
-                    onClick={handleSignOut}
-                  >
-                    <LogOut className="h-5 w-5" />
-                    <span>Logout</span>
-                  </DropdownMenu.Item>
-                  <DropdownMenu.Item className="flex cursor-pointer items-center space-x-3 p-3 hover:bg-muted">
-                    <HelpCircle className="h-5 w-5" />
-                    <Link href="/help">Help</Link>
-                  </DropdownMenu.Item>
-                  <DropdownMenu.Item
-                    className="flex cursor-pointer items-center space-x-3 p-3 hover:bg-muted"
-                    onClick={toggleTheme}
-                  >
-                    {mounted && resolvedTheme === "dark" ? (
-                      <>
-                        <Sun className="h-5 w-5" />
-                        <span>Light Mode</span>
-                      </>
-                    ) : (
-                      <>
-                        <Moon className="h-5 w-5" />
-                        <span>Dark Mode</span>
-                      </>
-                    )}
-                  </DropdownMenu.Item>
-                </DropdownMenu.Content>
-              </DropdownMenu.Root>
-            </>
-          ) : (
-            <>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={toggleTheme}
-                className="mr-2"
-              >
-                {mounted && resolvedTheme === "dark" ? (
-                  <Sun className="h-5 w-5" />
-                ) : (
-                  <Moon className="h-5 w-5" />
-                )}
-              </Button>
-              <Button variant="ghost" onClick={() => setSignInOpen(true)}>
-                Sign In
-              </Button>
-            </>
-          )}
-        </div>
-      </header>
-
-      {/* --- FIXED SIDEBAR --- */}
-      {showSearchBar ? (
-        <aside className="fixed bottom-0 left-0 top-16 flex w-16 xl:w-52 flex-col bg-background p-4">
-          <nav className="mt-6 flex flex-col items-center xl:items-start">
-            <Link href="/">
-              <div className="mb-6 flex cursor-pointer items-center space-x-4 hover:text-gray-400">
-                <Home className="h-8 w-8 flex-shrink-0" />
-                <span className="hidden xl:inline text-lg">Home</span>
-              </div>
-            </Link>
-
+          {/* Search Bar - TikTok style, aligned with other nav items */}
+          <div className="hidden xl:block px-4 mb-6">
             <div
-              className="mb-6 flex cursor-pointer items-center space-x-4 hover:text-gray-400"
+              className="flex items-center gap-3 px-3 py-2 bg-muted rounded-full cursor-pointer hover:bg-muted/80 transition-colors"
+              onClick={() => setSearchSheetOpen(true)}
+            >
+              <Search className="h-5 w-5 flex-shrink-0" />
+              <span className="text-sm text-muted-foreground">Search</span>
+            </div>
+          </div>
+
+          {/* Navigation */}
+          <nav className="mt-2 xl:mt-0 flex flex-col items-center xl:items-start px-2 xl:px-4">
+            {/* Search - icon only on small screens */}
+            <div
+              className="mb-3 flex xl:hidden w-full cursor-pointer items-center justify-center gap-3 p-2 rounded-lg hover:bg-muted transition-colors"
+              onClick={() => setSearchSheetOpen(true)}
+            >
+              <Search className="h-6 w-6 flex-shrink-0" />
+            </div>
+
+            {/* Home */}
+            <div
+              className="mb-3 flex w-full cursor-pointer items-center justify-center xl:justify-start gap-3 p-2 rounded-lg hover:bg-muted transition-colors"
+              onClick={handleHomeClick}
+            >
+              <Home className="h-6 w-6 flex-shrink-0" />
+              <span className="hidden xl:inline text-base">Home</span>
+            </div>
+
+            {/* Create */}
+            <div
+              className="mb-3 flex w-full cursor-pointer items-center justify-center xl:justify-start gap-3 p-2 rounded-lg hover:bg-muted transition-colors"
               onClick={() => {
-                // Use Next.js router for navigation
                 if (user) {
                   router.push("/create-post");
                 } else {
@@ -182,28 +103,62 @@ export default function Layout({
                 }
               }}
             >
-              <Plus className="h-8 w-8 flex-shrink-0" />
-              <span className="hidden xl:inline text-lg">Create</span>
+              <Plus className="h-6 w-6 flex-shrink-0" />
+              <span className="hidden xl:inline text-base">Create</span>
             </div>
 
-            {user ? (
-              <Link href={`/profile/${user.id}`}>
-                <div className="mb-6 flex cursor-pointer items-center space-x-4 hover:text-gray-400">
-                  <UserIcon className="h-8 w-8 flex-shrink-0" />
-                  <span className="hidden xl:inline text-lg">Profile</span>
+            {/* Profile (only if logged in) */}
+            {user && (
+              <Link href={`/profile/${user.id}`} className="w-full">
+                <div className="mb-3 flex w-full cursor-pointer items-center justify-center xl:justify-start gap-3 p-2 rounded-lg hover:bg-muted transition-colors">
+                  <UserIcon className="h-6 w-6 flex-shrink-0" />
+                  <span className="hidden xl:inline text-base">Profile</span>
                 </div>
               </Link>
-            ) : null}
+            )}
+
+            {/* Sign In (only if logged out) */}
+            {!user && (
+              <div
+                className="mb-3 flex w-full cursor-pointer items-center justify-center xl:justify-start gap-3 p-2 rounded-lg hover:bg-muted transition-colors"
+                onClick={() => setSignInOpen(true)}
+              >
+                <UserIcon className="h-6 w-6 flex-shrink-0" />
+                <span className="hidden xl:inline text-base">Sign In</span>
+              </div>
+            )}
           </nav>
+
+          {/* More button at the bottom */}
+          <div className="mt-auto px-2 xl:px-4 pb-6">
+            <div
+              className="flex w-full cursor-pointer items-center justify-center xl:justify-start gap-3 p-2 rounded-lg hover:bg-muted transition-colors"
+              onClick={() => setUserMenuSheetOpen(true)}
+            >
+              <MoreHorizontal className="h-6 w-6 flex-shrink-0" />
+              <span className="hidden xl:inline text-base">More</span>
+            </div>
+          </div>
         </aside>
-      ) : null}
+      )}
 
       {/* MAIN CONTENT AREA */}
       <main
-        className={`${showSearchBar ? "ml-16 xl:ml-52" : "ml-4"} h-screen overflow-y-auto pt-16`}
+        className={`${showSideBar ? "ml-16 xl:ml-52" : ""} min-h-screen`}
       >
         {children}
       </main>
+
+      {/* Sheets */}
+      <SearchSheet
+        open={searchSheetOpen}
+        onOpenChange={setSearchSheetOpen}
+      />
+      <UserMenuSheet
+        open={userMenuSheetOpen}
+        onOpenChange={setUserMenuSheetOpen}
+        onSignInClick={() => setSignInOpen(true)}
+      />
 
       {/* Sign In & Sign Up modals */}
       <SignInModal open={signInOpen} onOpenChange={setSignInOpen} />

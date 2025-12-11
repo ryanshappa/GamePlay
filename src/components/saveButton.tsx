@@ -5,9 +5,11 @@ import { useAuth } from '~/contexts/AuthContext';
 interface SaveButtonProps {
   postId: string;
   initialSaved: boolean;
+  /** "default" or "large" for size */
+  size?: 'default' | 'large';
 }
 
-export function SaveButton({ postId, initialSaved }: SaveButtonProps) {
+export function SaveButton({ postId, initialSaved, size = 'default' }: SaveButtonProps) {
   const { user } = useAuth();
   const [saved, setSaved] = React.useState(initialSaved);
   const [loading, setLoading] = React.useState(false);
@@ -53,14 +55,18 @@ export function SaveButton({ postId, initialSaved }: SaveButtonProps) {
     }
   };
 
+  // Size classes
+  const buttonSizeClasses = size === 'large' ? 'h-14 w-14' : 'h-10 w-10';
+  const iconSizeClasses = size === 'large' ? 'h-8 w-8' : 'h-6 w-6';
+
   return (
     <button
       onClick={handleClick}
       disabled={loading}
-      className="rounded-full bg-muted hover:bg-foreground/20 p-2"
+      className={`rounded-full bg-muted hover:bg-foreground/20 flex items-center justify-center ${buttonSizeClasses}`}
     >
       <Bookmark
-        className={`h-6 w-6 ${saved ? 'text-yellow-400' : 'text-foreground'}`}
+        className={`${iconSizeClasses} ${saved ? 'text-yellow-400' : 'text-foreground'}`}
         fill={saved ? 'currentColor' : 'none'}
       />
     </button>

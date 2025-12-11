@@ -4,6 +4,7 @@ import { useClerk, useAuth as useClerkAuth, useUser } from '@clerk/nextjs';
 interface User {
   id: string;
   username?: string;
+  firstName?: string;
   imageUrl?: string;
   publicMetadata?: {
     bio?: string;
@@ -29,6 +30,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(clerkUser ? {
         id: clerkUser.id,
         username: clerkUser.username || undefined,
+        firstName: clerkUser.firstName || undefined,
         imageUrl: clerkUser.imageUrl || undefined,
         publicMetadata: clerkUser.publicMetadata || {}
       } : null);

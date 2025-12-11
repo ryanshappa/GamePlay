@@ -104,72 +104,81 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-gray-100 p-6 flex items-center justify-center">
-      <div className="w-full max-w-2xl bg-muted rounded-lg shadow-lg p-8" style={{ marginRight: 'calc(25% - 10rem)' }}>
-        <section className="mb-8">
-          <h2 className="text-3xl font-bold mb-4">Manage account</h2>
+    <div className="min-h-screen bg-background text-foreground p-6 pb-12">
+      <div className="w-full max-w-2xl mx-auto">
+        <h1 className="text-3xl font-bold mb-8">Settings</h1>
+        
+        <section className="mb-8 bg-muted/50 rounded-lg p-6">
+          <h2 className="text-xl font-semibold mb-4">Manage Account</h2>
           <div className="space-y-4">
             <div className="flex justify-between items-center">
-              <span className="text-xl">Account control</span>
+              <span className="text-base text-muted-foreground">Account control</span>
             </div>
-            <div className="flex justify-between items-center pt-4">
-              <span className="text-xl">Delete account</span>
-              <Button onClick={handleDeleteAccount} variant="destructive">Delete</Button>
+            <div className="flex justify-between items-center pt-2">
+              <div>
+                <span className="text-base">Delete account</span>
+                <p className="text-sm text-muted-foreground">Permanently delete your account and all data</p>
+              </div>
+              <Button onClick={handleDeleteAccount} variant="destructive" size="sm">Delete</Button>
             </div>
           </div>
         </section>
 
-        <div className="border-t border-border my-8"></div>
-
-        <section className="mb-8">
-          <h2 className="text-3xl font-bold mb-4">Contact</h2>
-          <p className="text-sm text-gray-400 mb-4">Contact the Creator</p>
-          <div className="space-y-2">
-            <Label htmlFor="contact-subject">Subject</Label>
-            <Input
-              id="contact-subject"
-              placeholder="Enter subject"
-              value={contactSubject}
-              onChange={(e) => setContactSubject(e.target.value)}
-              className="bg-muted text-foreground border-input"
-            />
-            <Label htmlFor="contact-message">Message</Label>
-            <Textarea
-              id="contact-message"
-              placeholder="Type your message here..."
-              value={contactMessage}
-              onChange={(e) => setContactMessage(e.target.value)}
-              className="h-32 bg-muted text-foreground border-input"
-            />
-            <Button className="mt-2" onClick={handleContactSubmit}>
+        <section className="mb-8 bg-muted/50 rounded-lg p-6">
+          <h2 className="text-xl font-semibold mb-2">Contact</h2>
+          <p className="text-sm text-muted-foreground mb-4">Contact the Creator</p>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="contact-subject" className="text-sm font-medium">Subject</Label>
+              <Input
+                id="contact-subject"
+                placeholder="Enter subject"
+                value={contactSubject}
+                onChange={(e) => setContactSubject(e.target.value)}
+                className="mt-1 bg-background text-foreground border-input"
+              />
+            </div>
+            <div>
+              <Label htmlFor="contact-message" className="text-sm font-medium">Message</Label>
+              <Textarea
+                id="contact-message"
+                placeholder="Type your message here..."
+                value={contactMessage}
+                onChange={(e) => setContactMessage(e.target.value)}
+                className="mt-1 h-32 bg-background text-foreground border-input"
+              />
+            </div>
+            <Button onClick={handleContactSubmit}>
               Send Message
             </Button>
           </div>
         </section>
 
-        <div className="border-t border-border my-8"></div>
-
-        <section>
-          <h2 className="text-3xl font-bold mb-4">Report</h2>
-          <p className="text-sm text-gray-400 mb-4">Report any bugs or inappropriate content</p>
-          <div className="space-y-2">
-            <Label htmlFor="report-subject">Subject</Label>
-            <Input
-              id="report-subject"
-              placeholder="Enter subject"
-              value={reportSubject}
-              onChange={(e) => setReportSubject(e.target.value)}
-              className="bg-muted text-foreground border-input"
-            />
-            <Label htmlFor="report-details">Details</Label>
-            <Textarea
-              id="report-details"
-              placeholder="Describe the issue here..."
-              value={reportDetails}
-              onChange={(e) => setReportDetails(e.target.value)}
-              className="h-32 bg-muted text-foreground border-input"
-            />
-            <Button className="mt-2" onClick={handleReportSubmit}>
+        <section className="bg-muted/50 rounded-lg p-6">
+          <h2 className="text-xl font-semibold mb-2">Report</h2>
+          <p className="text-sm text-muted-foreground mb-4">Report any bugs or inappropriate content</p>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="report-subject" className="text-sm font-medium">Subject</Label>
+              <Input
+                id="report-subject"
+                placeholder="Enter subject"
+                value={reportSubject}
+                onChange={(e) => setReportSubject(e.target.value)}
+                className="mt-1 bg-background text-foreground border-input"
+              />
+            </div>
+            <div>
+              <Label htmlFor="report-details" className="text-sm font-medium">Details</Label>
+              <Textarea
+                id="report-details"
+                placeholder="Describe the issue here..."
+                value={reportDetails}
+                onChange={(e) => setReportDetails(e.target.value)}
+                className="mt-1 h-32 bg-background text-foreground border-input"
+              />
+            </div>
+            <Button onClick={handleReportSubmit}>
               Submit Report
             </Button>
           </div>

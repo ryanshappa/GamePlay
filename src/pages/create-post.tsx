@@ -167,6 +167,6 @@ const CreatePost = () => {
   );
 };
 
-CreatePost.getLayout = (page: React.ReactNode) => <Layout showSearchBar={false}>{page}</Layout>;
+CreatePost.getLayout = (page: React.ReactNode) => <Layout showSideBar={false}>{page}</Layout>;
 
 export default CreatePost;
