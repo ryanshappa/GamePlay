@@ -156,40 +156,40 @@ export function LandscapeFeed({ posts, onCommentClick, onShare, onLoadMore, hasM
 
             <Link href="/" className="p-1.5 hover:bg-muted rounded">
               <Home className="w-5 h-5 text-foreground" />
-            </Link>
+                </Link>
 
-            {user ? (
+                {user ? (
               <Link href={`/profile/${user.id}`} className="p-1.5 hover:bg-muted rounded">
                 <User className="w-5 h-5 text-foreground" />
-              </Link>
-            ) : (
-              <button 
-                onClick={() => setShowSignIn(true)} 
+                  </Link>
+                ) : (
+                  <button 
+                    onClick={() => setShowSignIn(true)} 
                 className="p-1.5 hover:bg-muted rounded"
-              >
+                  >
                 <User className="w-5 h-5 text-foreground" />
-              </button>
-            )}
+                  </button>
+                )}
 
             <Link href="/search" className="p-1.5 hover:bg-muted rounded">
               <Search className="w-5 h-5 text-foreground" />
-            </Link>
+                </Link>
 
-            <button
-              onClick={() => setCurrentIndex(i => Math.max(0, i - 1))}
-              disabled={currentIndex === 0}
+              <button
+                onClick={() => setCurrentIndex(i => Math.max(0, i - 1))}
+                disabled={currentIndex === 0}
               className="p-1.5 hover:bg-muted rounded disabled:opacity-50"
-            >
+              >
               <ChevronUp className="w-5 h-5 text-foreground" />
-            </button>
+              </button>
 
-            <button
-              onClick={() => setCurrentIndex(i => Math.min(posts.length - 1, i + 1))}
-              disabled={currentIndex === posts.length - 1}
+              <button
+                onClick={() => setCurrentIndex(i => Math.min(posts.length - 1, i + 1))}
+                disabled={currentIndex === posts.length - 1}
               className="p-1.5 hover:bg-muted rounded disabled:opacity-50"
-            >
+              >
               <ChevronDown className="w-5 h-5 text-foreground" />
-            </button>
+              </button>
           </aside>
 
           <main className="col-start-2 flex items-center justify-center relative">
@@ -231,53 +231,53 @@ export function LandscapeFeed({ posts, onCommentClick, onShare, onLoadMore, hasM
               paddingBottom: 'env(safe-area-inset-bottom, 8px)'
             }}
           >
-            {savePost && (
-              <Link href={`/profile/${savePost?.author.id}`} className="p-1 hover:bg-muted rounded-full">
+              {savePost && (
+                <Link href={`/profile/${savePost?.author.id}`} className="p-1 hover:bg-muted rounded-full">
                 <Avatar className="h-7 w-7">
-                  {savePost?.author.avatarUrl ? (
-                    <AvatarImage src={savePost?.author.avatarUrl} alt={savePost?.author.username} />
-                  ) : (
-                    <AvatarFallback>{savePost?.author.username?.[0] ?? "U"}</AvatarFallback>
-                  )}
-                </Avatar>
-              </Link>
-            )}
+                    {savePost?.author.avatarUrl ? (
+                      <AvatarImage src={savePost?.author.avatarUrl} alt={savePost?.author.username} />
+                    ) : (
+                      <AvatarFallback>{savePost?.author.username?.[0] ?? "U"}</AvatarFallback>
+                    )}
+                  </Avatar>
+                </Link>
+              )}
 
-            <button
-              onClick={handleLike}
+              <button
+                onClick={handleLike}
               className="flex flex-col items-center hover:bg-muted p-1.5 rounded"
-            >
+              >
               <Heart className={`w-5 h-5 ${hasLiked ? 'text-red-500 fill-red-500' : 'text-foreground'}`} />
               <span className="text-[10px] text-foreground">{likesCount}</span>
-            </button>
+              </button>
 
-            <button
-              onClick={() => setShowComments(true)}
+              <button
+                onClick={() => setShowComments(true)}
               className="flex flex-col items-center hover:bg-muted p-1.5 rounded"
-            >
+              >
               <MessageCircle className="w-5 h-5 text-foreground" />
               <span className="text-[10px] text-foreground">{commentsCount}</span>
-            </button>
+              </button>
 
-            <button
-              onClick={handleSave}
+              <button
+                onClick={handleSave}
               className="p-1.5 hover:bg-muted rounded"
-            >
+              >
               <Bookmark className={`w-5 h-5 ${saved ? 'text-yellow-400 fill-yellow-400' : 'text-foreground'}`} />
-            </button>
+              </button>
 
-            <button
-              onClick={() => {
-                if (savePost?.id) {
-                  onShare(savePost.id);
-                } else if (posts.length > 0) {
-                  onShare(posts[0]?.id ?? "");
-                }
-              }}
+              <button
+                onClick={() => {
+                  if (savePost?.id) {
+                    onShare(savePost.id);
+                  } else if (posts.length > 0) {
+                    onShare(posts[0]?.id ?? "");
+                  }
+                }}
               className="p-1.5 hover:bg-muted rounded"
-            >
+              >
               <Share2 className="w-5 h-5 text-foreground" />
-            </button>
+              </button>
           </aside>
         </div>
       </div>

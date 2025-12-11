@@ -224,7 +224,7 @@ export function EditProfileDialog({ open, onOpenChange, initialData }: EditProfi
               <h3 className="text-sm font-semibold text-muted-foreground">Social Links</h3>
               
               <div className="flex flex-col space-y-1">
-                <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2">
                 <FaLink className="w-5 h-5 text-muted-foreground flex-shrink-0" />
                 <Input
                   placeholder="Website URL (e.g., https://yoursite.com)"
@@ -237,7 +237,7 @@ export function EditProfileDialog({ open, onOpenChange, initialData }: EditProfi
               </div>
               
               <div className="flex flex-col space-y-1">
-                <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2">
                 <FaDiscord className="w-5 h-5 text-[#5865F2] flex-shrink-0" />
                 <Input
                   placeholder="Discord invite URL"
@@ -250,7 +250,7 @@ export function EditProfileDialog({ open, onOpenChange, initialData }: EditProfi
               </div>
               
               <div className="flex flex-col space-y-1">
-                <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2">
                 <FaSteam className="w-5 h-5 text-muted-foreground flex-shrink-0" />
                 <Input
                   placeholder="Steam profile URL"
@@ -263,7 +263,7 @@ export function EditProfileDialog({ open, onOpenChange, initialData }: EditProfi
               </div>
               
               <div className="flex flex-col space-y-1">
-                <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2">
                 <FaItchIo className="w-5 h-5 text-[#FA5C5C] flex-shrink-0" />
                 <Input
                   placeholder="itch.io profile URL"
@@ -276,7 +276,7 @@ export function EditProfileDialog({ open, onOpenChange, initialData }: EditProfi
               </div>
               
               <div className="flex flex-col space-y-1">
-                <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2">
                 <FaYoutube className="w-5 h-5 text-[#FF0000] flex-shrink-0" />
                 <Input
                   placeholder="YouTube channel URL"

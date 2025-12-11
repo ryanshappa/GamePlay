@@ -37,7 +37,7 @@ const PostItem: React.FC<PostItemProps> = React.memo(({
     <div className="flex flex-col w-full items-center px-4">
       {isFeedLayout && (
         <h2 className="text-2xl font-bold mb-2 w-full" style={{ maxWidth: 'calc(100vw - 300px)', width: '60vw' }}>
-          {post.title}
+            {post.title}
         </h2>
       )}
 
@@ -94,14 +94,14 @@ const PostItem: React.FC<PostItemProps> = React.memo(({
 
             {/* Comment Button - larger */}
             <div className="flex flex-col items-center">
-              <Button
-                variant="ghost"
-                size="icon"
+            <Button
+              variant="ghost"
+              size="icon"
                 className="rounded-full bg-muted hover:bg-foreground/20 h-14 w-14"
-                onClick={() => onCommentClick(post)}
-              >
+              onClick={() => onCommentClick(post)}
+            >
                 <MessageCircleIcon className="h-8 w-8" />
-              </Button>
+            </Button>
               <span className="text-sm mt-1">{post.commentsCount}</span>
             </div>
 
@@ -136,8 +136,8 @@ const PostItem: React.FC<PostItemProps> = React.memo(({
       {isFeedLayout && post.content && (
         <div className="mt-3 w-full" style={{ maxWidth: 'calc(100vw - 300px)', width: '60vw' }}>
           <p className={`whitespace-pre-wrap text-muted-foreground ${!isDescriptionExpanded && needsTruncation ? 'line-clamp-3' : ''}`}>
-            {post.content}
-          </p>
+          {post.content}
+        </p>
           {needsTruncation && (
             <button
               onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
