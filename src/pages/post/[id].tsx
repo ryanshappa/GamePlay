@@ -105,16 +105,16 @@ export default function PostPage({ post, status }: PostPageProps) {
         </div>
 
         {/* Title */}
-        <h1 className="text-2xl font-bold mb-4" style={{ width: 'min(1000px, calc(100vw - 300px))' }}>
+        <h1 className="text-2xl font-bold mb-4" style={{ width: 'min(60vw, calc(100vw - 300px))' }}>
           {post.title}
         </h1>
 
         {/* Main content area - iframe + interaction buttons */}
         <div className="flex items-center">
-          {/* Iframe container - responsive with max size */}
+          {/* Iframe container - responsive with viewport-based sizing */}
           <div 
             className="rounded-lg overflow-hidden bg-muted"
-            style={{ width: 'min(1000px, calc(100vw - 300px))', aspectRatio: '16/9' }}
+            style={{ width: 'min(60vw, calc(100vw - 300px))', aspectRatio: '16/9' }}
           >
             {post.fileUrl ? (
               <iframe
@@ -194,7 +194,7 @@ export default function PostPage({ post, status }: PostPageProps) {
         </div>
 
         {/* Post content / description */}
-        <div className="mt-4 pb-8" style={{ width: 'min(1000px, calc(100vw - 300px))' }}>
+        <div className="mt-4 pb-8" style={{ width: 'min(60vw, calc(100vw - 300px))' }}>
           <div className="flex items-center gap-2 mb-2">
             <Link href={`/profile/${post.author.id}`} className="text-foreground hover:underline">
               @{post.author.username}

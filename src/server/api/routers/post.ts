@@ -19,13 +19,15 @@ export const postRouter = createTRPCRouter({
     .input(z.object({
       limit: z.number().min(1).max(50).default(5),
       cursor: z.string().nullish(),
+      mobileOnly: z.boolean().optional(),
     }))
     .query(async ({ input, ctx }) => {
-      const { limit, cursor } = input;
+      const { limit, cursor, mobileOnly } = input;
       const posts = await ctx.db.post.findMany({
         take: limit + 1,
         cursor: cursor ? { id: cursor } : undefined,
         skip: cursor ? 1 : 0,
+        where: mobileOnly ? { isMobileFriendly: true } : undefined,
         orderBy: { createdAt: 'desc' },
         include: {
           author: true,

@@ -23,7 +23,7 @@ export default function HomePage() {
   //  detect orientation
   const [isLandscape, setIsLandscape] = useState(false);
 
-  // Infinite query for posts
+  // Infinite query for posts - filter to mobile-friendly only on mobile devices
   const {
     data,
     fetchNextPage,
@@ -31,7 +31,7 @@ export default function HomePage() {
     isFetchingNextPage,
     isLoading,
   } = api.post.getInfinitePosts.useInfiniteQuery(
-    { limit: 5 },
+    { limit: 5, mobileOnly: isMobile || undefined },
     {
       getNextPageParam: (lastPage) => lastPage.nextCursor,
     }

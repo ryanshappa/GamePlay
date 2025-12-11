@@ -11,6 +11,7 @@ const CreatePost = () => {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [engine, setEngine] = useState("unity");
+  const [isMobileFriendly, setIsMobileFriendly] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [creatingPost, setCreatingPost] = useState(false);
@@ -53,6 +54,7 @@ const CreatePost = () => {
             title,
             content,
             engine,
+            isMobileFriendly,
           }),
         });
 
@@ -129,7 +131,20 @@ const CreatePost = () => {
           >
             <option value="unity">Unity</option>
             <option value="godot">Godot</option>
+            <option value="unreal">Unreal Engine</option>
           </select>
+        </div>
+
+        <div className="mb-3 flex items-center gap-3">
+          <input
+            type="checkbox"
+            id="mobileFriendly"
+            checked={isMobileFriendly}
+            onChange={(e) => setIsMobileFriendly(e.target.checked)}
+            className="w-4 h-4 rounded border-input"
+          />
+          <Label htmlFor="mobileFriendly" className="cursor-pointer">Mobile-friendly game</Label>
+          <span className="text-sm text-muted-foreground">(Game works well on touch devices)</span>
         </div>
 
         <div className="mb-4">

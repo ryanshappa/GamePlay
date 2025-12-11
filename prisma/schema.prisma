@@ -44,7 +44,8 @@ model Post {
   engine      String    @default("Unity")
   status      String?
   savedPosts  SavedPost[]
-  requiresSharedArrayBufferSupport Boolean  @default(false) 
+  requiresSharedArrayBufferSupport Boolean  @default(false)
+  isMobileFriendly Boolean @default(false)
 }
 
 model Follow {
