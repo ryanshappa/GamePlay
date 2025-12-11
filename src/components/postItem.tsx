@@ -36,17 +36,17 @@ const PostItem: React.FC<PostItemProps> = React.memo(({
   return (
     <div className="flex flex-col w-full items-center px-4">
       {isFeedLayout && (
-        <h2 className="text-2xl font-bold mb-2 w-full" style={{ maxWidth: 'calc(100vw - 300px)', width: '1000px' }}>
-          {post.title}
+        <h2 className="text-2xl font-bold mb-2 w-full" style={{ maxWidth: 'calc(100vw - 300px)', width: '60vw' }}>
+            {post.title}
         </h2>
       )}
 
       <div className={`relative ${isFeedLayout ? 'flex items-center' : 'flex flex-col items-center'}`}>
-        {/* Iframe container - responsive with max size */}
+        {/* Iframe container - responsive with viewport-based sizing */}
         <div
           className="rounded-lg overflow-hidden bg-muted"
           style={{
-            width: isFeedLayout ? 'min(1000px, calc(100vw - 300px))' : 'min(1200px, calc(100vw - 200px))',
+            width: isFeedLayout ? 'min(60vw, calc(100vw - 300px))' : 'min(70vw, calc(100vw - 200px))',
             aspectRatio: '16/9'
           }}
         >
@@ -94,14 +94,14 @@ const PostItem: React.FC<PostItemProps> = React.memo(({
 
             {/* Comment Button - larger */}
             <div className="flex flex-col items-center">
-              <Button
-                variant="ghost"
-                size="icon"
+            <Button
+              variant="ghost"
+              size="icon"
                 className="rounded-full bg-muted hover:bg-foreground/20 h-14 w-14"
-                onClick={() => onCommentClick(post)}
-              >
+              onClick={() => onCommentClick(post)}
+            >
                 <MessageCircleIcon className="h-8 w-8" />
-              </Button>
+            </Button>
               <span className="text-sm mt-1">{post.commentsCount}</span>
             </div>
 
@@ -134,10 +134,10 @@ const PostItem: React.FC<PostItemProps> = React.memo(({
 
       {/* Post content - expandable */}
       {isFeedLayout && post.content && (
-        <div className="mt-3 w-full" style={{ maxWidth: 'calc(100vw - 300px)', width: '1000px' }}>
+        <div className="mt-3 w-full" style={{ maxWidth: 'calc(100vw - 300px)', width: '60vw' }}>
           <p className={`whitespace-pre-wrap text-muted-foreground ${!isDescriptionExpanded && needsTruncation ? 'line-clamp-3' : ''}`}>
-            {post.content}
-          </p>
+          {post.content}
+        </p>
           {needsTruncation && (
             <button
               onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
@@ -153,7 +153,7 @@ const PostItem: React.FC<PostItemProps> = React.memo(({
         <h2 className="text-2xl font-bold mt-4 mb-2">{post.title}</h2>
       )}
 
-      {showSeparator && <hr className="w-full border-t border-input mt-8 mb-6" style={{ maxWidth: 'calc(100vw - 300px)', width: '1000px' }} />}
+      {showSeparator && <hr className="w-full border-t border-input mt-8 mb-6" style={{ maxWidth: 'calc(100vw - 300px)', width: '60vw' }} />}
     </div>
   );
 });

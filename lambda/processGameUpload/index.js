@@ -50,9 +50,13 @@ exports.handler = async (event) => {
       const zip = await unzipper.Open.buffer(zipObject.Body);
       console.log('Zip file opened.');
 
-      // 3. Validate that essential game files exist
+      // 2.5 Detect if there's a root folder prefix to strip
+      const rootPrefix = detectRootFolderPrefix(zip.files);
+      console.log(`Detected root folder prefix: "${rootPrefix}"`);
+
+      // 3. Validate that essential game files exist (accounting for root prefix)
       console.log('Validating game files.');
-      let isValid = validateGameFiles(zip.files, engine);
+      let isValid = validateGameFiles(zip.files, engine, rootPrefix);
       console.log(`Validation result: ${isValid}`);
 
       if (!isValid) {
@@ -65,13 +69,17 @@ exports.handler = async (event) => {
         continue;
       }
 
-      // 4. Upload each extracted file to the destination bucket, preserving folder paths
+      // 4. Upload each extracted file to the destination bucket, stripping root folder if present
       console.log('Uploading extracted files to the destination bucket.');
       for (const entry of zip.files) {
         console.log("Processing file:", entry.path);
         if (entry.type === 'File') {
-          const filePath = entry.path; // This includes any subfolders
-          console.log(`Processing file: ${filePath}`);
+          // Strip root folder prefix if detected
+          let filePath = entry.path;
+          if (rootPrefix && filePath.startsWith(rootPrefix)) {
+            filePath = filePath.substring(rootPrefix.length);
+          }
+          console.log(`Processing file: ${entry.path} -> ${filePath}`);
 
           let content = await entry.buffer();
 
@@ -131,7 +139,7 @@ exports.handler = async (event) => {
 // -------------------------------------------------------
 // Validate files exist for each engine
 // -------------------------------------------------------
-function validateGameFiles(files, engine) {
+function validateGameFiles(files, engine, rootPrefix = '') {
   let requiredFiles = [];
 
   if (engine === 'unity') {
@@ -140,10 +148,21 @@ function validateGameFiles(files, engine) {
     // We expect at least: index.html, .pck, .wasm, and .js
     // (Possibly .audio.worklet.js, but we'll just check for at least one .js)
     requiredFiles = ['index.html', '.pck', '.wasm', '.js'];
+  } else if (engine === 'unreal') {
+    // Unreal HTML5 exports via Emscripten are similar to Godot
+    requiredFiles = ['index.html', '.wasm', '.js'];
   }
 
-  // Normalize file paths and required patterns to lowercase for case-insensitive matching
-  const fileNames = files.map((file) => file.path.toLowerCase());
+  // Normalize file paths, stripping root prefix if present
+  const fileNames = files.map((file) => {
+    let path = file.path.toLowerCase();
+    const prefixLower = rootPrefix.toLowerCase();
+    if (prefixLower && path.startsWith(prefixLower)) {
+      path = path.substring(prefixLower.length);
+    }
+    return path;
+  });
+  
   const requiredPatterns = requiredFiles.map((req) => req.toLowerCase());
   return requiredPatterns.every((pattern) =>
     fileNames.some((fileName) => fileName.includes(pattern))
@@ -196,4 +215,29 @@ function getFileHeaders(originalPath) {
   }
 
   return { contentType, contentEncoding };
+}
+
+// -------------------------------------------------------
+// Detect if all files share a common root folder prefix
+// -------------------------------------------------------
+function detectRootFolderPrefix(files) {
+  // Filter to only actual files (not directory entries)
+  const filePaths = files
+    .filter(f => f.type === 'File')
+    .map(f => f.path);
+  
+  if (filePaths.length === 0) return '';
+  
+  // Check if all files start with the same folder prefix
+  const firstPath = filePaths[0];
+  const firstSlash = firstPath.indexOf('/');
+  
+  if (firstSlash === -1) return ''; // No folder structure in first file
+  
+  const potentialPrefix = firstPath.substring(0, firstSlash + 1);
+  
+  // Verify ALL files share this prefix
+  const allSharePrefix = filePaths.every(p => p.startsWith(potentialPrefix));
+  
+  return allSharePrefix ? potentialPrefix : '';
 }

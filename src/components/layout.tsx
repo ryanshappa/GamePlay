@@ -30,7 +30,7 @@ export default function Layout({
   // Modal states
   const [signInOpen, setSignInOpen] = useState(false);
   const [signUpOpen, setSignUpOpen] = useState(false);
-  
+
   // Sheet states
   const [searchSheetOpen, setSearchSheetOpen] = useState(false);
   const [userMenuSheetOpen, setUserMenuSheetOpen] = useState(false);
@@ -60,7 +60,7 @@ export default function Layout({
               className="h-12 w-12 object-contain"
             />
             <span className="hidden xl:inline ml-2 text-xl font-bold">GamePlay</span>
-          </div>
+        </div>
 
           {/* Search Bar - TikTok style, aligned with other nav items */}
           <div className="hidden xl:block px-4 mb-6">
@@ -81,7 +81,7 @@ export default function Layout({
               onClick={() => setSearchSheetOpen(true)}
             >
               <Search className="h-6 w-6 flex-shrink-0" />
-            </div>
+        </div>
 
             {/* Home */}
             <div
@@ -90,7 +90,7 @@ export default function Layout({
             >
               <Home className="h-6 w-6 flex-shrink-0" />
               <span className="hidden xl:inline text-base">Home</span>
-            </div>
+              </div>
 
             {/* Create */}
             <div

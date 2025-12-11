@@ -45,6 +45,7 @@ model Post {
   status      String?
   savedPosts  SavedPost[]
   requiresSharedArrayBufferSupport Boolean  @default(false) 
+  isMobileFriendly Boolean @default(false)
 }
 
 model Follow {

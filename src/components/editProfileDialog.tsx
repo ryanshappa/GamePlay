@@ -33,6 +33,7 @@ export function EditProfileDialog({ open, onOpenChange, initialData }: EditProfi
   const [itchioUrl, setItchioUrl] = React.useState<string>(initialData?.itchioUrl || '');
   const [youtubeUrl, setYoutubeUrl] = React.useState<string>(initialData?.youtubeUrl || '');
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [errors, setErrors] = React.useState<Record<string, string>>({});
 
   // Update local state when user data is loaded
   React.useEffect(() => {
@@ -86,8 +87,54 @@ export function EditProfileDialog({ open, onOpenChange, initialData }: EditProfi
     }
   };
 
+  const isEmpty = (val?: string | null) => !val || val.trim() === '';
+
+  const validators = {
+    website: (val: string) =>
+      isEmpty(val) || /^https:\/\/[^\s/$.?#].[^\s]*$/i.test(val),
+    discord: (val: string) =>
+      isEmpty(val) || val.startsWith('https://discord.gg/') || val.startsWith('https://discord.com/invite/'),
+    steam: (val: string) =>
+      isEmpty(val) || val.startsWith('https://steamcommunity.com/') || val.startsWith('https://s.team/'),
+    itchio: (val: string) =>
+      isEmpty(val) || /^https:\/\/[a-z0-9-]+\.itch\.io(\/.*)?$/i.test(val),
+    youtube: (val: string) =>
+      isEmpty(val) || val.startsWith('https://www.youtube.com/') || val.startsWith('https://youtube.com/') || val.startsWith('https://youtu.be/'),
+  };
+
+  const validateLinks = () => {
+    const newErrors: Record<string, string> = {};
+    const website = websiteUrl.trim();
+    const discord = discordUrl.trim();
+    const steam = steamUrl.trim();
+    const itchio = itchioUrl.trim();
+    const youtube = youtubeUrl.trim();
+
+    if (!validators.website(website)) newErrors.websiteUrl = 'Website must start with https:// and be a valid URL.';
+    if (!validators.discord(discord)) newErrors.discordUrl = 'Discord must be https://discord.gg/... or https://discord.com/invite/....';
+    if (!validators.steam(steam)) newErrors.steamUrl = 'Steam must be https://steamcommunity.com/... or https://s.team/...';
+    if (!validators.itchio(itchio)) newErrors.itchioUrl = 'itch.io must be https://yourname.itch.io/...';
+    if (!validators.youtube(youtube)) newErrors.youtubeUrl = 'YouTube must be https://youtube.com/... or https://youtu.be/...';
+
+    // Normalize trimmed values so users can clear fields and save
+    setWebsiteUrl(website);
+    setDiscordUrl(discord);
+    setSteamUrl(steam);
+    setItchioUrl(itchio);
+    setYoutubeUrl(youtube);
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSaveChanges = async () => {
     if (!user) return;
+
+    const isValid = validateLinks();
+    if (!isValid) {
+      alert('Please fix the invalid social links before saving.');
+      return;
+    }
     
     setIsSubmitting(true);
     try {
@@ -99,11 +146,11 @@ export function EditProfileDialog({ open, onOpenChange, initialData }: EditProfi
           displayName,
           bio,
           avatarUrl,
-          websiteUrl,
-          discordUrl,
-          steamUrl,
-          itchioUrl,
-          youtubeUrl,
+          websiteUrl: websiteUrl.trim(),
+          discordUrl: discordUrl.trim(),
+          steamUrl: steamUrl.trim(),
+          itchioUrl: itchioUrl.trim(),
+          youtubeUrl: youtubeUrl.trim(),
         }),
       });
 
@@ -128,11 +175,11 @@ export function EditProfileDialog({ open, onOpenChange, initialData }: EditProfi
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 bg-background opacity-50 z-50" />
-        <Dialog.Content className="fixed top-1/2 left-1/2 max-w-lg w-full max-h-[90vh] overflow-y-auto bg-muted p-6 rounded-md transform -translate-x-1/2 -translate-y-1/2 z-50 text-foreground">
+        <Dialog.Overlay className="fixed inset-0 z-50 bg-background/70" />
+        <Dialog.Content className="fixed top-1/2 left-1/2 max-w-lg w-full max-h-[90vh] overflow-y-auto bg-background p-6 rounded-lg shadow-lg transform -translate-x-1/2 -translate-y-1/2 z-50 text-foreground border border-input">
           <Dialog.Title className="text-2xl font-bold mb-4">Edit Profile</Dialog.Title>
-          <Dialog.Close className="absolute top-2 right-2 text-foreground hover:text-gray-400">
-            <Cross2Icon />
+          <Dialog.Close className="absolute top-3 right-3 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 text-foreground">
+            <Cross2Icon className="h-4 w-4" />
           </Dialog.Close>
           <div className="space-y-4">
             <div className="flex items-center space-x-4">
@@ -176,6 +223,7 @@ export function EditProfileDialog({ open, onOpenChange, initialData }: EditProfi
             <div className="space-y-3 pt-2">
               <h3 className="text-sm font-semibold text-muted-foreground">Social Links</h3>
               
+              <div className="flex flex-col space-y-1">
               <div className="flex items-center space-x-2">
                 <FaLink className="w-5 h-5 text-muted-foreground flex-shrink-0" />
                 <Input
@@ -184,8 +232,11 @@ export function EditProfileDialog({ open, onOpenChange, initialData }: EditProfi
                   onChange={(e) => setWebsiteUrl(e.target.value)}
                   className="w-full bg-muted text-foreground"
                 />
+                </div>
+                {errors.websiteUrl && <p className="text-sm text-destructive">{errors.websiteUrl}</p>}
               </div>
               
+              <div className="flex flex-col space-y-1">
               <div className="flex items-center space-x-2">
                 <FaDiscord className="w-5 h-5 text-[#5865F2] flex-shrink-0" />
                 <Input
@@ -194,8 +245,11 @@ export function EditProfileDialog({ open, onOpenChange, initialData }: EditProfi
                   onChange={(e) => setDiscordUrl(e.target.value)}
                   className="w-full bg-muted text-foreground"
                 />
+                </div>
+                {errors.discordUrl && <p className="text-sm text-destructive">{errors.discordUrl}</p>}
               </div>
               
+              <div className="flex flex-col space-y-1">
               <div className="flex items-center space-x-2">
                 <FaSteam className="w-5 h-5 text-muted-foreground flex-shrink-0" />
                 <Input
@@ -204,8 +258,11 @@ export function EditProfileDialog({ open, onOpenChange, initialData }: EditProfi
                   onChange={(e) => setSteamUrl(e.target.value)}
                   className="w-full bg-muted text-foreground"
                 />
+                </div>
+                {errors.steamUrl && <p className="text-sm text-destructive">{errors.steamUrl}</p>}
               </div>
               
+              <div className="flex flex-col space-y-1">
               <div className="flex items-center space-x-2">
                 <FaItchIo className="w-5 h-5 text-[#FA5C5C] flex-shrink-0" />
                 <Input
@@ -214,8 +271,11 @@ export function EditProfileDialog({ open, onOpenChange, initialData }: EditProfi
                   onChange={(e) => setItchioUrl(e.target.value)}
                   className="w-full bg-muted text-foreground"
                 />
+                </div>
+                {errors.itchioUrl && <p className="text-sm text-destructive">{errors.itchioUrl}</p>}
               </div>
               
+              <div className="flex flex-col space-y-1">
               <div className="flex items-center space-x-2">
                 <FaYoutube className="w-5 h-5 text-[#FF0000] flex-shrink-0" />
                 <Input
@@ -224,6 +284,8 @@ export function EditProfileDialog({ open, onOpenChange, initialData }: EditProfi
                   onChange={(e) => setYoutubeUrl(e.target.value)}
                   className="w-full bg-muted text-foreground"
                 />
+                </div>
+                {errors.youtubeUrl && <p className="text-sm text-destructive">{errors.youtubeUrl}</p>}
               </div>
             </div>
 

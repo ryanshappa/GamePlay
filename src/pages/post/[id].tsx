@@ -34,7 +34,7 @@ export default function PostPage({ post, status }: PostPageProps) {
     setIsCopySuccess(true);
     setTimeout(() => setIsCopySuccess(false), 2000);
   }, [post.id]);
-
+      
   const handleCommentClick = useCallback(() => {
     setCommentsDrawerOpen(true);
   }, []);
@@ -79,13 +79,13 @@ export default function PostPage({ post, status }: PostPageProps) {
     return (
       <div className="flex h-screen w-full items-center justify-center">
         <div className="text-center">
-          {status === 'processing' && (
+            {status === 'processing' && (
             <p className="text-foreground">Your game is being processed. Please check back shortly.</p>
-          )}
-          {status === 'invalid' && (
+            )}
+            {status === 'invalid' && (
             <p className="text-foreground">There was an issue with your game upload. Please try again.</p>
-          )}
-        </div>
+            )}
+          </div>
       </div>
     );
   }
@@ -105,27 +105,27 @@ export default function PostPage({ post, status }: PostPageProps) {
         </div>
 
         {/* Title */}
-        <h1 className="text-2xl font-bold mb-4" style={{ width: 'min(1000px, calc(100vw - 300px))' }}>
+        <h1 className="text-2xl font-bold mb-4" style={{ width: 'min(60vw, calc(100vw - 300px))' }}>
           {post.title}
         </h1>
 
         {/* Main content area - iframe + interaction buttons */}
         <div className="flex items-center">
-          {/* Iframe container - responsive with max size */}
+          {/* Iframe container - responsive with viewport-based sizing */}
           <div 
             className="rounded-lg overflow-hidden bg-muted"
-            style={{ width: 'min(1000px, calc(100vw - 300px))', aspectRatio: '16/9' }}
+            style={{ width: 'min(60vw, calc(100vw - 300px))', aspectRatio: '16/9' }}
           >
             {post.fileUrl ? (
-              <iframe
+            <iframe
                 src={post.fileUrl}
-                title={post.title}
-                className="w-full h-full"
-                frameBorder="0"
-                allow="fullscreen; cross-origin-isolated"
-                allowFullScreen
-                // @ts-expect-error - credentialless is a valid attribute but not in React types yet
-                credentialless="true"
+              title={post.title}
+              className="w-full h-full"
+              frameBorder="0"
+              allow="fullscreen; cross-origin-isolated"
+              allowFullScreen
+              // @ts-expect-error - credentialless is a valid attribute but not in React types yet
+              credentialless="true"
               />
             ) : (
               <div className="w-full h-full bg-muted flex items-center justify-center">
@@ -142,10 +142,10 @@ export default function PostPage({ post, status }: PostPageProps) {
                 <AvatarImage src={post.author.avatarUrl || ''} alt="Author Avatar" />
                 <AvatarFallback className="text-lg">
                   {post.author.username?.charAt(0) || 'A'}
-                </AvatarFallback>
-              </Avatar>
-            </Link>
-
+                  </AvatarFallback>
+                </Avatar>
+              </Link>
+              
             {/* Like Button - larger */}
             <LikeButton
               postId={post.id}
@@ -190,11 +190,11 @@ export default function PostPage({ post, status }: PostPageProps) {
                 </span>
               )}
             </div>
+            </div>
           </div>
-        </div>
 
         {/* Post content / description */}
-        <div className="mt-4 pb-8" style={{ width: 'min(1000px, calc(100vw - 300px))' }}>
+        <div className="mt-4 pb-8" style={{ width: 'min(60vw, calc(100vw - 300px))' }}>
           <div className="flex items-center gap-2 mb-2">
             <Link href={`/profile/${post.author.id}`} className="text-foreground hover:underline">
               @{post.author.username}
@@ -213,9 +213,9 @@ export default function PostPage({ post, status }: PostPageProps) {
                   {isDescriptionExpanded ? 'less' : 'more'}
                 </button>
               )}
-            </div>
-          )}
-        </div>
+              </div>
+            )}
+          </div>
       </div>
 
       {/* Comments Sheet */}
