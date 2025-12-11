@@ -85,11 +85,16 @@
   box-shadow: none !important; /* In case the border is a shadow */
 }
 
-/* Prevent scrolling on root elements */
+/* Root element setup */
 html, body, #__next {
   height: 100%;
   margin: 0;
-  overflow: hidden;
+}
+
+/* Default overflow - allow scrolling */
+html {
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 /* Safe area utilities for mobile devices */

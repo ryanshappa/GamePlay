@@ -8,9 +8,17 @@ export interface LikeButtonProps {
   initialCount: number;
   /** "column" (default) or "row" for layout */
   orientation?: 'column' | 'row';
+  /** "default" or "large" for size */
+  size?: 'default' | 'large';
 }
 
-export function LikeButton({ postId, initialLiked, initialCount, orientation = 'column' }: LikeButtonProps) {
+export function LikeButton({ 
+  postId, 
+  initialLiked, 
+  initialCount, 
+  orientation = 'column',
+  size = 'default'
+}: LikeButtonProps) {
   const { user } = useAuth();
   const [liked, setLiked] = React.useState(initialLiked);
   const [count, setCount] = React.useState(initialCount);
@@ -66,24 +74,29 @@ export function LikeButton({ postId, initialLiked, initialCount, orientation = '
       ? 'flex items-center space-x-1'
       : 'flex flex-col items-center';
 
+  // Size classes
+  const buttonSizeClasses = size === 'large' ? 'h-14 w-14' : 'h-10 w-10';
+  const iconSizeClasses = size === 'large' ? 'h-8 w-8' : 'h-6 w-6';
+  const textSizeClasses = size === 'large' ? 'text-sm' : 'text-sm';
+
   return (
     <div className={containerClasses}>
       <button
-        className="rounded-full bg-muted hover:bg-foreground/20 p-2"
+        className={`rounded-full bg-muted hover:bg-foreground/20 flex items-center justify-center ${buttonSizeClasses}`}
         onClick={handleClick}
         disabled={loading}
       >
         <HeartIcon
-          className={`h-6 w-6 ${liked ? 'text-red-500' : 'text-foreground'}`}
+          className={`${iconSizeClasses} ${liked ? 'text-red-500' : 'text-foreground'}`}
           fill={liked ? 'currentColor' : 'none'}
         />
       </button>
       {/* When in row mode, show the count right next to the icon */}
       {orientation === 'row' ? (
-        <span className="text-foreground">{count}</span>
+        <span className={`text-foreground ${textSizeClasses}`}>{count}</span>
       ) : (
         // In column mode, the count appears below.
-        <span className="text-foreground mt-1">{count}</span>
+        <span className={`text-foreground mt-1 ${textSizeClasses}`}>{count}</span>
       )}
     </div>
   );

@@ -179,10 +179,10 @@ export default function ProfilePage() {
     <div className="bg-background text-foreground min-h-screen">
       {/* Profile Info */}
       <section className="p-8">
-        <div className="flex items-center space-x-6">
-          <Avatar className="h-32 w-32">
+        <div className="flex items-center space-x-8">
+          <Avatar className="h-44 w-44">
             <AvatarImage src={userProfile.avatarUrl} alt="Profile" />
-            <AvatarFallback>{userProfile.username?.charAt(0)}</AvatarFallback>
+            <AvatarFallback className="text-4xl">{userProfile.username?.charAt(0)}</AvatarFallback>
           </Avatar>
           <div>
             {userProfile.displayName && (
@@ -344,7 +344,7 @@ export default function ProfilePage() {
                   {userProfile.posts?.map((post) => (
                     <div key={post.id} className="relative">
                       <Link href={`/post/${post.id}`}>
-                        <div className="aspect-video bg-muted rounded-lg overflow-hidden relative cursor-pointer">
+                        <div className="aspect-video bg-muted rounded-lg overflow-hidden relative cursor-pointer border border-input hover:border-foreground/50 transition-colors">
                           <LazyIframe
                             src={post.fileUrl || '/default-file-url'}
                             title={post.title}
@@ -396,7 +396,7 @@ export default function ProfilePage() {
                   {savedPosts.map((post) => (
                     <div key={post.id} className="relative">
                       <Link href={`/post/${post.id}`}>
-                        <div className="aspect-video bg-muted rounded-lg overflow-hidden relative cursor-pointer">
+                        <div className="aspect-video bg-muted rounded-lg overflow-hidden relative cursor-pointer border border-input hover:border-foreground/50 transition-colors">
                           <LazyIframe
                             src={post.fileUrl || '/default-file-url'}
                             title={post.title}

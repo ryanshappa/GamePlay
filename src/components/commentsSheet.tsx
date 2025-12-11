@@ -112,7 +112,7 @@ function NestedCommentItemDrawer({
         </Link>
         <div className="flex-1">
           <div className="flex items-center justify-between">
-            <p className="font-semibold">{comment.user.username}</p>
+            <p className="font-semibold">@{comment.user.username}</p>
             {currentUserId && (
               <DeleteCommentButton
                 comment={{
@@ -345,8 +345,7 @@ export function CommentsDrawer({
     <Sheet open={open} onOpenChange={onClose}>
       <SheetContent
         side="right"
-        className="p-4 bg-muted text-foreground w-[320px]"
-        style={{ opacity: 0.95 }}
+        className="p-4 bg-background text-foreground w-[320px]"
       >
         <SheetHeader>
           <SheetTitle className="text-xl font-bold mb-4 text-foreground">
