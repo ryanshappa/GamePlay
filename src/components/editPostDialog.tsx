@@ -84,6 +84,9 @@ export function EditPostDialog({
         description: 'Your post has been successfully updated.',
       });
 
+      // Close the dialog first
+      onOpenChange(false);
+      
       onPostUpdated({
         title: data.post.title,
         content: data.post.content,
