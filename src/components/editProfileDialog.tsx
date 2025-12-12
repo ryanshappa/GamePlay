@@ -290,7 +290,7 @@ export function EditProfileDialog({ open, onOpenChange, initialData }: EditProfi
             </div>
 
             <Button 
-              className="w-full bg-primary hover:bg-primary/90 text-foreground" 
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white" 
               onClick={handleSaveChanges}
               disabled={isSubmitting}
             >

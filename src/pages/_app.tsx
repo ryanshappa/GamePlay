@@ -11,6 +11,7 @@ import { ClerkProvider } from '@clerk/nextjs';
 import { LayoutDesktop } from '~/components/LayoutDesktop';
 import { LayoutMobile } from '~/components/LayoutMobile';
 import { ThemeProvider } from '~/components/theme-provider';
+import { Toaster } from '~/components/ui/toaster';
 
 type NextPageWithLayout = NextPage & {
   getLayout?: (page: ReactElement) => ReactNode;
@@ -61,6 +62,7 @@ const MyApp: AppType = ({ Component, pageProps }: AppPropsWithLayout) => {
                 </>
               )}
             </div>
+            <Toaster />
           </ThemeProvider>
         </AuthProvider>
       </ClerkProvider>

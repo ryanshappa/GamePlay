@@ -6,7 +6,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
 import { Button, Portal } from '@chakra-ui/react';
 import Link from 'next/link';
 import { EditProfileDialog } from '~/components/editProfileDialog';
-import { MoreHorizontal } from 'lucide-react';
+import { EditPostDialog } from '~/components/editPostDialog';
+import { MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
 import {
   Menu,
   MenuButton,
@@ -16,6 +17,7 @@ import {
 import UserProfile from '../../components/UserProfile';
 import { FollowButton } from '~/components/followButton';
 import { FaLink, FaDiscord, FaSteam, FaItchIo, FaYoutube } from 'react-icons/fa';
+import { useToast } from '~/hooks/use-toast';
 
 // Lazy loading iframe component - only loads when visible in viewport
 function LazyIframe({ src, title }: { src: string; title: string }) {
@@ -82,11 +84,14 @@ export default function ProfilePage() {
   const router = useRouter();
   const { id } = router.query;
   const profileId = typeof id === 'string' ? id : '';
+  const { toast } = useToast();
 
   const { user } = useAuth();
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [isFollowing, setIsFollowing] = useState(false);
   const [editProfileOpen, setEditProfileOpen] = useState(false);
+  const [editPostOpen, setEditPostOpen] = useState(false);
+  const [editingPost, setEditingPost] = useState<Post | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [activeTab, setActiveTab] = useState<'posts' | 'saved'>('posts');
   const [savedPosts, setSavedPosts] = useState<Post[]>([]);
@@ -154,17 +159,49 @@ export default function ProfilePage() {
             posts: prevUser.posts.filter((post) => post.id !== postId),
           };
         });
-        alert('Post deleted successfully.');
+        toast({
+          title: "Post Deleted",
+          description: "Your post has been successfully deleted.",
+        });
       } else {
         const data = await response.json();
-        alert(`Failed to delete post: ${data.error}`);
+        toast({
+          variant: "destructive",
+          title: "Delete Failed",
+          description: data.error || "Failed to delete post.",
+        });
       }
     } catch (error) {
       console.error('Error deleting post:', error);
-      alert('An error occurred while deleting the post. Please try again.');
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "An error occurred while deleting the post. Please try again.",
+      });
     } finally {
       setIsDeleting(false);
     }
+  };
+
+  const handleEditPost = (post: Post) => {
+    setEditingPost(post);
+    setEditPostOpen(true);
+  };
+
+  const handlePostUpdated = (updatedPost: { title: string; content: string }) => {
+    setUserProfile((prevUser) => {
+      if (!prevUser) return prevUser;
+      return {
+        ...prevUser,
+        posts: prevUser.posts.map((post) =>
+          post.id === editingPost?.id
+            ? { ...post, title: updatedPost.title, content: updatedPost.content }
+            : post
+        ),
+      };
+    });
+    setEditPostOpen(false);
+    setEditingPost(null);
   };
 
   // If router isn't ready or profileId is empty, show a loading indicator.
@@ -218,7 +255,7 @@ export default function ProfilePage() {
                 <span className="text-gray-400">following</span>
               </div>
             </div>
-            <p className="mt-2 text-gray-300">{userProfile.bio}</p>
+            <p className="mt-2 text-muted-foreground">{userProfile.bio}</p>
 
             {/* Social Links (excluding website, which is shown inline with username) */}
             {(userProfile.discordUrl || userProfile.steamUrl || userProfile.itchioUrl || userProfile.youtubeUrl) && (
@@ -312,6 +349,20 @@ export default function ProfilePage() {
         }}
       />
 
+      {editingPost && (
+        <EditPostDialog
+          open={editPostOpen}
+          onOpenChange={(open) => {
+            setEditPostOpen(open);
+            if (!open) setEditingPost(null);
+          }}
+          postId={editingPost.id}
+          initialTitle={editingPost.title}
+          initialDescription={editingPost.content || ''}
+          onPostUpdated={handlePostUpdated}
+        />
+      )}
+
       <div className="flex justify-center space-x-8 border-b border-border mb-2">
         <button
           className={`py-2 ${activeTab === 'posts'
@@ -361,17 +412,25 @@ export default function ProfilePage() {
                               as={Button}
                               variant="ghost"
                               size="sm"
-                              className="p-1 rounded-full hover:bg-muted"
+                              className="p-1 rounded-full hover:bg-muted bg-background/80"
                             >
                               <MoreHorizontal className="h-6 w-6" />
                             </MenuButton>
                             <Portal>
                               <MenuList className="bg-muted text-foreground z-50">
                                 <MenuItem
+                                  onClick={() => handleEditPost(post)}
+                                  className="px-4 py-2 hover:bg-muted cursor-pointer flex items-center gap-2"
+                                >
+                                  <Pencil className="h-4 w-4" />
+                                  Edit Post
+                                </MenuItem>
+                                <MenuItem
                                   onClick={() => handleDeletePost(post.id)}
-                                  className="px-4 py-2 hover:bg-muted cursor-pointer"
+                                  className="px-4 py-2 hover:bg-muted cursor-pointer text-red-500 flex items-center gap-2"
                                   disabled={isDeleting}
                                 >
+                                  <Trash2 className="h-4 w-4" />
                                   {isDeleting ? 'Deleting...' : 'Delete Post'}
                                 </MenuItem>
                               </MenuList>
