@@ -151,6 +151,9 @@ function validateGameFiles(files, engine, rootPrefix = '') {
   } else if (engine === 'unreal') {
     // Unreal HTML5 exports via Emscripten are similar to Godot
     requiredFiles = ['index.html', '.wasm', '.js'];
+  } else if (engine === 'threejs') {
+    // Three.js projects need index.html and at least one JS file
+    requiredFiles = ['index.html', '.js'];
   }
 
   // Normalize file paths, stripping root prefix if present
@@ -197,6 +200,19 @@ function getFileHeaders(originalPath) {
   } else if (filePath.endsWith('.pck')) {
     // Godot .pck is data – can stay octet-stream
     contentType = 'application/octet-stream';
+  } else if (filePath.endsWith('.gltf')) {
+    // Three.js 3D model format (JSON-based)
+    contentType = 'model/gltf+json';
+  } else if (filePath.endsWith('.glb')) {
+    // Three.js 3D model format (binary)
+    contentType = 'model/gltf-binary';
+  } else if (filePath.endsWith('.obj') || filePath.endsWith('.mtl')) {
+    // OBJ and MTL model files
+    contentType = 'text/plain';
+  } else if (filePath.endsWith('.json')) {
+    contentType = 'application/json';
+  } else if (filePath.endsWith('.svg')) {
+    contentType = 'image/svg+xml';
   }
 
   // Check for .gz

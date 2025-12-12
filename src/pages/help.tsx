@@ -75,6 +75,29 @@ export default function HelpPage() {
             </p>
           </AccordionContent>
         </AccordionItem>
+
+        <AccordionItem value="threejs-upload">
+          <AccordionTrigger className="text-xl">How do I upload a Three.js game?</AccordionTrigger>
+          <AccordionContent className="text-lg">
+            <p className="mb-2">
+              Three.js games can be uploaded as a zip file containing your built project. Your zip should include:
+            </p>
+            <ul className="list-disc list-inside mb-2 pl-4">
+              <li><strong>index.html</strong> - The entry point for your game</li>
+              <li><strong>JavaScript files</strong> - Your bundled game code (e.g., main.js, bundle.js)</li>
+              <li><strong>Assets</strong> - 3D models (.gltf, .glb), textures, and other resources</li>
+            </ul>
+            <p className="mb-2">
+              If you&apos;re using a build tool like Vite or Webpack, zip the contents of your <code className="bg-muted px-1 rounded">dist/</code> or <code className="bg-muted px-1 rounded">build/</code> folder.
+            </p>
+            <p>
+              For more information on setting up Three.js projects, see the&nbsp;
+              <Link href="https://threejs.org/manual/#en/fundamentals" className="text-blue-500 underline" target="_blank" rel="noopener noreferrer">
+                Three.js documentation
+              </Link>.
+            </p>
+          </AccordionContent>
+        </AccordionItem>
       </Accordion>
     </div>
   );
